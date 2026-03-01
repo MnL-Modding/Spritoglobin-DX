@@ -59,7 +59,7 @@ LANGUAGES = { # display name, NDS value, 3DS key
     "fr_CA": ["Français (CA)", 2, "US_fr"],
     "es_MX": ["Español (MX)",  5, "US_sp"],
     "nl_NL": ["Nederlands",   -1, "EU_du"],
-    "en_GB": ["English (EU)",  1, "EU_en"],
+    "en_GB": ["English (UK)",  1, "EU_en"],
     "fr_FR": ["Français (FR)", 2, "EU_fr"],
     "de_DE": ["Deutsch",       3, "EU_ge"],
     "it_IT": ["Italiano",      4, "EU_it"],
