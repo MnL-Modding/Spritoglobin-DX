@@ -38,7 +38,7 @@ jobs:
           mode: app
           enable-plugins: pyside6
           user-package-configuration-file: "spritoglobin_dx.nuitka-package.config.yml"
-          windows-console-mode: attach
+          windows-console-mode: force
           windows-icon-from-ico: "spritoglobin_dx/files/ico_sprito_dx.ico"
           include-data-dir: "spritoglobin_dx.dist-info=spritoglobin_dx.dist-info"  # Workaround for https://github.com/Nuitka/Nuitka/issues/2965
       - name: Upload artifacts
