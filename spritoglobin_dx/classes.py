@@ -196,6 +196,16 @@ class ObjFile:
             "renderer_index":  part_data.renderer,
         }
     
+    def get_sprite(self, object_name, animation_index, color_anim_index = None, frame_index = None):
+        img, size, _ = get_sprite_with_offset(
+            object_name      = object_name,
+            animation_index  = animation_index,
+            color_anim_index = color_anim_index,
+            frame_index      = frame_index
+        )
+
+        return img, size
+    
     def get_sprite_with_offset(self, object_name, animation_index, color_anim_index = None, frame_index = None):
         self.cache_object(object_name)
         
