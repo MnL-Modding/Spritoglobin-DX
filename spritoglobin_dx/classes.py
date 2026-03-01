@@ -1,6 +1,7 @@
-import numpy
 import struct
 from io import BytesIO
+
+import numpy
 
 from spritoglobin_dx.constants import *
 from spritoglobin_dx.scripts import SIZING_TABLE, get_sprite_graphic, get_sprite_part_set_graphic, draw_part

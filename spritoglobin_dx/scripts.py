@@ -359,8 +359,6 @@ def draw_part(part_data, graph_file, obj_anim_data, alpha_divisor = None, ignore
         if part_data.oam_data & 0x200 != 0:
             out = cv2.flip(out, 0)
     
-    #cv2.imshow("bluh", out)
-    
     return out, (img_width, img_height)
 
 def apply_sprite_color(img, obj_anim_data, color_data, renderer_data, current_anim_index, global_anim_index, current_time_anim, current_time_color, current_anim_length):
