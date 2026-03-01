@@ -204,8 +204,8 @@ class MainWindow(QtWidgets.QMainWindow):
             if force:
                 QtWidgets.QMessageBox.critical(
                     self,
-                    self.strings["CheckUpdateErrorTitle"],
-                    self.strings["CheckUpdateErrorBlurb"].format(e),
+                    self.tr("CheckUpdateErrorTitle"),
+                    self.tr("CheckUpdateErrorBlurb").format(e),
                 )
             return
         latest_release = latest_release_resp.json()
@@ -218,17 +218,19 @@ class MainWindow(QtWidgets.QMainWindow):
         if latest_ver <= skip_ver and not force:
             pass
         elif latest_ver > current_ver:
+            new_version_assurance_string = self.tr("CheckUpdateNewVersionAssurance")
+
             information_box = QtWidgets.QMessageBox(self)
             information_box.setTextFormat(QtCore.Qt.RichText)
-            information_box.setWindowTitle(self.strings["CheckUpdateNewVersionTitle"])
-            information_box.setText(self.strings["CheckUpdateNewVersionBlurb"].format(
+            information_box.setWindowTitle(self.tr("CheckUpdateNewVersionTitle"))
+            information_box.setText(self.tr("CheckUpdateNewVersionBlurb").format(
                 f"<b>{latest_release['name']}</b>",
                 latest_release['body'],
                 f"<a href='{latest_release['html_url']}'>github.com</a>",
-            ).replace("\n", "<br>") + f"<br><br><span style='color: rgb(127, 127, 127);'>{self.strings["CheckUpdateNewVersionAssurance"]}</span>")
+            ).replace("\n", "<br>") + f"<br><br><span style='color: rgb(127, 127, 127);'>{new_version_assurance_string}</span>")
 
-            remind_button = QtWidgets.QPushButton(self.strings["CheckUpdateNewVersionRemindOption"])
-            ignore_button = QtWidgets.QPushButton(self.strings["CheckUpdateNewVersionIgnoreOption"])
+            remind_button = QtWidgets.QPushButton(self.tr("CheckUpdateNewVersionRemindOption"))
+            ignore_button = QtWidgets.QPushButton(self.tr("CheckUpdateNewVersionIgnoreOption"))
 
             information_box.addButton(remind_button, QtWidgets.QMessageBox.AcceptRole)
             information_box.addButton(ignore_button, QtWidgets.QMessageBox.ActionRole)
@@ -240,8 +242,8 @@ class MainWindow(QtWidgets.QMainWindow):
         elif force:
             QtWidgets.QMessageBox.information(
                 self,
-                self.strings["CheckUpdateUpToDateTitle"],
-                self.strings["CheckUpdateUpToDateBlurb"],
+                self.tr("CheckUpdateUpToDateTitle"),
+                self.tr("CheckUpdateUpToDateBlurb"),
             )
 
         update_config["timestamp"] = time.time()
@@ -255,18 +257,18 @@ class MainWindow(QtWidgets.QMainWindow):
         menu_bar = self.menuBar()
 
     
-        menu_bar_file = menu_bar.addMenu(self.strings["MenuBarFileTitle"])
+        menu_bar_file = menu_bar.addMenu(self.tr("MenuBarFileTitle"))
 
         menu_bar_file.addAction(
             grab_icon(14),
-            self.strings["MenuBarFileOpenOption"],
+            self.tr("MenuBarFileOpenOption"),
             QtGui.QKeySequence.StandardKey.Open,
             self.open_file,
         )
 
         menu_bar_file.addAction(
             grab_icon(13),
-            self.strings["MenuBarFileCloseOption"],
+            self.tr("MenuBarFileCloseOption"),
             QtGui.QKeySequence.StandardKey.Close,
             self.close_file,
         )
@@ -275,14 +277,14 @@ class MainWindow(QtWidgets.QMainWindow):
 
         menu_bar_file.addAction(
             grab_icon(16),
-            self.strings["MenuBarFileQuickExportOption"],
+            self.tr("MenuBarFileQuickExportOption"),
             QtGui.QKeySequence.StandardKey.Save,
             partial(self.export_file, True),
         )
 
         menu_bar_file.addAction(
             grab_icon(16),
-            self.strings["MenuBarFileExportOption"],
+            self.tr("MenuBarFileExportOption"),
             QtGui.QKeySequence.StandardKey.SaveAs,
             partial(self.export_file, False),
         )
@@ -291,22 +293,22 @@ class MainWindow(QtWidgets.QMainWindow):
 
         menu_bar_file.addAction(
             grab_icon(15),
-            self.strings["MenuBarFileQuitOption"],
+            self.tr("MenuBarFileQuitOption"),
             QtGui.QKeySequence.StandardKey.Quit,
             QtWidgets.QApplication.quit,
         )
 
 
-        menu_bar_options = menu_bar.addMenu(self.strings["MenuBarOptionsTitle"])
+        menu_bar_options = menu_bar.addMenu(self.tr("MenuBarOptionsTitle"))
 
-        language_selector = QtWidgets.QMenu(self.strings["MenuBarOptionsLanguageOption"], self)
+        language_selector = QtWidgets.QMenu(self.tr("MenuBarOptionsLanguageOption"), self)
         for i, lang_key in enumerate(LANGUAGES):
             if not (LANG_DIR / f'{lang_key}.qm').exists() and not lang_key == "None": continue
             lang = LANGUAGES[lang_key]
 
             lang_string = lang[0]
             if lang_string is None:
-                lang_string = self.strings["MenuBarOptionsLanguageSystem"]
+                lang_string = self.tr("MenuBarOptionsLanguageSystem")
 
             #if lang[3]:
             #    lang_string += "⚠"
@@ -320,12 +322,12 @@ class MainWindow(QtWidgets.QMainWindow):
                 partial(self.change_lang, lang_key)
             )
 
-        framerate_selector = QtWidgets.QMenu(self.strings["MenuBarOptionsFramerateOption"], self)
+        framerate_selector = QtWidgets.QMenu(self.tr("MenuBarOptionsFramerateOption"), self)
         self.framerate_options = []
         for i in range(2):
             string = [
-                self.strings["MenuBarOptionsFramerate"].format(60),
-                self.strings["MenuBarOptionsFramerate"].format(30),
+                self.tr("MenuBarOptionsFramerate").format(60),
+                self.tr("MenuBarOptionsFramerate").format(30),
             ][i]
 
             if self.settings["framerate"] == i: string += " ✓"
@@ -336,12 +338,12 @@ class MainWindow(QtWidgets.QMainWindow):
             framerate_selector.addAction(framerate_action)
             self.framerate_options.append(framerate_action)
 
-        audio_mute = QtGui.QAction(self.strings["MenuBarOptionsMuteOption"], self)
+        audio_mute = QtGui.QAction(self.tr("MenuBarOptionsMuteOption"), self)
         audio_mute.setCheckable(True)
         audio_mute.setChecked(self.settings["muted"] == "True")
         audio_mute.toggled.connect(self.toggle_mute)
 
-        check_updates = QtGui.QAction(self.strings["MenuBarOptionsCheckUpdatesOption"], self)
+        check_updates = QtGui.QAction(self.tr("MenuBarOptionsCheckUpdatesOption"), self)
         check_updates.setCheckable(True)
         check_updates.setChecked(self.settings["check_for_updates"] == "True")
         check_updates.toggled.connect(self.toggle_update_check)
@@ -353,11 +355,11 @@ class MainWindow(QtWidgets.QMainWindow):
         menu_bar_options.addAction(check_updates)
 
     
-        menu_bar_help = menu_bar.addMenu(self.strings["MenuBarHelpTitle"])
+        menu_bar_help = menu_bar.addMenu(self.tr("MenuBarHelpTitle"))
 
         menu_bar_help.addAction(
             # grab_icon(14),
-            self.strings["MenuBarHelpCheckUpdates"],
+            self.tr("MenuBarHelpCheckUpdates"),
             self.check_for_updates,
         )
 
@@ -448,7 +450,7 @@ class MainWindow(QtWidgets.QMainWindow):
         object_info_layout.addWidget(self.color_mode_info_text)
         self.color_mode_info_text.setVisible(False)
 
-        self.object_bounding_box_enable = QtWidgets.QCheckBox(self.strings["ShowBoundingBoxToggle"])
+        self.object_bounding_box_enable = QtWidgets.QCheckBox(self.tr("ShowBoundingBoxToggle"))
         self.object_bounding_box_enable.checkStateChanged.connect(self.update_sprite_viewer)
         object_info_layout.addWidget(self.object_bounding_box_enable)
 
@@ -456,7 +458,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
 
 
-        string = QtWidgets.QLabel(self.strings["ColorAnimSelectorTitle"])
+        string = QtWidgets.QLabel(self.tr("ColorAnimSelectorTitle"))
         string.setBuddy(self.color_anim_list_box)
         string.setEnabled(False)
 
@@ -481,9 +483,9 @@ class MainWindow(QtWidgets.QMainWindow):
         self.timeline_tabs.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Fixed)
         self.timeline_tabs.setMinimumWidth(320)
         self.timeline_tabs.setTabPosition(QtWidgets.QTabWidget.South)
-        self.timeline_tabs.addTab(self.sprite_anim_timeline, grab_icon(1), self.strings["AnimationTabsSpriteAnimTitle"])
-        self.timeline_tabs.addTab(self.sprite_color_anim_timeline, gray_pal_icon, self.strings["AnimationTabsSpriteColorAnimTitle"])
-        self.timeline_tabs.addTab(global_color_anim, gray_pal_icon, self.strings["AnimationTabsSpriteGlobalAnimTitle"])
+        self.timeline_tabs.addTab(self.sprite_anim_timeline, grab_icon(1), self.tr("AnimationTabsSpriteAnimTitle"))
+        self.timeline_tabs.addTab(self.sprite_color_anim_timeline, gray_pal_icon, self.tr("AnimationTabsSpriteColorAnimTitle"))
+        self.timeline_tabs.addTab(global_color_anim, gray_pal_icon, self.tr("AnimationTabsSpriteGlobalAnimTitle"))
         self.timeline_tabs.setAutoFillBackground(True)
 
 
@@ -498,7 +500,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.sprite_part_set_list_box.setSizePolicy(QtWidgets.QSizePolicy.Preferred, self.sprite_part_set_list_box.sizePolicy().verticalPolicy())
         sprite_part_info_layout.addWidget(self.sprite_part_set_list_box, 1, 0, 1, -1)
 
-        string = QtWidgets.QLabel(self.strings["SpritePartSetSelectorTitle"])
+        string = QtWidgets.QLabel(self.tr("SpritePartSetSelectorTitle"))
         string.setBuddy(self.sprite_part_set_list_box)
         string.setEnabled(False)
         sprite_part_info_layout.addWidget(string, 0, 0, 1, -1)
@@ -522,7 +524,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.sprite_part_list_box.setSizePolicy(QtWidgets.QSizePolicy.Preferred, self.sprite_part_list_box.sizePolicy().verticalPolicy())
         sprite_part_info_layout.addWidget(self.sprite_part_list_box, 4, 0, 1, -1)
 
-        string = QtWidgets.QLabel(self.strings["SpritePartSelectorTitle"])
+        string = QtWidgets.QLabel(self.tr("SpritePartSelectorTitle"))
         string.setBuddy(self.sprite_part_list_box)
         string.setEnabled(False)
         sprite_part_info_layout.addWidget(string, 3, 0, 1, -1)
@@ -595,12 +597,12 @@ class MainWindow(QtWidgets.QMainWindow):
         line.setFrameShadow(QtWidgets.QFrame.Sunken)
         main_layout.addWidget(line, 3, 0, 1, 2)
 
-        string = QtWidgets.QLabel(self.strings["ObjectSelectorTitle"])
+        string = QtWidgets.QLabel(self.tr("ObjectSelectorTitle"))
         string.setBuddy(self.obj_list_box)
         string.setEnabled(False)
         main_layout.addWidget(string, 0, 0, 1, 2)
 
-        string = QtWidgets.QLabel(self.strings["AnimationSelectorTitle"])
+        string = QtWidgets.QLabel(self.tr("AnimationSelectorTitle"))
         string.setBuddy(self.anim_list_box)
         string.setEnabled(False)
         main_layout.addWidget(string, 4, 0, 1, 1)
@@ -663,8 +665,8 @@ class MainWindow(QtWidgets.QMainWindow):
         if self.obj_data is None:
             QtWidgets.QMessageBox.critical(
                 self,
-                self.strings["ExportFailNoDataTitle"],
-                self.strings["ExportFailNoDataBlurb"],
+                self.tr("ExportFailNoDataTitle"),
+                self.tr("ExportFailNoDataBlurb"),
             )
             return
             
@@ -728,68 +730,6 @@ class MainWindow(QtWidgets.QMainWindow):
         
         QtCore.QLocale.setDefault(QtCore.QLocale(lang_key))
 
-        self.strings = {
-            "AnimationTabsSpriteAnimTitle":       self.tr("AnimationTabsSpriteAnimTitle"),
-            "AnimationTabsSpriteColorAnimTitle":  self.tr("AnimationTabsSpriteColorAnimTitle"),
-            "AnimationTabsSpriteGlobalAnimTitle": self.tr("AnimationTabsSpriteGlobalAnimTitle"),
-            "ObjectSelectorTitle":                self.tr("ObjectSelectorTitle"),
-            "AnimationSelectorTitle":             self.tr("AnimationSelectorTitle"),
-            "ShowBoundingBoxToggle":              self.tr("ShowBoundingBoxToggle"),
-            "ColorModeInfo":                      self.tr("ColorModeInfo"),
-            "ColorAnimSelectorTitle":             self.tr("ColorAnimSelectorTitle"),
-            "ColorAnimSelectorNone":              self.tr("ColorAnimSelectorNone"),
-            "ExportFailNoDataTitle":              self.tr("ExportFailNoDataTitle"),
-            "ExportFailNoDataBlurb":              self.tr("ExportFailNoDataBlurb"),
-
-            "CheckUpdateQueryTitle":              self.tr("CheckUpdateQueryTitle"),
-            "CheckUpdateQueryBlurb":              self.tr("CheckUpdateQueryBlurb"),
-            "CheckUpdateQueryLinkString":         self.tr("CheckUpdateQueryLinkString"),
-            "CheckUpdateErrorTitle":              self.tr("CheckUpdateErrorTitle"),
-            "CheckUpdateErrorBlurb":              self.tr("CheckUpdateErrorBlurb"),
-            "CheckUpdateNewVersionTitle":         self.tr("CheckUpdateNewVersionTitle"),
-            "CheckUpdateNewVersionBlurb":         self.tr("CheckUpdateNewVersionBlurb"),
-            "CheckUpdateNewVersionAssurance":     self.tr("CheckUpdateNewVersionAssurance"),
-            "CheckUpdateNewVersionRemindOption":  self.tr("CheckUpdateNewVersionRemindOption"),
-            "CheckUpdateNewVersionIgnoreOption":  self.tr("CheckUpdateNewVersionIgnoreOption"),
-            "CheckUpdateUpToDateTitle":           self.tr("CheckUpdateUpToDateTitle"),
-            "CheckUpdateUpToDateBlurb":           self.tr("CheckUpdateUpToDateBlurb"),
-
-            "MenuBarFileTitle":                   self.tr("MenuBarFileTitle"),
-            "MenuBarFileOpenOption":              self.tr("MenuBarOpenOption"),
-            "MenuBarFileCloseOption":             self.tr("MenuBarCloseOption"),
-            "MenuBarFileQuickExportOption":       self.tr("MenuBarQuickExportOption"),
-            "MenuBarFileExportOption":            self.tr("MenuBarExportOption"),
-            "MenuBarFileQuitOption":              self.tr("MenuBarFileQuitOption"),
-            "MenuBarOptionsTitle":                self.tr("MenuBarOptionsTitle"),
-            "MenuBarOptionsLanguageOption":       self.tr("MenuBarOptionsLanguageOption"),
-            "MenuBarOptionsLanguageSystem":       self.tr("MenuBarOptionsLanguageSystem"),
-            "MenuBarOptionsMuteOption":           self.tr("MenuBarOptionsMuteOption"),
-            "MenuBarOptionsFramerateOption":      self.tr("MenuBarOptionsFramerateOption"),
-            "MenuBarOptionsFramerate":            self.tr("MenuBarOptionsFramerate"),
-            "MenuBarOptionsCheckUpdatesOption":   self.tr("MenuBarOptionsCheckUpdatesOption"),
-            "MenuBarHelpTitle":                   self.tr("MenuBarHelpTitle"),
-            "MenuBarHelpCheckUpdates":            self.tr("MenuBarHelpCheckUpdates"),
-
-            "SpritePartSetSelectorTitle":         self.tr("SpritePartSetSelectorTitle"),
-            "SpritePartSelectorTitle":            self.tr("SpritePartSelectorTitle"),
-            "SpritePartSelectorNone":             self.tr("SpritePartSelectorNone"),
-            "SpritePartSizeTitle":                self.tr("SpritePartSizeTitle"),
-            "SpritePartBufferOffset":             self.tr("SpritePartBufferOffset"),
-            "SpritePartSize0":                    self.tr("SpritePartSize0"),
-            "SpritePartSize1":                    self.tr("SpritePartSize1"),
-            "SpritePartSize2":                    self.tr("SpritePartSize2"),
-            "SpritePartSize3":                    self.tr("SpritePartSize3"),
-            "SpritePartShapeTitle":               self.tr("SpritePartShapeTitle"),
-            "SpritePartShape0":                   self.tr("SpritePartShape0"),
-            "SpritePartShape1":                   self.tr("SpritePartShape1"),
-            "SpritePartShape2":                   self.tr("SpritePartShape2"),
-            "SpritePartSizePixels":               self.tr("SpritePartSizePixels"),
-            "SpritePartFlipHorizontal":           self.tr("SpritePartFlipHorizontal"),
-            "SpritePartFlipVertical":             self.tr("SpritePartFlipVertical"),
-            "SpritePartOffset":                   self.tr("SpritePartOffset"),
-            "SpritePartRendererTitle":            self.tr("SpritePartRendererTitle"),
-        }
-
         self.game_title_strings = {
             "GameTitleML1":  self.tr("GameTitleML1"),
             "GameTitleML2":  self.tr("GameTitleML2"),
@@ -816,8 +756,8 @@ class MainWindow(QtWidgets.QMainWindow):
 
             for i, action in enumerate(self.framerate_options):
                 string = [
-                    self.strings["MenuBarOptionsFramerate"].format(60),
-                    self.strings["MenuBarOptionsFramerate"].format(30),
+                    self.tr("MenuBarOptionsFramerate").format(60),
+                    self.tr("MenuBarOptionsFramerate").format(30),
                 ][i]
 
                 if self.settings["framerate"] == i: string += " ✓"
@@ -831,11 +771,13 @@ class MainWindow(QtWidgets.QMainWindow):
     
     def toggle_update_check(self, check):
         if check is None:
+            query_link_string = self.tr("CheckUpdateQueryLinkString")
+
             check_updates_box = QtWidgets.QMessageBox(self)
             check_updates_box.setTextFormat(QtCore.Qt.RichText)
-            check_updates_box.setWindowTitle(self.strings["CheckUpdateQueryTitle"])
-            check_updates_box.setText(self.strings["CheckUpdateQueryBlurb"].format(
-                f"<a href='https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement'>{self.strings["CheckUpdateQueryLinkString"]}</a>"
+            check_updates_box.setWindowTitle(self.tr("CheckUpdateQueryTitle"))
+            check_updates_box.setText(self.tr("CheckUpdateQueryBlurb").format(
+                f"<a href='https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement'>{query_link_string}</a>"
             ).replace("\n", "<br>"))
             check_updates_box.setStandardButtons(QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No)
 
@@ -929,7 +871,7 @@ class MainWindow(QtWidgets.QMainWindow):
             self.color_anim_list_box.blockSignals(True)
             self.color_anim_list_box.clear()
             self.color_anim_list_box.blockSignals(False)
-            self.color_anim_list_box.addItem(self.strings["ColorAnimSelectorNone"])
+            self.color_anim_list_box.addItem(self.tr("ColorAnimSelectorNone"))
             self.color_anim_list_box.setEnabled(False)
             return
 
@@ -949,7 +891,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.color_anim_list_box.blockSignals(True)
         self.color_anim_list_box.clear()
 
-        self.color_anim_list_box.addItem(self.strings["ColorAnimSelectorNone"])
+        self.color_anim_list_box.addItem(self.tr("ColorAnimSelectorNone"))
 
         for i in object_properties["color_data"].keys():
             self.color_anim_list_box.addItem(str(i))
@@ -998,7 +940,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
 
         self.color_mode_info_text.setVisible(True)
-        self.color_mode_info_text.setText(self.strings['ColorModeInfo'].format(object_properties['color_mode'][0]))
+        self.color_mode_info_text.setText(self.tr('ColorModeInfo').format(object_properties['color_mode'][0]))
 
 
         self.sprite_part_set_list_box.blockSignals(True)
@@ -1207,7 +1149,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.sprite_part_list_box.blockSignals(True)
         self.sprite_part_list_box.clear()
 
-        self.sprite_part_list_box.addItem(self.strings["SpritePartSelectorNone"])
+        self.sprite_part_list_box.addItem(self.tr("SpritePartSelectorNone"))
         [self.sprite_part_list_box.addItem(f"{sprite_part_set[0] + i}") for i in range(sprite_part_set[1])]
         self.sprite_part_list_box.blockSignals(False)
 
@@ -1296,15 +1238,15 @@ class MainWindow(QtWidgets.QMainWindow):
 
             buffer_offset = ("?", "?")
         
-        self.sprite_part_graphics_buffer_info_text.setText(self.strings["SpritePartBufferOffset"].format(*buffer_offset))
+        self.sprite_part_graphics_buffer_info_text.setText(self.tr("SpritePartBufferOffset").format(*buffer_offset))
 
         string = ""
 
         if sprite_part_properties is not None:
             self.sprite_part_info_text.setEnabled(True)
 
-            size = [self.strings["SpritePartSize0"], self.strings["SpritePartSize1"], self.strings["SpritePartSize2"], self.strings["SpritePartSize3"]][sprite_part_properties["oam_size"]]
-            shape = [self.strings["SpritePartShape0"], self.strings["SpritePartShape1"], self.strings["SpritePartShape2"]][sprite_part_properties["oam_shape"]]
+            size = [self.tr("SpritePartSize0"), self.tr("SpritePartSize1"), self.tr("SpritePartSize2"), self.tr("SpritePartSize3")][sprite_part_properties["oam_size"]]
+            shape = [self.tr("SpritePartShape0"), self.tr("SpritePartShape1"), self.tr("SpritePartShape2")][sprite_part_properties["oam_shape"]]
             px_size = sprite_part_properties["size"]
             h_flip = sprite_part_properties["horizontal_flip"]
             v_flip = sprite_part_properties["vertical_flip"]
@@ -1319,17 +1261,17 @@ class MainWindow(QtWidgets.QMainWindow):
             v_flip = "?"
             offset = ("?", "?")
 
-        string += self.strings["SpritePartSizeTitle"].format(size)
+        string += self.tr("SpritePartSizeTitle").format(size)
         string += "\n"
-        string += self.strings["SpritePartShapeTitle"].format(shape)
+        string += self.tr("SpritePartShapeTitle").format(shape)
         string += "\n"
-        string += self.strings["SpritePartSizePixels"].format(*px_size)
+        string += self.tr("SpritePartSizePixels").format(*px_size)
         string += "\n\n"
-        string += self.strings["SpritePartFlipHorizontal"].format(h_flip)
+        string += self.tr("SpritePartFlipHorizontal").format(h_flip)
         string += "\n"
-        string += self.strings["SpritePartFlipVertical"].format(v_flip)
+        string += self.tr("SpritePartFlipVertical").format(v_flip)
         string += "\n\n"
-        string += self.strings["SpritePartOffset"].format(*offset)
+        string += self.tr("SpritePartOffset").format(*offset)
 
         self.sprite_part_info_text.setText(string)
 
@@ -1345,7 +1287,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
             renderer_index = "?"
 
-        string += self.strings["SpritePartRendererTitle"].format(renderer_index)
+        string += self.tr("SpritePartRendererTitle").format(renderer_index)
 
         self.sprite_part_renderer_info_text.setText(string)
 
@@ -1941,28 +1883,13 @@ class MainWindow(QtWidgets.QMainWindow):
         boundingBoxToggled = QtCore.Signal(bool)
 
         def __init__(self, font, padding_amount, timeline_height, keyframe_padding, playhead_height):
-            self.strings = {
-                "ShowBoundingBoxToggle":            self.tr("ShowBoundingBoxToggle"),
-                "FrameDataSpritePartsUsed":         self.tr("FrameDataSpritePartsUsed"),
-                "FrameDataSpritePartsUsedNone":     self.tr("FrameDataSpritePartsUsedNone"),
-                "FrameDataTransformMatrixUsed":     self.tr("FrameDataTransformMatrixUsed"),
-                "FrameDataTransformMatrixUsedNone": self.tr("FrameDataTransformMatrixUsedNone"),
-                "FrameDataTransformMatrixInverted": self.tr("FrameDataTransformMatrixInverted"),
-                "FrameDataTransformMatrixXShear":   self.tr("FrameDataTransformMatrixXShear"),
-                "FrameDataTransformMatrixYShear":   self.tr("FrameDataTransformMatrixYShear"),
-                "FrameDataTransformMatrixXScale":   self.tr("FrameDataTransformMatrixXScale"),
-                "FrameDataTransformMatrixYScale":   self.tr("FrameDataTransformMatrixYScale"),
-                "FrameDataTransformMatrixXPos":     self.tr("FrameDataTransformMatrixXPos"),
-                "FrameDataTransformMatrixYPos":     self.tr("FrameDataTransformMatrixYPos"),
-            }
-
             self.bounding_box_visible = False
             self.current_parts = None
             self.current_matrix = None
             self.current_matrix_inv = False
 
             self.bounding_box_toggle = QtWidgets.QCheckBox()
-            self.bounding_box_toggle_string = QtWidgets.QLabel(self.strings["ShowBoundingBoxToggle"])
+            self.bounding_box_toggle_string = QtWidgets.QLabel(self.tr("ShowBoundingBoxToggle"))
             self.bounding_box_toggle_string.setBuddy(self.bounding_box_toggle)
             self.bounding_box_toggle.setSizePolicy(QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Minimum)
             self.bounding_box_toggle.checkStateChanged.connect(self.toggle_bounding_box)
@@ -2061,26 +1988,26 @@ class MainWindow(QtWidgets.QMainWindow):
             string = ""
 
             if self.current_parts is None:
-                string += self.strings["FrameDataSpritePartsUsed"].format("?")
+                string += self.tr("FrameDataSpritePartsUsed").format("?")
             elif self.current_parts[1] == 1:
-                string += self.strings["FrameDataSpritePartsUsed"].format(self.current_parts[0])
+                string += self.tr("FrameDataSpritePartsUsed").format(self.current_parts[0])
             elif self.current_parts[1] == 0:
-                string += self.strings["FrameDataSpritePartsUsedNone"]
+                string += self.tr("FrameDataSpritePartsUsedNone")
             else:
-                string += self.strings["FrameDataSpritePartsUsed"].format(f"{self.current_parts[0]} - {self.current_parts[0] + self.current_parts[1] - 1}")
+                string += self.tr("FrameDataSpritePartsUsed").format(f"{self.current_parts[0]} - {self.current_parts[0] + self.current_parts[1] - 1}")
             
             string += "\n"
 
             if self.current_parts is None:
-                string += self.strings["FrameDataTransformMatrixUsed"].format("?")
+                string += self.tr("FrameDataTransformMatrixUsed").format("?")
             elif not self.current_matrix_index > -1:
-                string += self.strings["FrameDataTransformMatrixUsedNone"]
+                string += self.tr("FrameDataTransformMatrixUsedNone")
             else:
-                string += self.strings["FrameDataTransformMatrixUsed"].format(self.current_matrix_index)
+                string += self.tr("FrameDataTransformMatrixUsed").format(self.current_matrix_index)
             
             string += "\n"
             if self.current_matrix_inv:
-                string += self.strings["FrameDataTransformMatrixInverted"]
+                string += self.tr("FrameDataTransformMatrixInverted")
             else:
                 string += "---"
                 
@@ -2095,12 +2022,12 @@ class MainWindow(QtWidgets.QMainWindow):
 
             for i, label in enumerate(self.frame_data_matrix):
                 string = [
-                    self.strings["FrameDataTransformMatrixXScale"],
-                    self.strings["FrameDataTransformMatrixXShear"],
-                    self.strings["FrameDataTransformMatrixXPos"],
-                    self.strings["FrameDataTransformMatrixYShear"],
-                    self.strings["FrameDataTransformMatrixYScale"],
-                    self.strings["FrameDataTransformMatrixYPos"],
+                    self.tr("FrameDataTransformMatrixXScale"),
+                    self.tr("FrameDataTransformMatrixXShear"),
+                    self.tr("FrameDataTransformMatrixXPos"),
+                    self.tr("FrameDataTransformMatrixYShear"),
+                    self.tr("FrameDataTransformMatrixYScale"),
+                    self.tr("FrameDataTransformMatrixYPos"),
                 ][i]
 
                 label.setText(string.format(f"{matrix[i]:7.4f}", matrix[i]))
@@ -2161,15 +2088,6 @@ class MainWindow(QtWidgets.QMainWindow):
         sendLayerPersistance = QtCore.Signal(bool)
 
         def __init__(self, font, padding_amount, timeline_height, keyframe_padding, playhead_height):
-            self.strings = {
-                "LayerToggleTitle":       self.tr("LayerToggleTitle"),
-                "LayerInfoRenderChannel": self.tr("LayerInfoRenderChannel"),
-                "LayerInfoPersistant":    self.tr("LayerInfoPersistant"),
-                "LayerInfoStartEndColor": self.tr("LayerInfoStartEndColor"),
-                "LayerInfoColorRGB":      self.tr("LayerInfoColorRGB"),
-                "LayerInfoColorA":        self.tr("LayerInfoColorA"),
-            }
-
             self.layer_toggle_list_string = QtWidgets.QLabel()
 
             self.layer_toggle_list = QtWidgets.QComboBox()
@@ -2188,9 +2106,9 @@ class MainWindow(QtWidgets.QMainWindow):
             self.layer_info_color = QtWidgets.QLabel()
             self.layer_info_alpha = QtWidgets.QLabel()
 
-            string_color = QtWidgets.QLabel(self.strings["LayerInfoColorRGB"])
+            string_color = QtWidgets.QLabel(self.tr("LayerInfoColorRGB"))
             string_color.setBuddy(self.layer_info_color)
-            string_alpha = QtWidgets.QLabel(self.strings["LayerInfoColorA"])
+            string_alpha = QtWidgets.QLabel(self.tr("LayerInfoColorA"))
             string_alpha.setBuddy(self.layer_info_alpha)
 
             layer_info_layout.addWidget(self.layer_info_text_1, 0, 0, 1, -1, alignment = QtCore.Qt.AlignmentFlag.AlignCenter)
@@ -2323,9 +2241,9 @@ class MainWindow(QtWidgets.QMainWindow):
                 channel = "?"
                 persistant = "?"
 
-            string += self.strings["LayerInfoRenderChannel"].format(channel)
+            string += self.tr("LayerInfoRenderChannel").format(channel)
             string += "\n"
-            string += self.strings["LayerInfoPersistant"].format(persistant)
+            string += self.tr("LayerInfoPersistant").format(persistant)
 
             self.layer_info_text_1.setText(string)
 
@@ -2365,7 +2283,7 @@ class MainWindow(QtWidgets.QMainWindow):
                 r1, g1, b1, a1 = "?", "?", "?", "?"
                 r2, g2, b2, a2 = "?", "?", "?", "?"
 
-            string += self.strings["LayerInfoStartEndColor"]
+            string += self.tr("LayerInfoStartEndColor")
             string += "\n"
             string += f"({r1}, {g1}, {b1}, {a1})"
             string += "\n"
@@ -2420,7 +2338,7 @@ class MainWindow(QtWidgets.QMainWindow):
                     layers = len(self.animation_data)
                     layer_amt = layers
 
-                self.layer_toggle_list_string.setText(self.strings["LayerToggleTitle"].format(layer_amt))
+                self.layer_toggle_list_string.setText(self.tr("LayerToggleTitle").format(layer_amt))
 
                 self.layer_toggle_list.blockSignals(True)
                 self.layer_toggle_list.clear()
@@ -2470,24 +2388,6 @@ class MainWindow(QtWidgets.QMainWindow):
         def __init__(self, parent, game_title_strings, current_window_icon):
             super().__init__()
 
-            self.strings = {
-                "ImportWindowTitle":          self.tr("ImportWindowTitle"),
-                "ImportChooseFileButton":     self.tr("ImportChooseFileButton"),
-                "ImportChooseFileTitle":      self.tr("ImportChooseFileTitle"),
-                "ImportChooseFileBlurb":      self.tr("ImportChooseFileBlurb"),
-                "ImportFileFailureTitle":     self.tr("ImportFileFailureTitle"),
-                "ImportFileFailureBlurb":     self.tr("ImportFileFailureBlurb"),
-                "ImportFileError100":         self.tr("ImportFileError100"),
-                "ImportFileError101":         self.tr("ImportFileError101"),
-                "ImportFileError102":         self.tr("ImportFileError102"),
-                "FileInfoNone":               self.tr("FileInfoNone"),
-                "FileInfoBG4TitleAndVersion": self.tr("FileInfoBG4TitleAndVersion"),
-                "FileInfoValidEntryCount":    self.tr("FileInfoValidEntryCount"),
-                "FileInfoCellAnimeTitle":     self.tr("FileInfoCellAnimeTitle"),
-                "ImportAlphabetizeToggle":    self.tr("ImportAlphabetizeToggle"),
-                "ImportAcceptButton":         self.tr("ImportAcceptButton"),
-            }
-
             self.parent = parent
             self.game_title_strings = game_title_strings
 
@@ -2499,22 +2399,23 @@ class MainWindow(QtWidgets.QMainWindow):
 
             self.supported_games_list_string_format = ", ".join(supported_games[:-1]), supported_games[-1]
 
-            self.setWindowTitle(self.strings["ImportWindowTitle"])
+            self.setWindowTitle(self.tr("ImportWindowTitle"))
             self.setWindowIcon(self.current_window_icon)
 
             layout = QtWidgets.QGridLayout()
 
-            self.choose_file_button = QtWidgets.QPushButton(self.strings["ImportChooseFileButton"])
+            self.choose_file_button = QtWidgets.QPushButton(self.tr("ImportChooseFileButton"))
             self.choose_file_button.setIcon(grab_icon(14))
             self.choose_file_button.clicked.connect(self.import_obj_file)
 
-            self.file_info_text = QtWidgets.QLabel(f"\n{self.strings["FileInfoNone"]}\n")
+            file_info_none_string = self.tr("FileInfoNone")
+            self.file_info_text = QtWidgets.QLabel(f"\n{file_info_none_string}\n")
             self.file_info_text.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
 
-            self.sort_contents_toggle = QtWidgets.QCheckBox(self.strings["ImportAlphabetizeToggle"])
+            self.sort_contents_toggle = QtWidgets.QCheckBox(self.tr("ImportAlphabetizeToggle"))
             self.sort_contents_toggle.setVisible(False)
 
-            self.import_button = QtWidgets.QPushButton(self.strings["ImportAcceptButton"])
+            self.import_button = QtWidgets.QPushButton(self.tr("ImportAcceptButton"))
             self.import_button.setIcon(grab_icon(1))
             self.import_button.clicked.connect(self.finalize)
             self.import_button.setEnabled(False)
@@ -2546,13 +2447,13 @@ class MainWindow(QtWidgets.QMainWindow):
 
             QtWidgets.QMessageBox.information(
                 self,
-                self.strings["ImportChooseFileTitle"],
-                self.strings["ImportChooseFileBlurb"].format(*self.supported_games_list_string_format),
+                self.tr("ImportChooseFileTitle"),
+                self.tr("ImportChooseFileBlurb").format(*self.supported_games_list_string_format),
             )
 
             path, _ = QtWidgets.QFileDialog.getOpenFileName(
                 self,
-                self.strings["ImportChooseFileTitle"],
+                self.tr("ImportChooseFileTitle"),
                 path,
                 "Data Archives (*.dat);;All Files (*)",
             )
@@ -2584,15 +2485,21 @@ class MainWindow(QtWidgets.QMainWindow):
                 QtWidgets.QApplication.restoreOverrideCursor()
 
                 err = QtWidgets.QMessageBox(self.parent)
+                error_strings = {
+                    100: self.tr("ImportFileError100"),
+                    101: self.tr("ImportFileError101"),
+                    102: self.tr("ImportFileError102"),
+                }
 
-                err.setWindowTitle(self.strings["ImportFileFailureTitle"])
+                err.setWindowTitle(self.tr("ImportFileFailureTitle"))
                 err.setWindowIcon(self.current_window_icon)
-                err.setText(self.strings["ImportFileFailureBlurb"].format(e, self.strings[f"ImportFileError{e.error_code}"].format(*self.supported_games_list_string_format)))
+                err.setText(self.tr("ImportFileFailureBlurb").format(e, error_strings[e.error_code].format(*self.supported_games_list_string_format)))
                 err.setIcon(QtWidgets.QMessageBox.Icon.Critical)
 
                 err.exec()
 
-                self.file_info_text.setText(f"\n{self.strings["FileInfoNone"]}\n")
+                file_info_none_string = self.tr("FileInfoNone")
+                self.file_info_text.setText(f"\n{file_info_none_string}\n")
                 self.sort_contents_toggle.setVisible(False)
             else:
                 self.current_path = path
@@ -2600,26 +2507,28 @@ class MainWindow(QtWidgets.QMainWindow):
                 self.import_button.setEnabled(True)
                 self.sort_contents_toggle.setVisible(True)
 
-                info = self.strings["FileInfoBG4TitleAndVersion"].format(*obj_data.bg4_version)
+                info = self.tr("FileInfoBG4TitleAndVersion").format(*obj_data.bg4_version)
                 valid = (obj_data.valid_entries, obj_data.invalid_entries)
-                ca_info = self.strings["FileInfoBG4TitleAndVersion"].format(*obj_data.bg4_ca_version)
+                ca_info = self.tr("FileInfoBG4TitleAndVersion").format(*obj_data.bg4_ca_version)
                 ca_valid = (obj_data.valid_ca_entries, obj_data.invalid_ca_entries)
 
                 game_title = self.game_title_strings[f"GameTitle{self.current_game_id}"]
             finally:
+                cellanime_title_string = self.tr("FileInfoCellAnimeTitle")
+
                 string = ""
 
                 string += "\n"
                 string += f"{os.path.basename(path)} - {info}"
                 string += "\n"
-                string += self.strings["FileInfoValidEntryCount"].format(*valid)
+                string += self.tr("FileInfoValidEntryCount").format(*valid)
                 string += "\n"
                 string += f"({game_title})"
                 string += "\n"
                 string += "\n"
-                string += f"{self.strings["FileInfoCellAnimeTitle"]} - {ca_info}"
+                string += f"{cellanime_title_string} - {ca_info}"
                 string += "\n"
-                string += self.strings["FileInfoValidEntryCount"].format(*ca_valid)
+                string += self.tr("FileInfoValidEntryCount").format(*ca_valid)
                 string += "\n"
 
                 self.file_info_text.setText(string)
@@ -2636,38 +2545,21 @@ class MainWindow(QtWidgets.QMainWindow):
         def __init__(self, parent, current_window_icon, success_jingle, obj_data, use_low_framerate, initial_object, initial_animation, initial_color_anim):
             super().__init__()
 
-            self.strings = {
-                "ExportWindowTitle":               self.tr("ExportWindowTitle"),
-                "ExportAnimationListTitle":        self.tr("ExportAnimationListTitle"),
-                "ExportAnimationListData":         self.tr("ExportAnimationListData"),
-                "ExportAnimationListDataWithLoop": self.tr("ExportAnimationListDataWithLoop"),
-                "AnimationOptionFramerateTitle":   self.tr("AnimationOptionFramerateTitle"),
-                "AnimationOptionFramerate":        self.tr("AnimationOptionFramerate"),
-                "AnimationOptionColorAnimTitle":   self.tr("AnimationOptionColorAnimTitle"),
-                "AnimationOptionColorAnimNone":    self.tr("AnimationOptionColorAnimNone"),
-                "AnimationListDataCurrentAnim":    self.tr("AnimationListDataCurrentAnim"),
-                "AnimationListDataCurrentLoops":   self.tr("AnimationListDataCurrentLoops"),
-                "ExportAcceptButton":              self.tr("ExportAcceptButton"),
-                "ExportChooseFileTitle":           self.tr("ExportChooseFileTitle"),
-                "ExportFileSuccessTitle":          self.tr("ExportFileSuccessTitle"),
-                "ExportFileSuccessBlurb":          self.tr("ExportFileSuccessBlurb"),
-            }
-
             self.parent = parent
             self.obj_data = obj_data
 
             self.current_window_icon = current_window_icon
             self.success_jingle = success_jingle
 
-            self.setWindowTitle(self.strings["ExportWindowTitle"])
+            self.setWindowTitle(self.tr("ExportWindowTitle"))
             self.setWindowIcon(self.current_window_icon)
 
             layout = QtWidgets.QGridLayout()
 
             self.framerate_choose_box = QtWidgets.QComboBox()
             self.framerate_choose_box.addItems([
-                self.strings["AnimationOptionFramerate"].format("60 / 50"),
-                self.strings["AnimationOptionFramerate"].format("30 / 25"),
+                self.tr("AnimationOptionFramerate").format("60 / 50"),
+                self.tr("AnimationOptionFramerate").format("30 / 25"),
             ])
             if use_low_framerate:
                 self.framerate_choose_box.setCurrentIndex(1)
@@ -2703,7 +2595,7 @@ class MainWindow(QtWidgets.QMainWindow):
             self.loop_choose_spin_box.setMaximum(99)
             self.loop_choose_spin_box.valueChanged.connect(self.change_current_anim_data)
 
-            self.export_button = QtWidgets.QPushButton(self.strings["ExportAcceptButton"])
+            self.export_button = QtWidgets.QPushButton(self.tr("ExportAcceptButton"))
             self.export_button.setIcon(grab_icon(16))
             self.export_button.clicked.connect(self.export_gif)
 
@@ -2741,27 +2633,27 @@ class MainWindow(QtWidgets.QMainWindow):
             layout.addWidget(self.gif_preview, 0, 4, 9, 1)
             layout.addWidget(self.gif_timer_text, 9, 4, alignment = QtCore.Qt.AlignmentFlag.AlignRight)
 
-            string = QtWidgets.QLabel(self.strings["AnimationOptionFramerateTitle"])
+            string = QtWidgets.QLabel(self.tr("AnimationOptionFramerateTitle"))
             string.setBuddy(self.framerate_choose_box)
             string.setEnabled(False)
             layout.addWidget(string, 0, 0, 1, 2)
 
-            string = QtWidgets.QLabel(self.strings["AnimationOptionColorAnimTitle"])
+            string = QtWidgets.QLabel(self.tr("AnimationOptionColorAnimTitle"))
             string.setBuddy(self.color_anim_list_box)
             string.setEnabled(False)
             layout.addWidget(string, 0, 2, 1, 2)
 
-            string = QtWidgets.QLabel(self.strings["ExportAnimationListTitle"])
+            string = QtWidgets.QLabel(self.tr("ExportAnimationListTitle"))
             string.setBuddy(self.anim_list_box)
             string.setEnabled(False)
             layout.addWidget(string, 2, 0, 1, 4)
 
-            string = QtWidgets.QLabel(self.strings["AnimationListDataCurrentAnim"])
+            string = QtWidgets.QLabel(self.tr("AnimationListDataCurrentAnim"))
             string.setBuddy(self.anim_choose_list_box)
             string.setEnabled(False)
             layout.addWidget(string, 7, 0, 1, 2)
 
-            string = QtWidgets.QLabel(self.strings["AnimationListDataCurrentLoops"])
+            string = QtWidgets.QLabel(self.tr("AnimationListDataCurrentLoops"))
             string.setBuddy(self.loop_choose_spin_box)
             string.setEnabled(False)
             layout.addWidget(string, 7, 2, 1, 2)
@@ -2896,7 +2788,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
             self.color_anim_list_box.setEnabled(object_properties["has_color_data"])
 
-            self.color_anim_list_box.addItem(self.strings["AnimationOptionColorAnimNone"])
+            self.color_anim_list_box.addItem(self.tr("AnimationOptionColorAnimNone"))
             if object_properties["has_color_data"]:
                 for anim in object_properties["color_data"].keys():
                     self.color_anim_list_box.addItem(str(anim))
@@ -2921,9 +2813,9 @@ class MainWindow(QtWidgets.QMainWindow):
             
             for i, (anim, count) in enumerate(self.current_anim_list):
                 if count == 1:
-                    string = self.strings["ExportAnimationListData"].format(anim)
+                    string = self.tr("ExportAnimationListData").format(anim)
                 else:
-                    string = self.strings["ExportAnimationListDataWithLoop"].format(anim, count)
+                    string = self.tr("ExportAnimationListDataWithLoop").format(anim, count)
                 item = self.anim_list_box.item(i)
                 item.setText(string)
 
@@ -2962,7 +2854,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
             path, file_filter = QtWidgets.QFileDialog.getSaveFileName(
                 self,
-                self.strings["ExportChooseFileTitle"],
+                self.tr("ExportChooseFileTitle"),
                 f"{path}/{filename}",
                 "GIF files (*.gif);;Animated PNGs (*.png);;All Files (*)",
             )
@@ -3089,8 +2981,8 @@ class MainWindow(QtWidgets.QMainWindow):
 
             QtWidgets.QMessageBox.about(
                 self,
-                self.strings["ExportFileSuccessTitle"],
-                self.strings["ExportFileSuccessBlurb"].format(filename),
+                self.tr("ExportFileSuccessTitle"),
+                self.tr("ExportFileSuccessBlurb").format(filename),
             )
 
             self.animation_timer.start()
