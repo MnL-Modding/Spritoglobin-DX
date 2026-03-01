@@ -197,7 +197,7 @@ class ObjFile:
         }
     
     def get_sprite(self, object_name, animation_index, color_anim_index = None, frame_index = None):
-        img, size, _ = get_sprite_with_offset(
+        img, size, _ = self.get_sprite_with_offset(
             object_name      = object_name,
             animation_index  = animation_index,
             color_anim_index = color_anim_index,
