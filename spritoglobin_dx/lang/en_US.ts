@@ -288,6 +288,7 @@
     <message>
         <location filename="../main.py" line="497"/>
         <source>AnimationTabsSpriteColorAnimTitle</source>
+        <translatorcomment>&quot;Single&quot; is an adjective of &quot;Animation&quot; rather than &quot;Color.&quot; It refers to the fact that each sprite animation has a Single Animation for Color, rather than the Animation being of a Single Color.</translatorcomment>
         <translation>Single Color Animation</translation>
     </message>
     <message>

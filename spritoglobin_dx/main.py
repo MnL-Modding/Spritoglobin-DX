@@ -600,7 +600,7 @@ class MainWindow(QtWidgets.QMainWindow):
         main_layout.setColumnStretch(0, 1)
         main_layout.setColumnStretch(1, 1)
         main_layout.setColumnStretch(2, 9)
-        main_layout.setColumnStretch(3, 3)
+        main_layout.setColumnStretch(3, 4)
 
         line = QtWidgets.QFrame()
         line.setFrameShape(QtWidgets.QFrame.HLine)
