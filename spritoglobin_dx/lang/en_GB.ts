@@ -359,7 +359,7 @@ Note: This will make a request to GitHub&apos;s servers, which will receive your
 ---
 {1}
 ---
-Download it at {2}</translation>
+Download it on {2}</translation>
     </message>
     <message>
         <location filename="../main.py" line="223"/>

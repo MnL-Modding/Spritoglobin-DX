@@ -107,7 +107,6 @@ def grab_icon(index):
 
 
 class MainWindow(QtWidgets.QMainWindow):
-    # C:\Users\Marc\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.12_qbz5n2kfra8p0\LocalCache\Local\spritoglobin_dx\config.ini
     def __init__(self, parent):
         super(MainWindow, self).__init__()
 
@@ -233,7 +232,7 @@ class MainWindow(QtWidgets.QMainWindow):
             information_box.setText(self.tr("CheckUpdateNewVersionBlurb").format(
                 f"<b>{latest_release['name']}</b>",
                 latest_release['body'],
-                f"<a href='{latest_release['html_url']}'>github.com</a>",
+                f"<a href='{latest_release['html_url']}'>GitHub</a>.",
             ).replace("\n", "<br>") + f"<br><br><span style='color: rgb(127, 127, 127);'>{new_version_assurance_string}</span>")
 
             remind_button = QtWidgets.QPushButton(self.tr("CheckUpdateNewVersionRemindOption"))
