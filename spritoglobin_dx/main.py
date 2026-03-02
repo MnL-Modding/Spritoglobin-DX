@@ -256,6 +256,10 @@ class MainWindow(QtWidgets.QMainWindow):
         self.menuBar().clear()
         menu_bar = self.menuBar()
 
+
+        if self.obj_data is not None:
+            self.setWindowTitle(f"{os.path.basename(self.current_path)} ({self.game_title_strings[f"GameTitle{self.current_game_id}"]})")
+
     
         menu_bar_file = menu_bar.addMenu(self.tr("MenuBarFileTitle"))
 
@@ -2059,6 +2063,7 @@ class MainWindow(QtWidgets.QMainWindow):
                     QtGui.QColor(THEME_COLORS["P_COLOR_0"]).getRgb(),
                 ],
                 matrix = matrix,
+                inverted = self.current_matrix_inv,
             )
             
             qp.drawImage(4, 4, QtGui.QImage(demo_img, *demo_img_size, QtGui.QImage.Format.Format_RGBA8888))

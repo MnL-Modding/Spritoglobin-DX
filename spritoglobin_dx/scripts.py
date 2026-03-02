@@ -485,8 +485,11 @@ def transform_image(img, matrix, center, size):
     return img
 
 
-def create_transform_demo(scale, checker_amt, colors, matrix):
+def create_transform_demo(scale, checker_amt, colors, matrix, inverted):
     img = numpy.zeros([4, 4, 4], dtype = numpy.float64)
+
+    if inverted:
+        matrix[1], matrix[3] = -matrix[1], -matrix[3]
 
     for i in range(4):
         off_y = i // 2
