@@ -1258,8 +1258,8 @@ class MainWindow(QtWidgets.QMainWindow):
             size = [self.tr("SpritePartSize0"), self.tr("SpritePartSize1"), self.tr("SpritePartSize2"), self.tr("SpritePartSize3")][sprite_part_properties["oam_size"]]
             shape = [self.tr("SpritePartShape0"), self.tr("SpritePartShape1"), self.tr("SpritePartShape2")][sprite_part_properties["oam_shape"]]
             px_size = sprite_part_properties["size"]
-            h_flip = sprite_part_properties["horizontal_flip"]
-            v_flip = sprite_part_properties["vertical_flip"]
+            h_flip = sprite_part_properties["horizontal_flip"] # TODO
+            v_flip = sprite_part_properties["vertical_flip"] # TODO
             offset = sprite_part_properties["offset"]
         else:
             self.sprite_part_info_text.setEnabled(False)
@@ -1454,13 +1454,13 @@ class MainWindow(QtWidgets.QMainWindow):
                 layout.addWidget(self.info_text, 0, 1, 1, -1)
 
                 self.zoom_in_button = QtWidgets.QPushButton()
-                self.zoom_in_button.setIcon(grab_icon(2))
+                self.zoom_in_button.setIcon(grab_icon(3))
                 self.zoom_in_button.clicked.connect(self.zoom_in)
                 self.zoom_in_button.setCursor(QtCore.Qt.ArrowCursor)
                 layout.addWidget(self.zoom_in_button, 2, 1)
 
                 self.zoom_out_button = QtWidgets.QPushButton()
-                self.zoom_out_button.setIcon(grab_icon(3))
+                self.zoom_out_button.setIcon(grab_icon(2))
                 self.zoom_out_button.clicked.connect(self.zoom_out)
                 self.zoom_out_button.setCursor(QtCore.Qt.ArrowCursor)
                 layout.addWidget(self.zoom_out_button, 2, 2)
@@ -2247,7 +2247,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
             if self.current_anim_length != 0:
                 channel = self.animation_data[self.current_layer]["render_channel"]
-                persistant = self.animation_data[self.current_layer]["is_persistant"]
+                persistant = self.animation_data[self.current_layer]["is_persistant"] # TODO
             else:
                 channel = "?"
                 persistant = "?"

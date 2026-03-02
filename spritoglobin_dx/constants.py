@@ -52,7 +52,7 @@ THEME_COLOR_ICON_MASKS = {
 
 
 LANGUAGES = { # display name, NDS value, 3DS key
-    "None":  [None,           -1, "None"],
+    "None":  [None,         None, "None"],
     "ja_JP": ["日本語",        0, "JP_ja"],
     "ko_KR": ["한국어",        0, "KR_ko"],
     "en_US": ["English (US)",  1, "US_en"],
