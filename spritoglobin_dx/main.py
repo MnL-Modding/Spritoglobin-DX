@@ -19,6 +19,13 @@ from spritoglobin_dx.scripts import create_transform_demo
 
 
 def main():
+    # Workaround for the app root directory sometimes
+    # not being added to the module search path by Nuitka.
+    # TODO: Remove this when this is fixed in Nuitka, or
+    # https://github.com/Nuitka/Nuitka/issues/2965 is implemented.
+    if '__compiled__' in globals():
+        sys.path.append(str(SCRIPT_DIR.parent))
+
     app = QtWidgets.QApplication(sys.argv)
 
     if os.name == 'nt':
