@@ -782,12 +782,19 @@ class MainWindow(QtWidgets.QMainWindow):
     def toggle_update_check(self, check):
         if check is None:
             query_link_string = self.tr("CheckUpdateQueryLinkString")
+            
+            lang_key = self.settings["language"]
+
+            if lang_key == "None":
+                lang_key = QtCore.QLocale.system().name()
+            
+            github_lang_key = LANGUAGES[lang_key][3]
 
             check_updates_box = QtWidgets.QMessageBox(self)
             check_updates_box.setTextFormat(QtCore.Qt.RichText)
             check_updates_box.setWindowTitle(self.tr("CheckUpdateQueryTitle"))
             check_updates_box.setText(self.tr("CheckUpdateQueryBlurb").format(
-                f"<a href='https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement'>{query_link_string}</a>"
+                f"<a href='https://docs.github.com/{github_lang_key}/site-policy/privacy-policies/github-general-privacy-statement'>{query_link_string}</a>"
             ).replace("\n", "<br>"))
             check_updates_box.setStandardButtons(QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No)
 

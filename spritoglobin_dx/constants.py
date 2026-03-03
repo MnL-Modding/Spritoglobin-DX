@@ -51,21 +51,21 @@ THEME_COLOR_ICON_MASKS = {
 # THEME_COLORS["P_COLOR_0"] = "#00ff00" # dx rando (NYI)
 
 
-LANGUAGES = { # display name, NDS value, 3DS key
-    "None":  [None,         None, "None"],
-    "ja_JP": ["日本語",        0, "JP_ja"],
-    "ko_KR": ["한국어",        0, "KR_ko"],
-    "en_US": ["English (US)",  1, "US_en"],
-    "fr_CA": ["Français (CA)", 2, "US_fr"],
-    "es_MX": ["Español (MX)",  5, "US_sp"],
-    "nl_NL": ["Nederlands",   -1, "EU_du"],
-    "en_GB": ["English (UK)",  1, "EU_en"],
-    "fr_FR": ["Français (FR)", 2, "EU_fr"],
-    "de_DE": ["Deutsch",       3, "EU_ge"],
-    "it_IT": ["Italiano",      4, "EU_it"],
-    "pt_PT": ["Português",    -1, "EU_pt"],
-    "ru_RU": ["Русский",      -1, "EU_ru"],
-    "es_ES": ["Español (ES)",  5, "EU_sp"],
+LANGUAGES = { # display name, NDS value, 3DS key, github documentation language key
+    "None":  [None],
+    "ja_JP": ["日本語",        0, "JP_ja", "ja"],
+    "ko_KR": ["한국어",        0, "KR_ko", "ko"],
+    "en_US": ["English (US)",  1, "US_en", "en"],
+    "fr_CA": ["Français (CA)", 2, "US_fr", "fr"],
+    "es_MX": ["Español (MX)",  5, "US_sp", "es"],
+    "nl_NL": ["Nederlands",   -1, "EU_du", "en"], # no github language
+    "en_GB": ["English (UK)",  1, "EU_en", "en"],
+    "fr_FR": ["Français (FR)", 2, "EU_fr", "fr"],
+    "de_DE": ["Deutsch",       3, "EU_ge", "de"],
+    "it_IT": ["Italiano",      4, "EU_it", "en"],
+    "pt_PT": ["Português",    -1, "EU_pt", "pt"],
+    "ru_RU": ["Русский",      -1, "EU_ru", "ru"],
+    "es_ES": ["Español (ES)",  5, "EU_sp", "es"],
 }
 
 GAME_IDS_THAT_ARE_CURRENTLY_SUPPORTED = ["ML5", "ML1R", "ML3R"]

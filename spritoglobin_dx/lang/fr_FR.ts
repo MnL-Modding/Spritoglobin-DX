@@ -483,7 +483,7 @@ Installez-la ici : {2}</translation>
     <message>
         <location filename="../main.py" line="786"/>
         <source>CheckUpdateQueryLinkString</source>
-        <translation>Déclaration de vie privée</translation>
+        <translation>Déclaration de confidentialité</translation>
     </message>
     <message>
         <location filename="../main.py" line="788"/>

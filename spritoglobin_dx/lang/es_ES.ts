@@ -333,7 +333,7 @@ Nota: Esta acción enviará una petición a los servidores de GitHub, por lo que
     <message>
         <location filename="../main.py" line="786"/>
         <source>CheckUpdateQueryLinkString</source>
-        <translation>Políticas de privacidad</translation>
+        <translation>Declaración de privacidad</translation>
     </message>
     <message>
         <location filename="../main.py" line="213"/>
@@ -572,12 +572,12 @@ La puedes descargar en {2}</translation>
     <message>
         <location filename="../main.py" line="747"/>
         <source>GameTitleML4</source>
-        <translation>Mario &amp; Luigi: Dream Team Bros</translation>
+        <translation>Mario &amp; Luigi: Dream Team Bros.</translation>
     </message>
     <message>
         <location filename="../main.py" line="748"/>
         <source>GameTitleML5</source>
-        <translation>Mario &amp; Luigi: Paper Jam Bros</translation>
+        <translation>Mario &amp; Luigi: Paper Jam Bros.</translation>
     </message>
     <message>
         <location filename="../main.py" line="749"/>
