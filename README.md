@@ -3,7 +3,16 @@ Spritoglobin DX is a sprite viewer for Mario and Luigi: Bowser's Inside Story + 
 
 ![Screenshot of Spritoglobin DX](docs/screenshot.png)
 
-Spritoglobin DX icon and program icons created by MiiK: https://bsky.app/profile/miikheaven.bsky.social
+# Credits
+[ThePurpleAnon](https://bsky.app/profile/thepurpleanon.bsky.social) ![Bluesky](spritoglobin_dx/files/img_soc_bsky.png) - Python Code, UI Design, and Program Sounds
+
+[DimiDimit](https://github.com/DimiDimit) ![Github](spritoglobin_dx/files/img_soc_github.png) - Additional Python Code and Cleanup
+
+[MiiK](https://bsky.app/profile/miikheaven.bsky.social) ![Bluesky](spritoglobin_dx/files/img_soc_bsky.png) - Spritoglobin DX Icon and Program UI Icons
+
+Translators:
+- Español (ES) ![es_ES Flag](spritoglobin_dx/lang/es_ES.png) - [Danius](https://github.com/Dani88alv) ![Github](spritoglobin_dx/files/img_soc_github.png)
+- Français (FR) ![fr_FR Flag](spritoglobin_dx/lang/fr_FR.png) - [Yo-New 3DS](## "Discord: yo_2ds") ![Discord](spritoglobin_dx/files/img_soc_discord.png)
 
 # Running the Program
 There are 4 ways to run this program, from easiest to most complicated:

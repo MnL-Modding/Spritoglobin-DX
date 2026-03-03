@@ -16,6 +16,7 @@ LANG_DIR = SCRIPT_DIR / 'lang'
 
 CONFIG_DIR = Path(QtCore.QStandardPaths.writableLocation(QtCore.QStandardPaths.StandardLocation.AppConfigLocation))
 
+
 THEME_COLORS = {
     "M_COLOR_0": "#f81810", # mario
     "L_COLOR_0": "#18f868", # luigi
@@ -38,18 +39,6 @@ THEME_COLOR_ICON_MASKS = {
     "P_COLOR_0": ("#00FFFF", "#BFFFFF", "#008080"),
 }
 
-# TODO: custom themes (temp test examples)
-
-# THEME_COLORS["M_COLOR_0"] = "#f05ec7" # sprito
-# THEME_COLORS["L_COLOR_0"] = "#edd20a" # cheato
-# THEME_COLORS["K_COLOR_0"] = "#9f5cda" # data
-# THEME_COLORS["P_COLOR_0"] = "#14bb59" # rando
-
-# THEME_COLORS["M_COLOR_0"] = "#e125d0" # dx sprito
-# THEME_COLORS["L_COLOR_0"] = "#ffff00" # dx cheato (NYI)
-# THEME_COLORS["K_COLOR_0"] = "#7f00ff" # dx data (NYI)
-# THEME_COLORS["P_COLOR_0"] = "#00ff00" # dx rando (NYI)
-
 
 LANGUAGES = { # display name, NDS value, 3DS key, github documentation language key
     "None":  [None],
@@ -67,6 +56,7 @@ LANGUAGES = { # display name, NDS value, 3DS key, github documentation language 
     "ru_RU": ["Русский",      -1, "EU_ru", "ru"],
     "es_ES": ["Español (ES)",  5, "EU_sp", "es"],
 }
+
 
 GAME_IDS_THAT_ARE_CURRENTLY_SUPPORTED = ["ML5", "ML1R", "ML3R"]
 GAME_IDS_THAT_ARE_ON_3DS = ["ML4", "ML5", "ML1R", "ML3R"]

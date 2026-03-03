@@ -415,6 +415,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
         self.sprite_color_anim_timeline = self.ColorAnimationTimeline(
             font             = mono_font,
+            boolean_strings  = self.boolean_strings,
             padding_amount   = 9,
             timeline_height  = 29,
             keyframe_padding = 2,
@@ -427,6 +428,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
         self.global_color_anim_timeline = self.ColorAnimationTimeline(
             font             = mono_font,
+            boolean_strings  = self.boolean_strings,
             padding_amount   = 9,
             timeline_height  = 29,
             keyframe_padding = 2,
@@ -748,6 +750,11 @@ class MainWindow(QtWidgets.QMainWindow):
             "GameTitleML5":  self.tr("GameTitleML5"),
             "GameTitleML1R": self.tr("GameTitleML1R"),
             "GameTitleML3R": self.tr("GameTitleML3R"),
+        }
+
+        self.boolean_strings = {
+            "True":  self.tr("GenericBooleanAffirmative"),
+            "False": self.tr("GenericBooleanNegative"),
         }
 
         self.write_config()
@@ -1265,8 +1272,8 @@ class MainWindow(QtWidgets.QMainWindow):
             size = [self.tr("SpritePartSize0"), self.tr("SpritePartSize1"), self.tr("SpritePartSize2"), self.tr("SpritePartSize3")][sprite_part_properties["oam_size"]]
             shape = [self.tr("SpritePartShape0"), self.tr("SpritePartShape1"), self.tr("SpritePartShape2")][sprite_part_properties["oam_shape"]]
             px_size = sprite_part_properties["size"]
-            h_flip = sprite_part_properties["horizontal_flip"] # TODO
-            v_flip = sprite_part_properties["vertical_flip"] # TODO
+            h_flip = self.boolean_strings[str(sprite_part_properties["horizontal_flip"])]
+            v_flip = self.boolean_strings[str(sprite_part_properties["vertical_flip"])]
             offset = sprite_part_properties["offset"]
         else:
             self.sprite_part_info_text.setEnabled(False)
@@ -2105,7 +2112,8 @@ class MainWindow(QtWidgets.QMainWindow):
     class ColorAnimationTimeline(AnimationTimeline):
         sendLayerPersistance = QtCore.Signal(bool)
 
-        def __init__(self, font, padding_amount, timeline_height, keyframe_padding, playhead_height):
+        def __init__(self, font, boolean_strings, padding_amount, timeline_height, keyframe_padding, playhead_height):
+            self.boolean_strings = boolean_strings
             self.layer_toggle_list_string = QtWidgets.QLabel()
 
             self.layer_toggle_list = QtWidgets.QComboBox()
@@ -2254,7 +2262,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
             if self.current_anim_length != 0:
                 channel = self.animation_data[self.current_layer]["render_channel"]
-                persistant = self.animation_data[self.current_layer]["is_persistant"] # TODO
+                persistant = self.boolean_strings[str(self.animation_data[self.current_layer]["is_persistant"])]
             else:
                 channel = "?"
                 persistant = "?"

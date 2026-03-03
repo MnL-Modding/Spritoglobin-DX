@@ -1,6 +1,6 @@
 [project]
 name = "spritoglobin_dx"
-version = "0.1.0-rc.2"
+version = "0.1.0"
 description = "Sprite viewer for Bowser's Inside Story DX, and other 3DS M&L games."
 authors = [
     {name = "ThePurpleAnon"}

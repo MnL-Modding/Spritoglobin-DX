@@ -4,32 +4,32 @@
 <context>
     <name>ColorAnimationTimeline</name>
     <message>
-        <location filename="../main.py" line="2120"/>
+        <location filename="../main.py" line="2143"/>
         <source>LayerInfoColorRGB</source>
         <translation>Couleur :</translation>
     </message>
     <message>
-        <location filename="../main.py" line="2122"/>
+        <location filename="../main.py" line="2145"/>
         <source>LayerInfoColorA</source>
         <translation>Alpha :</translation>
     </message>
     <message>
-        <location filename="../main.py" line="2255"/>
+        <location filename="../main.py" line="2278"/>
         <source>LayerInfoRenderChannel</source>
         <translation>Chaine de rendu : {0}</translation>
     </message>
     <message>
-        <location filename="../main.py" line="2257"/>
+        <location filename="../main.py" line="2280"/>
         <source>LayerInfoPersistant</source>
         <translation>Persistant : {0}</translation>
     </message>
     <message>
-        <location filename="../main.py" line="2298"/>
+        <location filename="../main.py" line="2321"/>
         <source>LayerInfoStartEndColor</source>
         <translation>Commencer/terminer les couleurs :</translation>
     </message>
     <message>
-        <location filename="../main.py" line="2352"/>
+        <location filename="../main.py" line="2375"/>
         <source>LayerToggleTitle</source>
         <translation>Calque d&apos;animation actuel ({0} en tout)</translation>
     </message>
@@ -37,84 +37,84 @@
 <context>
     <name>FileImportWindow</name>
     <message>
-        <location filename="../main.py" line="2413"/>
+        <location filename="../main.py" line="2436"/>
         <source>ImportWindowTitle</source>
         <translatorcomment>finally, it will not be capitalized for adaptation reasons</translatorcomment>
         <translation>Importer un fichier objet</translation>
     </message>
     <message>
-        <location filename="../main.py" line="2418"/>
+        <location filename="../main.py" line="2441"/>
         <source>ImportChooseFileButton</source>
         <translation>Choisir un fichier</translation>
     </message>
     <message>
-        <location filename="../main.py" line="2423"/>
-        <location filename="../main.py" line="2513"/>
+        <location filename="../main.py" line="2446"/>
+        <location filename="../main.py" line="2536"/>
         <source>FileInfoNone</source>
         <translation>Aucun fichier choisi</translation>
     </message>
     <message>
-        <location filename="../main.py" line="2426"/>
+        <location filename="../main.py" line="2449"/>
         <source>ImportAlphabetizeToggle</source>
         <translation>Alphabétiser le contenu du fichier après importation</translation>
     </message>
     <message>
-        <location filename="../main.py" line="2429"/>
+        <location filename="../main.py" line="2452"/>
         <source>ImportAcceptButton</source>
         <translation>Importer le fichier !</translation>
     </message>
     <message>
-        <location filename="../main.py" line="2461"/>
-        <location filename="../main.py" line="2467"/>
+        <location filename="../main.py" line="2484"/>
+        <location filename="../main.py" line="2490"/>
         <source>ImportChooseFileTitle</source>
         <translation>Choisir une archive objet</translation>
     </message>
     <message>
-        <location filename="../main.py" line="2462"/>
+        <location filename="../main.py" line="2485"/>
         <source>ImportChooseFileBlurb</source>
         <translation>Veuillez choisir une archive objet depuis {0}, ou {1}.</translation>
     </message>
     <message>
-        <location filename="../main.py" line="2500"/>
+        <location filename="../main.py" line="2523"/>
         <source>ImportFileError100</source>
         <translation>Le fichier semble être une archive objet valide, mais les données semblent être corrompues ou dans un format non-reconnu.</translation>
     </message>
     <message>
-        <location filename="../main.py" line="2501"/>
+        <location filename="../main.py" line="2524"/>
         <source>ImportFileError101</source>
         <translation>Le fichier ne semble pas être une archive objet valide.</translation>
     </message>
     <message>
-        <location filename="../main.py" line="2502"/>
+        <location filename="../main.py" line="2525"/>
         <source>ImportFileError102</source>
         <translation>Le fichier ne semble pas être une archive objet valide. Seules les archives objet depuis {0}, et {1} sont actuellement supportées.</translation>
     </message>
     <message>
-        <location filename="../main.py" line="2505"/>
+        <location filename="../main.py" line="2528"/>
         <source>ImportFileFailureTitle</source>
         <translation>L&apos;importation du fichier a échoué</translation>
     </message>
     <message>
-        <location filename="../main.py" line="2507"/>
+        <location filename="../main.py" line="2530"/>
         <source>ImportFileFailureBlurb</source>
         <translation>Le fichier choisi a reflété une erreur : &quot;{0}&quot;
 
 {1}</translation>
     </message>
     <message>
-        <location filename="../main.py" line="2521"/>
-        <location filename="../main.py" line="2523"/>
+        <location filename="../main.py" line="2544"/>
+        <location filename="../main.py" line="2546"/>
         <source>FileInfoBG4TitleAndVersion</source>
         <translation>Archive BG4 (Version {0}.{1})</translation>
     </message>
     <message>
-        <location filename="../main.py" line="2530"/>
+        <location filename="../main.py" line="2553"/>
         <source>FileInfoCellAnimeTitle</source>
         <translation>Info CellAnime</translation>
     </message>
     <message>
-        <location filename="../main.py" line="2535"/>
-        <location filename="../main.py" line="2542"/>
+        <location filename="../main.py" line="2558"/>
+        <location filename="../main.py" line="2565"/>
         <source>FileInfoValidEntryCount</source>
         <translation>{0} entrées valides, {1} entrées invalides</translation>
     </message>
@@ -122,73 +122,73 @@
 <context>
     <name>GifExportWindow</name>
     <message>
-        <location filename="../main.py" line="2565"/>
+        <location filename="../main.py" line="2588"/>
         <source>ExportWindowTitle</source>
         <translation>Exporter un fichier</translation>
     </message>
     <message>
-        <location filename="../main.py" line="2572"/>
-        <location filename="../main.py" line="2573"/>
+        <location filename="../main.py" line="2595"/>
+        <location filename="../main.py" line="2596"/>
         <source>AnimationOptionFramerate</source>
         <translation>{0} FPS</translation>
     </message>
     <message>
-        <location filename="../main.py" line="2609"/>
+        <location filename="../main.py" line="2632"/>
         <source>ExportAcceptButton</source>
         <translation>Exporter un fichier !</translation>
     </message>
     <message>
-        <location filename="../main.py" line="2647"/>
+        <location filename="../main.py" line="2670"/>
         <source>AnimationOptionFramerateTitle</source>
         <translation>Fréquence :</translation>
     </message>
     <message>
-        <location filename="../main.py" line="2652"/>
+        <location filename="../main.py" line="2675"/>
         <source>AnimationOptionColorAnimTitle</source>
         <translation>Animation de couleur :</translation>
     </message>
     <message>
-        <location filename="../main.py" line="2657"/>
+        <location filename="../main.py" line="2680"/>
         <source>ExportAnimationListTitle</source>
         <translation>Séquence d&apos;animation :</translation>
     </message>
     <message>
-        <location filename="../main.py" line="2662"/>
+        <location filename="../main.py" line="2685"/>
         <source>AnimationListDataCurrentAnim</source>
         <translation>Animation :</translation>
     </message>
     <message>
-        <location filename="../main.py" line="2667"/>
+        <location filename="../main.py" line="2690"/>
         <source>AnimationListDataCurrentLoops</source>
         <translation>Répétitions :</translation>
     </message>
     <message>
-        <location filename="../main.py" line="2802"/>
+        <location filename="../main.py" line="2825"/>
         <source>AnimationOptionColorAnimNone</source>
         <translation>Aucun</translation>
     </message>
     <message>
-        <location filename="../main.py" line="2827"/>
+        <location filename="../main.py" line="2850"/>
         <source>ExportAnimationListData</source>
         <translation>Animation {0}</translation>
     </message>
     <message>
-        <location filename="../main.py" line="2829"/>
+        <location filename="../main.py" line="2852"/>
         <source>ExportAnimationListDataWithLoop</source>
         <translation>Animation {0} ({1} répétitions)</translation>
     </message>
     <message>
-        <location filename="../main.py" line="2868"/>
+        <location filename="../main.py" line="2891"/>
         <source>ExportChooseFileTitle</source>
         <translation>Exporter un fichier</translation>
     </message>
     <message>
-        <location filename="../main.py" line="2995"/>
+        <location filename="../main.py" line="3018"/>
         <source>ExportFileSuccessTitle</source>
         <translation>Exportation réussie</translation>
     </message>
     <message>
-        <location filename="../main.py" line="2996"/>
+        <location filename="../main.py" line="3019"/>
         <source>ExportFileSuccessBlurb</source>
         <translation>Le fichier {0} a été exporté avec succès !</translation>
     </message>
@@ -196,65 +196,65 @@
 <context>
     <name>GraphicsAnimationTimeline</name>
     <message>
-        <location filename="../main.py" line="1902"/>
+        <location filename="../main.py" line="1924"/>
         <source>ShowBoundingBoxToggle</source>
         <translation>Afficher les animations de la bounding box</translation>
     </message>
     <message>
-        <location filename="../main.py" line="2001"/>
-        <location filename="../main.py" line="2003"/>
-        <location filename="../main.py" line="2007"/>
+        <location filename="../main.py" line="2023"/>
+        <location filename="../main.py" line="2025"/>
+        <location filename="../main.py" line="2029"/>
         <source>FrameDataSpritePartsUsed</source>
         <translation>Partie(s) de sprite utilisée(s) : {0}</translation>
     </message>
     <message>
-        <location filename="../main.py" line="2006"/>
+        <location filename="../main.py" line="2028"/>
         <source>FrameDataSpritePartsUsedNone</source>
         <translation>Aucune partie de sprite utilisée !</translation>
     </message>
     <message>
-        <location filename="../main.py" line="2012"/>
-        <location filename="../main.py" line="2016"/>
+        <location filename="../main.py" line="2034"/>
+        <location filename="../main.py" line="2038"/>
         <source>FrameDataTransformMatrixUsed</source>
         <translation>Moule(s) de transformation utilisé(s) : {0}</translation>
     </message>
     <message>
-        <location filename="../main.py" line="2015"/>
+        <location filename="../main.py" line="2037"/>
         <source>FrameDataTransformMatrixUsedNone</source>
         <translation>Aucun moule de transformation utilisé !</translation>
     </message>
     <message>
-        <location filename="../main.py" line="2021"/>
+        <location filename="../main.py" line="2043"/>
         <source>FrameDataTransformMatrixInverted</source>
         <translation>(La rotation est inversée)</translation>
     </message>
     <message>
-        <location filename="../main.py" line="2035"/>
+        <location filename="../main.py" line="2057"/>
         <source>FrameDataTransformMatrixXScale</source>
         <translation>Taille X : {0}</translation>
     </message>
     <message>
-        <location filename="../main.py" line="2036"/>
+        <location filename="../main.py" line="2058"/>
         <source>FrameDataTransformMatrixXShear</source>
         <translation>Coupe X : {0}</translation>
     </message>
     <message>
-        <location filename="../main.py" line="2037"/>
+        <location filename="../main.py" line="2059"/>
         <source>FrameDataTransformMatrixXPos</source>
         <translation>Position X : {1}</translation>
     </message>
     <message>
-        <location filename="../main.py" line="2038"/>
+        <location filename="../main.py" line="2060"/>
         <source>FrameDataTransformMatrixYShear</source>
         <translation>Coupe Y : {0}</translation>
     </message>
     <message>
-        <location filename="../main.py" line="2039"/>
+        <location filename="../main.py" line="2061"/>
         <source>FrameDataTransformMatrixYScale</source>
         <translation>Taille Y : {0}</translation>
     </message>
     <message>
-        <location filename="../main.py" line="2040"/>
+        <location filename="../main.py" line="2062"/>
         <source>FrameDataTransformMatrixYPos</source>
         <translation>Position Y : {1}</translation>
     </message>
@@ -365,8 +365,8 @@ Installez-la ici : {2}</translation>
     <message>
         <location filename="../main.py" line="339"/>
         <location filename="../main.py" line="340"/>
-        <location filename="../main.py" line="769"/>
-        <location filename="../main.py" line="770"/>
+        <location filename="../main.py" line="784"/>
+        <location filename="../main.py" line="785"/>
         <source>MenuBarOptionsFramerate</source>
         <translation>{0} fps</translation>
     </message>
@@ -391,107 +391,117 @@ Installez-la ici : {2}</translation>
         <translation>&amp;Rechercher des mises à jour</translation>
     </message>
     <message>
-        <location filename="../main.py" line="463"/>
+        <location filename="../main.py" line="465"/>
         <source>ShowBoundingBoxToggle</source>
         <translation>Afficher la bounding box de l&apos;objet</translation>
     </message>
     <message>
-        <location filename="../main.py" line="471"/>
+        <location filename="../main.py" line="473"/>
         <source>ColorAnimSelectorTitle</source>
         <translation>Animations de couleur :</translation>
     </message>
     <message>
-        <location filename="../main.py" line="496"/>
+        <location filename="../main.py" line="498"/>
         <source>AnimationTabsSpriteAnimTitle</source>
         <translation>Animation de sprite</translation>
     </message>
     <message>
-        <location filename="../main.py" line="497"/>
+        <location filename="../main.py" line="499"/>
         <source>AnimationTabsSpriteColorAnimTitle</source>
         <translation>Animation unique de couleur</translation>
     </message>
     <message>
-        <location filename="../main.py" line="498"/>
+        <location filename="../main.py" line="500"/>
         <source>AnimationTabsSpriteGlobalAnimTitle</source>
         <translation>Animation globale de couleur</translation>
     </message>
     <message>
-        <location filename="../main.py" line="513"/>
+        <location filename="../main.py" line="515"/>
         <source>SpritePartSetSelectorTitle</source>
         <translation>Paramètre de la partie du sprite actuel :</translation>
     </message>
     <message>
-        <location filename="../main.py" line="537"/>
+        <location filename="../main.py" line="539"/>
         <source>SpritePartSelectorTitle</source>
         <translation>Partie du sprite actuel :</translation>
     </message>
     <message>
-        <location filename="../main.py" line="610"/>
+        <location filename="../main.py" line="612"/>
         <source>ObjectSelectorTitle</source>
         <translation>Objet actuel :</translation>
     </message>
     <message>
-        <location filename="../main.py" line="615"/>
+        <location filename="../main.py" line="617"/>
         <source>AnimationSelectorTitle</source>
         <translation>Animations :</translation>
     </message>
     <message>
-        <location filename="../main.py" line="678"/>
+        <location filename="../main.py" line="680"/>
         <source>ExportFailNoDataTitle</source>
         <translation>Aucune donnée d&apos;objet</translation>
     </message>
     <message>
-        <location filename="../main.py" line="679"/>
+        <location filename="../main.py" line="681"/>
         <source>ExportFailNoDataBlurb</source>
         <translation>Il n&apos;y a actuellement aucune donnée d&apos;objet chargée ! Veuillez charger une archive objet avant d&apos;essayer d&apos;exporter un fichier</translation>
     </message>
     <message>
-        <location filename="../main.py" line="744"/>
+        <location filename="../main.py" line="746"/>
         <source>GameTitleML1</source>
         <translation>Mario &amp; Luigi: Superstar Saga</translation>
     </message>
     <message>
-        <location filename="../main.py" line="745"/>
+        <location filename="../main.py" line="747"/>
         <source>GameTitleML2</source>
         <translation>Mario &amp; Luigi: Les frères du temps</translation>
     </message>
     <message>
-        <location filename="../main.py" line="746"/>
+        <location filename="../main.py" line="748"/>
         <source>GameTitleML3</source>
         <translation>Mario &amp; Luigi: Voyage au centre de Bowser</translation>
     </message>
     <message>
-        <location filename="../main.py" line="747"/>
+        <location filename="../main.py" line="749"/>
         <source>GameTitleML4</source>
         <translation>Mario &amp; Luigi: Dream Team Bros.</translation>
     </message>
     <message>
-        <location filename="../main.py" line="748"/>
+        <location filename="../main.py" line="750"/>
         <source>GameTitleML5</source>
         <translation>Mario &amp; Luigi: Paper Jam Bros.</translation>
     </message>
     <message>
-        <location filename="../main.py" line="749"/>
+        <location filename="../main.py" line="751"/>
         <source>GameTitleML1R</source>
         <translation>Mario &amp; Luigi: Superstar Saga + Les sbires de Bowser</translation>
     </message>
     <message>
-        <location filename="../main.py" line="750"/>
+        <location filename="../main.py" line="752"/>
         <source>GameTitleML3R</source>
         <translation>Mario &amp; Luigi: Voyage au centre de Bowser + L&apos;épopée de Bowser Jr.</translation>
     </message>
     <message>
-        <location filename="../main.py" line="786"/>
+        <location filename="../main.py" line="756"/>
+        <source>GenericBooleanAffirmative</source>
+        <translation>oui</translation>
+    </message>
+    <message>
+        <location filename="../main.py" line="757"/>
+        <source>GenericBooleanNegative</source>
+        <translation>non</translation>
+    </message>
+    <message>
+        <location filename="../main.py" line="801"/>
         <source>CheckUpdateQueryLinkString</source>
         <translation>Déclaration de confidentialité</translation>
     </message>
     <message>
-        <location filename="../main.py" line="788"/>
+        <location filename="../main.py" line="810"/>
         <source>CheckUpdateQueryTitle</source>
         <translation>Vérification de mises à jour automatique</translation>
     </message>
     <message>
-        <location filename="../main.py" line="789"/>
+        <location filename="../main.py" line="811"/>
         <source>CheckUpdateQueryBlurb</source>
         <translation>Autoriser Spritoglobin DX à se connecter automatiquement à Internet pour rechercher des mises à jour ?
 
@@ -500,93 +510,93 @@ Cela peut toujours être changé dans les paramètres.
 Note : Cela créera une requête aux serveurs de GitHub, qui recevront votre adresse IP et l&apos;utiliseront selon leur {0}.</translation>
     </message>
     <message>
-        <location filename="../main.py" line="884"/>
-        <location filename="../main.py" line="904"/>
+        <location filename="../main.py" line="906"/>
+        <location filename="../main.py" line="926"/>
         <source>ColorAnimSelectorNone</source>
         <translation>Aucun</translation>
     </message>
     <message>
-        <location filename="../main.py" line="953"/>
+        <location filename="../main.py" line="975"/>
         <source>ColorModeInfo</source>
         <translation>Mode de couleur : {0}</translation>
     </message>
     <message>
-        <location filename="../main.py" line="1162"/>
+        <location filename="../main.py" line="1184"/>
         <source>SpritePartSelectorNone</source>
         <translation>Aucun sélectionné</translation>
     </message>
     <message>
-        <location filename="../main.py" line="1251"/>
+        <location filename="../main.py" line="1273"/>
         <source>SpritePartBufferOffset</source>
         <translation>Données de tampon graphique : {0}h - {1}h</translation>
     </message>
     <message>
-        <location filename="../main.py" line="1258"/>
+        <location filename="../main.py" line="1280"/>
         <source>SpritePartSize0</source>
         <translation>0 (petite)</translation>
     </message>
     <message>
-        <location filename="../main.py" line="1258"/>
+        <location filename="../main.py" line="1280"/>
         <source>SpritePartSize1</source>
         <translation>1 (moyenne)</translation>
     </message>
     <message>
-        <location filename="../main.py" line="1258"/>
+        <location filename="../main.py" line="1280"/>
         <source>SpritePartSize2</source>
         <translation>2 (grande)</translation>
     </message>
     <message>
-        <location filename="../main.py" line="1258"/>
+        <location filename="../main.py" line="1280"/>
         <source>SpritePartSize3</source>
         <translation>3 (très grande)</translation>
     </message>
     <message>
-        <location filename="../main.py" line="1259"/>
+        <location filename="../main.py" line="1281"/>
         <source>SpritePartShape0</source>
         <translation>0 (carrée)</translation>
     </message>
     <message>
-        <location filename="../main.py" line="1259"/>
+        <location filename="../main.py" line="1281"/>
         <source>SpritePartShape1</source>
         <translation>1 (large)</translation>
     </message>
     <message>
-        <location filename="../main.py" line="1259"/>
+        <location filename="../main.py" line="1281"/>
         <source>SpritePartShape2</source>
         <translation>2 (haute)</translation>
     </message>
     <message>
-        <location filename="../main.py" line="1274"/>
+        <location filename="../main.py" line="1296"/>
         <source>SpritePartSizeTitle</source>
         <translation>Taille : {0}</translation>
     </message>
     <message>
-        <location filename="../main.py" line="1276"/>
+        <location filename="../main.py" line="1298"/>
         <source>SpritePartShapeTitle</source>
         <translation>Forme : {0}</translation>
     </message>
     <message>
-        <location filename="../main.py" line="1278"/>
+        <location filename="../main.py" line="1300"/>
         <source>SpritePartSizePixels</source>
         <translation>({0}px, {1}px)</translation>
     </message>
     <message>
-        <location filename="../main.py" line="1280"/>
+        <location filename="../main.py" line="1302"/>
         <source>SpritePartFlipHorizontal</source>
         <translation>Ret. horizontal : {0}</translation>
     </message>
     <message>
-        <location filename="../main.py" line="1282"/>
+        <location filename="../main.py" line="1304"/>
         <source>SpritePartFlipVertical</source>
         <translation>Ret. vertical : {0}</translation>
     </message>
     <message>
-        <location filename="../main.py" line="1284"/>
+        <location filename="../main.py" line="1306"/>
         <source>SpritePartOffset</source>
         <translation>Compensation : ({0}px, {1}px)</translation>
     </message>
     <message>
-        <location filename="../main.py" line="1300"/>
+        <location filename="../main.py" line="1322"/>
         <source>SpritePartRendererTitle</source>
         <translation>Rendu : {0}</translation>
     </message>
