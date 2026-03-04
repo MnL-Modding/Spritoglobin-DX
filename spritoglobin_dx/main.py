@@ -143,7 +143,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.settings = dict(config['UserPreferences'])
 
         self.change_lang(self.settings.get("language", "None"), reset_ui = False)
-        self.set_framerate(int(self.settings.get("framerate", 1)), reset_ui = False)
+        self.set_framerate(int(self.settings.get("framerate", 1)))
         self.toggle_mute(self.settings.get("muted", False))
         self.toggle_update_check(self.settings.get("check_for_updates", None))
         
@@ -346,20 +346,23 @@ class MainWindow(QtWidgets.QMainWindow):
             )
 
         framerate_selector = QtWidgets.QMenu(self.tr("MenuBarOptionsFramerateOption"), self)
-        self.framerate_options = []
+        framerates = QtGui.QActionGroup(self)
+        framerates.setExclusive(True)
         for i in range(2):
             string = [
                 self.tr("MenuBarOptionsFramerate").format(60),
                 self.tr("MenuBarOptionsFramerate").format(30),
             ][i]
 
-            if self.settings["framerate"] == i: string += " ✓"
-
             framerate_action = QtGui.QAction(string)
-            framerate_action.triggered.connect(partial(self.set_framerate, i))
+            framerate_action.setData(i)
+            framerate_action.setCheckable(True)
+            if self.settings["framerate"] == i:
+                framerate_action.setChecked(True)
 
-            framerate_selector.addAction(framerate_action)
-            self.framerate_options.append(framerate_action)
+            framerates.addAction(framerate_action)
+        framerate_selector.addActions(framerates.actions())
+        framerate_selector.triggered.connect(self.set_framerate)
 
         audio_mute = QtGui.QAction(self.tr("MenuBarOptionsMuteOption"), self)
         audio_mute.setCheckable(True)
@@ -800,24 +803,13 @@ class MainWindow(QtWidgets.QMainWindow):
             if self.obj_data is not None:
                 self.obj_data.set_timers(save_tmr, animation_timer = True, color_timer = True)
     
-    def set_framerate(self, framerate, reset_ui = True):
+    def set_framerate(self, framerate):
+        if not isinstance(framerate, int):
+            framerate = framerate.data()
+
         self.settings["framerate"] = framerate
 
         self.write_config()
-
-        if reset_ui:
-            framerate = [60, 30][self.settings["framerate"]]
-            self.animation_timer.setInterval(round(1000 / framerate))
-
-            for i, action in enumerate(self.framerate_options):
-                string = [
-                    self.tr("MenuBarOptionsFramerate").format(60),
-                    self.tr("MenuBarOptionsFramerate").format(30),
-                ][i]
-
-                if self.settings["framerate"] == i: string += " ✓"
-
-                action.setText(string)
     
     def toggle_mute(self, muted):
         self.settings["muted"] = str(muted)
