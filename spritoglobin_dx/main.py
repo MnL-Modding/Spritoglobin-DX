@@ -162,6 +162,19 @@ class MainWindow(QtWidgets.QMainWindow):
             config.write(config_file)
 
 
+        # Space = Play/Pause Animation Timeline
+        action = QtGui.QAction(self)
+        action.setShortcut(QtGui.QKeySequence(QtCore.Qt.Key_Space))
+        action.triggered.connect(self.timeline_toggle_playback)
+        self.addAction(action)
+
+        # Shift+Space = Play/Pause Color Animation Timeline
+        action = QtGui.QAction(self)
+        action.setShortcut(QtGui.QKeySequence(QtCore.Qt.ShiftModifier | QtCore.Qt.Key_Space))
+        action.triggered.connect(self.color_timeline_toggle_playback)
+        self.addAction(action)
+
+
         self.init_ui()
     
 
@@ -184,7 +197,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
         # MOST OF THE FOLLOWING CODE WAS PROVIDED BY DIMIDIMIT, THE G.O.A.T.
         
-        # get current version of app (poetry or compiled only)
+        # get current version of app
         try:
             dist = importlib.metadata.distribution(APP_NAME)
         except PackageNotFoundError:
@@ -576,9 +589,17 @@ class MainWindow(QtWidgets.QMainWindow):
         string.setEnabled(False)
         sprite_part_info_layout.addWidget(string, 9, 0, 1, 2, alignment = QtCore.Qt.AlignmentFlag.AlignCenter)
 
-        padding = QtWidgets.QWidget()
-        sprite_part_info_layout.addWidget(padding, 10, 0, 1, -1)
-        padding.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
+        try:
+            dist = importlib.metadata.distribution(APP_NAME)
+            ver_num = f"{APP_DISPLAY_NAME} v{dist.version}"
+        except PackageNotFoundError:
+            ver_num = "unknown version"
+
+        version_number = QtWidgets.QLabel(ver_num)
+        version_number.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
+        version_number.setAlignment(QtCore.Qt.AlignmentFlag.AlignBottom | QtCore.Qt.AlignmentFlag.AlignRight)
+        version_number.setEnabled(False)
+        sprite_part_info_layout.addWidget(version_number, 10, 0, 1, -1)
 
         sprite_part_info_layout.setColumnStretch(0, 1)
         sprite_part_info_layout.setColumnStretch(1, 1)
@@ -625,19 +646,6 @@ class MainWindow(QtWidgets.QMainWindow):
 
         self.setCentralWidget(main)
         self.set_theme(update = False)
-
-
-        # Space = Play/Pause Animation Timeline
-        action = QtGui.QAction(self)
-        action.setShortcut(QtGui.QKeySequence(QtCore.Qt.Key_Space))
-        action.triggered.connect(self.timeline_toggle_playback)
-        self.addAction(action)
-
-        # Shift+Space = Play/Pause Color Animation Timeline
-        action = QtGui.QAction(self)
-        action.setShortcut(QtGui.QKeySequence(QtCore.Qt.ShiftModifier | QtCore.Qt.Key_Space))
-        action.triggered.connect(self.color_timeline_toggle_playback)
-        self.addAction(action)
 
 
         self.change_file()
@@ -753,14 +761,34 @@ class MainWindow(QtWidgets.QMainWindow):
         }
 
         self.boolean_strings = {
-            "True":  self.tr("GenericBooleanAffirmative"),
-            "False": self.tr("GenericBooleanNegative"),
+            True:  self.tr("GenericBooleanAffirmative"),
+            False: self.tr("GenericBooleanNegative"),
         }
 
         self.write_config()
 
         if reset_ui:
+            save_obj = self.obj_list_box.currentText()
+            save_ans = self.anim_list_box.currentRow()
+            save_anc = self.color_anim_list_box.currentRow()
+            save_gos = self.animation_timer_going
+            save_goc = self.color_timer_going
+            save_tab = self.timeline_tabs.currentIndex()
+            save_tmr = self.obj_data.get_timers(animation_timer = True, color_timer = True)
+            save_sps = self.sprite_part_set_list_box.currentIndex()
+            save_sph = self.sprite_part_list_box.currentIndex()
+
             self.init_ui()
+
+            self.obj_list_box.setCurrentText(save_obj)
+            self.anim_list_box.setCurrentRow(save_ans)
+            self.color_anim_list_box.setCurrentRow(save_anc)
+            self.animation_timer_going = save_gos
+            self.color_timer_going = save_goc
+            self.timeline_tabs.setCurrentIndex(save_tab)
+            self.obj_data.set_timers(save_tmr, animation_timer = True, color_timer = True)
+            self.sprite_part_set_list_box.setCurrentIndex(save_sps)
+            self.sprite_part_list_box.setCurrentIndex(save_sph)
     
     def set_framerate(self, framerate, reset_ui = True):
         self.settings["framerate"] = framerate
@@ -1272,8 +1300,8 @@ class MainWindow(QtWidgets.QMainWindow):
             size = [self.tr("SpritePartSize0"), self.tr("SpritePartSize1"), self.tr("SpritePartSize2"), self.tr("SpritePartSize3")][sprite_part_properties["oam_size"]]
             shape = [self.tr("SpritePartShape0"), self.tr("SpritePartShape1"), self.tr("SpritePartShape2")][sprite_part_properties["oam_shape"]]
             px_size = sprite_part_properties["size"]
-            h_flip = self.boolean_strings[str(sprite_part_properties["horizontal_flip"])]
-            v_flip = self.boolean_strings[str(sprite_part_properties["vertical_flip"])]
+            h_flip = self.boolean_strings[sprite_part_properties["horizontal_flip"]]
+            v_flip = self.boolean_strings[sprite_part_properties["vertical_flip"]]
             offset = sprite_part_properties["offset"]
         else:
             self.sprite_part_info_text.setEnabled(False)
@@ -2262,7 +2290,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
             if self.current_anim_length != 0:
                 channel = self.animation_data[self.current_layer]["render_channel"]
-                persistant = self.boolean_strings[str(self.animation_data[self.current_layer]["is_persistant"])]
+                persistant = self.boolean_strings[self.animation_data[self.current_layer]["is_persistant"]]
             else:
                 channel = "?"
                 persistant = "?"

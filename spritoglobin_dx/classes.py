@@ -285,11 +285,14 @@ class ObjFile:
             self.color_timer += delta
     
     def set_timers(self, time, animation_timer = False, color_timer = False):
+        if isinstance(time, int):
+            time = (time, time)
+
         if animation_timer:
-            self.animation_timer = time
+            self.animation_timer = time[0]
 
         if color_timer:
-            self.color_timer = time
+            self.color_timer = time[1]
     
     def get_timers(self, animation_timer = False, color_timer = False):
         timers = []
