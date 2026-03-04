@@ -606,6 +606,36 @@ class MainWindow(QtWidgets.QMainWindow):
 
 
 
+        lists_and_stuff = QtWidgets.QFrame()
+        lists_and_stuff.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
+        lists_and_stuff_layout = QtWidgets.QGridLayout(lists_and_stuff)
+        lists_and_stuff_layout.setContentsMargins(0, 0, 0, 0)
+
+        lists_and_stuff_layout.addWidget(self.obj_list_box, 1, 0, 1, 2)
+        lists_and_stuff_layout.addWidget(object_info, 2, 0, 1, 2)
+        lists_and_stuff_layout.addWidget(self.anim_list_box, 5, 0, 1, 2)
+
+        string = QtWidgets.QLabel(self.tr("ObjectSelectorTitle"))
+        string.setBuddy(self.obj_list_box)
+        string.setEnabled(False)
+        lists_and_stuff_layout.addWidget(string, 0, 0, 1, 2)
+
+        string = QtWidgets.QLabel(self.tr("AnimationSelectorTitle"))
+        string.setBuddy(self.anim_list_box)
+        string.setEnabled(False)
+        lists_and_stuff_layout.addWidget(string, 4, 0, 1, 1)
+
+        line = QtWidgets.QFrame()
+        line.setFrameShape(QtWidgets.QFrame.HLine)
+        line.setFrameShadow(QtWidgets.QFrame.Sunken)
+        lists_and_stuff_layout.addWidget(line, 3, 0, 1, 2)
+
+        self.global_animation_icon = QtWidgets.QLabel()
+        self.global_animation_icon.setPixmap(grab_icon(0))
+        lists_and_stuff_layout.addWidget(self.global_animation_icon, 4, 1, 1, 1, alignment = QtCore.Qt.AlignmentFlag.AlignRight)
+
+
+
         self.animation_timer_going = False
         self.color_timer_going = False
 
@@ -614,35 +644,13 @@ class MainWindow(QtWidgets.QMainWindow):
         main = QtWidgets.QWidget()
         main_layout = QtWidgets.QGridLayout(main)
 
-        main_layout.addWidget(self.obj_list_box, 1, 0, 1, 2)
-        main_layout.addWidget(object_info, 2, 0, 1, 2)
-        main_layout.addWidget(self.anim_list_box, 5, 0, 1, 2)
-        main_layout.addWidget(self.sprite_viewer, 0, 2, 6, 1)
-        main_layout.addWidget(self.timeline_tabs, 6, 0, 1, 3)
-        main_layout.addWidget(sprite_part_info, 0, 3, -1, 1)
+        main_layout.addWidget(lists_and_stuff, 0, 0, 1, 1)
+        main_layout.addWidget(self.sprite_viewer, 0, 1, 1, 1)
+        main_layout.addWidget(self.timeline_tabs, 1, 0, 1, 2)
+        main_layout.addWidget(sprite_part_info, 0, 2, 2, 1)
         main_layout.setColumnStretch(0, 1)
-        main_layout.setColumnStretch(1, 1)
-        main_layout.setColumnStretch(2, 9)
-        main_layout.setColumnStretch(3, 4)
-
-        line = QtWidgets.QFrame()
-        line.setFrameShape(QtWidgets.QFrame.HLine)
-        line.setFrameShadow(QtWidgets.QFrame.Sunken)
-        main_layout.addWidget(line, 3, 0, 1, 2)
-
-        string = QtWidgets.QLabel(self.tr("ObjectSelectorTitle"))
-        string.setBuddy(self.obj_list_box)
-        string.setEnabled(False)
-        main_layout.addWidget(string, 0, 0, 1, 2)
-
-        string = QtWidgets.QLabel(self.tr("AnimationSelectorTitle"))
-        string.setBuddy(self.anim_list_box)
-        string.setEnabled(False)
-        main_layout.addWidget(string, 4, 0, 1, 1)
-
-        self.global_animation_icon = QtWidgets.QLabel()
-        self.global_animation_icon.setPixmap(grab_icon(0))
-        main_layout.addWidget(self.global_animation_icon, 4, 1, 1, 1, alignment = QtCore.Qt.AlignmentFlag.AlignRight)
+        main_layout.setColumnStretch(1, 5)
+        main_layout.setColumnStretch(2, 2)
 
         self.setCentralWidget(main)
         self.set_theme(update = False)
@@ -774,9 +782,10 @@ class MainWindow(QtWidgets.QMainWindow):
             save_gos = self.animation_timer_going
             save_goc = self.color_timer_going
             save_tab = self.timeline_tabs.currentIndex()
-            save_tmr = self.obj_data.get_timers(animation_timer = True, color_timer = True)
             save_sps = self.sprite_part_set_list_box.currentIndex()
             save_sph = self.sprite_part_list_box.currentIndex()
+            if self.obj_data is not None:
+                save_tmr = self.obj_data.get_timers(animation_timer = True, color_timer = True)
 
             self.init_ui()
 
@@ -786,9 +795,10 @@ class MainWindow(QtWidgets.QMainWindow):
             self.animation_timer_going = save_gos
             self.color_timer_going = save_goc
             self.timeline_tabs.setCurrentIndex(save_tab)
-            self.obj_data.set_timers(save_tmr, animation_timer = True, color_timer = True)
             self.sprite_part_set_list_box.setCurrentIndex(save_sps)
             self.sprite_part_list_box.setCurrentIndex(save_sph)
+            if self.obj_data is not None:
+                self.obj_data.set_timers(save_tmr, animation_timer = True, color_timer = True)
     
     def set_framerate(self, framerate, reset_ui = True):
         self.settings["framerate"] = framerate
