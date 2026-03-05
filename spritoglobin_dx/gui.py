@@ -277,8 +277,11 @@ class InteractiveGraphicsWindow(QtWidgets.QLabel):
         
         if self.img_data is not None:
             obj_canvas = render_object_scene(
-                size = self.size,
-                data = self.img_data,
+                canvas_size        = self.size,
+                global_translation = (float(offset[0] / self.scale), float(offset[1] / self.scale), 0),
+                global_rotation    = (0, 0, 0),
+                global_scale       = (float(self.scale),) * 3,
+                img_data           = self.img_data,
             )
         
         for bounding_box in self.bounding_boxes:

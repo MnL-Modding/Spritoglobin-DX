@@ -202,6 +202,8 @@ def get_sprite_part_set_graphic(obj_anim_data, graph_file, first_part, total_par
         h = tile_size[1]
 
         if separate:
+            if matrix is None:
+                matrix = [1, 0, 0, 0, 1, 0]
             sprite_part_list.append([tile.flatten(), (w, h), (part_data.x_offset, part_data.y_offset), matrix])
             continue
 
