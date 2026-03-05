@@ -197,16 +197,39 @@ class ObjFile:
         }
     
     def get_sprite(self, object_name, animation_index, color_anim_index = None, frame_index = None):
-        img, size, _ = self.get_sprite_with_offset(
+        img, size, _ = self._get_sprite_data(
             object_name      = object_name,
             animation_index  = animation_index,
             color_anim_index = color_anim_index,
-            frame_index      = frame_index
+            frame_index      = frame_index,
+            separate         = False,
         )
 
         return img, size
     
     def get_sprite_with_offset(self, object_name, animation_index, color_anim_index = None, frame_index = None):
+        img, size, offset = self._get_sprite_data(
+            object_name      = object_name,
+            animation_index  = animation_index,
+            color_anim_index = color_anim_index,
+            frame_index      = frame_index,
+            separate         = False,
+        )
+
+        return img, size, offset
+    
+    def get_sprite_part_entities(self, object_name, animation_index, color_anim_index = None, frame_index = None):
+        data = self._get_sprite_data(
+            object_name      = object_name,
+            animation_index  = animation_index,
+            color_anim_index = color_anim_index,
+            frame_index      = frame_index,
+            separate         = True,
+        )
+
+        return data
+    
+    def _get_sprite_data(self, object_name, animation_index, color_anim_index = None, frame_index = None, separate = False):
         self.cache_object(object_name)
         
         obj_anim_data = self.cached_object.obj_anim_data
@@ -241,6 +264,7 @@ class ObjFile:
             current_time_anim   = animation_timer,
             current_time_color  = color_timer,
             color_data          = color_data,
+            separate            = separate,
         )
     
     def get_sprite_part_set_with_offset(self, object_name, first_part, total_parts, highlighted_part = None):

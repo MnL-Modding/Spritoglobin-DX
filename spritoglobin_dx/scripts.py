@@ -18,7 +18,7 @@ SWIZZLE_TABLE = numpy.array([
 SIZING_TABLE = [[(8, 8), (16, 16), (32, 32), (64, 64)], [(16, 8), (32, 8), (32, 16), (64, 32)], [(8, 16), (8, 32), (16, 32), (32, 64)]]
 
 
-def get_sprite_graphic(obj_anim_data, graph_file, current_anim_index, color_anim_index, current_frame_index, current_time_anim, current_time_color, color_data):
+def get_sprite_graphic(obj_anim_data, graph_file, current_anim_index, color_anim_index, current_frame_index, current_time_anim, current_time_color, color_data, separate = False):
     anim_data = obj_anim_data.get_anim_data(current_anim_index)
     frame_data = obj_anim_data.get_frame_data(anim_data.first_frame + current_frame_index)
 
@@ -71,11 +71,12 @@ def get_sprite_graphic(obj_anim_data, graph_file, current_anim_index, color_anim
         else:
             full_bounding_box = min_x, max_x, min_y, max_y
     
-    img, (graph_w, graph_h), (offset_x, offset_y) = get_sprite_part_set_graphic(
+    data = get_sprite_part_set_graphic(
         obj_anim_data          = obj_anim_data,
         graph_file             = graph_file,
         first_part             = frame_data.first_part,
         total_parts            = frame_data.total_parts,
+        separate               = separate,
         matrix                 = matrix,
         given_bounding_box     = full_bounding_box,
         color_data             = color_data,
@@ -84,6 +85,12 @@ def get_sprite_graphic(obj_anim_data, graph_file, current_anim_index, color_anim
         current_time_anim      = current_time_anim,
         current_time_color     = current_time_color,
     )
+
+    if separate:
+        return data
+    else:
+        img, (graph_w, graph_h), (offset_x, offset_y) = data
+
     if img is None: return None, (0, 0), (0, 0)
     img = numpy.array(bytearray(img)).reshape(graph_h, graph_w, 4)
 
@@ -136,7 +143,7 @@ def get_sprite_part_set_bounding_box(obj_anim_data, first_part, total_parts, giv
     
     return min_x, max_x, min_y, max_y
 
-def get_sprite_part_set_graphic(obj_anim_data, graph_file, first_part, total_parts, matrix = None, given_bounding_box = None, color_data = None, current_anim_index = None, color_anim_index = None, current_time_anim = None, current_time_color = None, highlighted_part = None):
+def get_sprite_part_set_graphic(obj_anim_data, graph_file, first_part, total_parts, separate = False, matrix = None, given_bounding_box = None, color_data = None, current_anim_index = None, color_anim_index = None, current_time_anim = None, current_time_color = None, highlighted_part = None):
     min_x, max_x, min_y, max_y = get_sprite_part_set_bounding_box(
         obj_anim_data      = obj_anim_data,
         first_part         = first_part,
@@ -146,13 +153,14 @@ def get_sprite_part_set_graphic(obj_anim_data, graph_file, first_part, total_par
 
     graph_w, graph_h = max_x - min_x, max_y - min_y
 
-    if graph_w < 1 or graph_h < 1:
+    if (graph_w < 1 or graph_h < 1) and not separate:
         return None, (0, 0), (0, 0)
     
     img = numpy.zeros((graph_h, graph_w, 4), dtype=numpy.uint8)
 
     offset_x, offset_y, = -min_x, max_y
 
+    sprite_part_list = []
     for i in reversed(range(total_parts)):
         part_data = obj_anim_data.get_part_data(first_part + i)
 
@@ -193,6 +201,10 @@ def get_sprite_part_set_graphic(obj_anim_data, graph_file, first_part, total_par
         w = tile_size[0]
         h = tile_size[1]
 
+        if separate:
+            sprite_part_list.append([tile.flatten(), (w, h), (part_data.x_offset, part_data.y_offset), matrix])
+            continue
+
         target_area = img[y:y+h, x:x+w].astype(numpy.float32)
         tile = tile.astype(numpy.float32)
 
@@ -210,6 +222,9 @@ def get_sprite_part_set_graphic(obj_anim_data, graph_file, first_part, total_par
         
         img[y:y+h, x:x+w, :3] = numpy.clip(rgb, 0, 255).astype(numpy.uint8)
         img[y:y+h, x:x+w, 3] = numpy.clip(alpha * 255, 0, 255).astype(numpy.uint8).reshape(tile_size[1], tile_size[0])
+
+    if separate:
+        return sprite_part_list
         
     if matrix is not None:
         # this is the new method of preventing edges from looking bad
