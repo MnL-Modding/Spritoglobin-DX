@@ -1,7 +1,7 @@
 # Spritoglobin DX
 Spritoglobin DX is a sprite viewer for Mario and Luigi: Bowser's Inside Story + Bowser Jr.'s Journey, as well as a growing list of other Mario & Luigi titles.
 
-![Screenshot of Spritoglobin DX](docs/screenshot.png)
+![Screenshot of Spritoglobin DX v0.1.0 prerelease](docs/0.1.0pre.png)
 
 # Credits
 [ThePurpleAnon](https://bsky.app/profile/thepurpleanon.bsky.social) ![Bluesky](spritoglobin_dx/files/img_soc_bsky.png) - Python Code, UI Design, and Program Sounds
