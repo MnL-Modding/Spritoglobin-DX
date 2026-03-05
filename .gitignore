@@ -178,3 +178,4 @@ poetry.toml
 
 *.nds
 /gif exports/
+test*.dat

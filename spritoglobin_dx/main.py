@@ -809,6 +809,12 @@ class MainWindow(QtWidgets.QMainWindow):
 
         self.settings["framerate"] = framerate
 
+        try:
+            framerate = [60, 30][self.settings["framerate"]]
+            self.animation_timer.setInterval(round(1000 / framerate))
+        except AttributeError:
+            pass
+
         self.write_config()
     
     def toggle_mute(self, muted):
