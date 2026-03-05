@@ -405,7 +405,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
         self.sprite_viewer = InteractiveGraphicsWindow(
             font = mono_font,
-            size = [513, 513],
+            size = [512, 512],
             default_scale = 2,
             default_offset = [0.0, 0.0],
             min_scale = 0.5,
@@ -413,8 +413,8 @@ class MainWindow(QtWidgets.QMainWindow):
             grid_size = 32,
         )
         self.sprite_viewer.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
-        self.sprite_viewer.setMinimumWidth(513)
-        self.sprite_viewer.setMinimumHeight(513)
+        self.sprite_viewer.setMinimumWidth(512)
+        self.sprite_viewer.setMinimumHeight(512)
 
         self.sprite_anim_timeline = GraphicsAnimationTimeline(
             font             = mono_font,
@@ -534,7 +534,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
         self.sprite_part_viewer = InteractiveGraphicsWindow(
             font = mono_font,
-            size = [255, 255],
+            size = [256, 256],
             default_scale = 1,
             default_offset = [0.0, 0.0],
             min_scale = 0.5,
@@ -542,8 +542,8 @@ class MainWindow(QtWidgets.QMainWindow):
             grid_size = 32,
         )
         self.sprite_part_viewer.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
-        self.sprite_part_viewer.setMinimumWidth(255)
-        self.sprite_part_viewer.setMinimumHeight(255)
+        self.sprite_part_viewer.setMinimumWidth(256)
+        self.sprite_part_viewer.setMinimumHeight(256)
         sprite_part_info_layout.addWidget(self.sprite_part_viewer, 2, 0, 1, -1)
 
         self.sprite_part_list_box = QtWidgets.QComboBox()

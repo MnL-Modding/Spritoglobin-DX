@@ -7,6 +7,7 @@ from PySide6 import QtWidgets, QtGui
 from spritoglobin_dx.classes import ObjFile, InvalidObjectFileError
 from spritoglobin_dx.constants import *
 from spritoglobin_dx.gui import InteractiveGraphicsWindow
+from spritoglobin_dx.render import render_object_scene
 
 
 def grab_icon(index): # TODO: GET RID OF THIS THING, THIS IS ONLY TEMPORARY
@@ -288,7 +289,7 @@ class GifExportWindow(QtWidgets.QDialog):
 
         self.gif_preview = InteractiveGraphicsWindow(
             font = mono_font,
-            size = [513, 513],
+            size = [514, 514],
             default_scale = 2,
             default_offset = [0.0, 0.0],
             min_scale = 0.5,
@@ -296,8 +297,8 @@ class GifExportWindow(QtWidgets.QDialog):
             grid_size = 32,
         )
         self.gif_preview.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
-        self.gif_preview.setMinimumWidth(513)
-        self.gif_preview.setMinimumHeight(513)
+        self.gif_preview.setMinimumWidth(514)
+        self.gif_preview.setMinimumHeight(514)
         self.gif_preview.background_color = QtCore.Qt.transparent
 
         self.gif_timer_text = QtWidgets.QLabel(f"{0:3} / {0:3}")

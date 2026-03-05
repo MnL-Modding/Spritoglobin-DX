@@ -2,6 +2,7 @@ import numpy
 from PySide6 import QtWidgets, QtGui
 
 from spritoglobin_dx.constants import *
+from spritoglobin_dx.render import render_object_scene
 from spritoglobin_dx.scripts import create_transform_demo
 
 
@@ -232,7 +233,11 @@ class InteractiveGraphicsWindow(QtWidgets.QLabel):
                     qp.setPen(QtGui.QPen(QtGui.QColor(THEME_COLORS["GRAY_M"]), 1))
                 else:
                     qp.setPen(QtGui.QPen(QtGui.QColor(THEME_COLORS["GRAY_L"]), 1))
-                line_offset = offset[1] + self.center[1] + (i * grid_step) - offset_correction
+                
+                if  i >= 0: off_center_offset = 0
+                elif i < 0: off_center_offset = -1
+
+                line_offset = offset[1] + self.center[1] + (i * grid_step) - offset_correction + off_center_offset
                 qp.drawLine(0, line_offset, self.width(), line_offset)
 
             for i in range(-((self.center[0] + offset[0]) // grid_step) - 1, ((self.center[0] - offset[0]) // grid_step) + 1):
@@ -242,7 +247,11 @@ class InteractiveGraphicsWindow(QtWidgets.QLabel):
                     qp.setPen(QtGui.QPen(QtGui.QColor(THEME_COLORS["GRAY_M"]), 1))
                 else:
                     qp.setPen(QtGui.QPen(QtGui.QColor(THEME_COLORS["GRAY_L"]), 1))
-                line_offset = offset[0] + self.center[0] + (i * grid_step) - offset_correction
+                
+                if  i >= 0: off_center_offset = 0
+                elif i < 0: off_center_offset = -1
+
+                line_offset = offset[0] + self.center[0] + (i * grid_step) - offset_correction + off_center_offset
                 qp.drawLine(line_offset, 0, line_offset, self.height())
 
             qp.setPen(QtGui.QPen(QtGui.QColor(THEME_COLORS["M_COLOR_0"]), pen_width))
@@ -267,8 +276,10 @@ class InteractiveGraphicsWindow(QtWidgets.QLabel):
             qp.drawImage(img_x, img_y, img)
         
         if self.img_data is not None:
-            for parts_list, translation, rotation, scale in self.img_data:
-                pass # TODO
+            obj_canvas = render_object_scene(
+                size = self.size,
+                data = self.img_data,
+            )
         
         for bounding_box in self.bounding_boxes:
             x_pos = offset[0] + (( bounding_box[0] + center_offset) * self.scale) + self.center[0]
