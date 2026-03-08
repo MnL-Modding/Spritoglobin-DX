@@ -3,7 +3,7 @@ from PySide6 import QtWidgets, QtGui
 
 from spritoglobin_dx.constants import *
 from spritoglobin_dx.render import SpriteRenderer
-from spritoglobin_dx.scripts import create_transform_demo
+from spritoglobin_dx.graphics import create_transform_demo
 
 
 def grab_icon(index): # TODO: GET RID OF THIS THING, THIS IS ONLY TEMPORARY
@@ -146,7 +146,7 @@ class InteractiveGraphicsWindow(QtWidgets.QLabel):
     def mousePressEvent(self, event):
         if self.disable_controls: return
 
-        if (event.buttons() & QtCore.Qt.LeftButton) or ((event.buttons() & QtCore.Qt.LeftButton != 0) and self.renderer is not None):
+        if (event.buttons() & QtCore.Qt.LeftButton) or ((event.buttons() & QtCore.Qt.RightButton != 0) and self.renderer is not None):
             self.dragging = True
             self.setCursor(QtCore.Qt.ClosedHandCursor)
             pos = event.pos()
@@ -164,8 +164,8 @@ class InteractiveGraphicsWindow(QtWidgets.QLabel):
                 self.update_image()
             elif (event.buttons() & QtCore.Qt.RightButton != 0) and self.renderer is not None:
                 pos = event.pos()
-                #self.rotation[1] += pos.x() - self.mouse_last_pos[0]
-                #self.rotation[0] += pos.y() - self.mouse_last_pos[1]
+                #self.rotation[1] += (pos.x() - self.mouse_last_pos[0]) / 2
+                #self.rotation[0] += (pos.y() - self.mouse_last_pos[1]) / 2
                 self.mouse_last_pos = [pos.x(), pos.y()]
                 self.update_image()
     

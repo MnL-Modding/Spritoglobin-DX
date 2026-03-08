@@ -11,10 +11,6 @@ class SpriteRenderer:
         
         self.context = moderngl.create_context(standalone=True)
         self.context.enable(moderngl.BLEND)
-        self.context.blend_func = (
-            moderngl.SRC_ALPHA, moderngl.ONE_MINUS_SRC_ALPHA, # rgb
-            moderngl.ONE, moderngl.ONE_MINUS_SRC_ALPHA        # a
-        )
 
         self.resize(canvas_size)
         
@@ -37,6 +33,7 @@ class SpriteRenderer:
                 out vec4 f_color;
                 void main() {
                     f_color = texture(u_texture, v_texcoord);
+                    if (f_color.a <= 0.0) discard;
                 }
             """
         )
@@ -78,13 +75,13 @@ class SpriteRenderer:
             color_attachments=[self.context.texture(self.canvas_size, 4)],
             depth_attachment=self.context.depth_renderbuffer(self.canvas_size),
         )
-        
+
         self.projection = self.get_projection_matrix()
 
 
     def render_object_scene(self, global_translation, global_rotation, global_scale, img_data):
         self.framebuffer.use()
-        self.framebuffer.clear(0, 0, 0, 0)
+        self.framebuffer.clear()
 
         g_s = self.get_scale_matrix(*global_scale)
         g_t = self.get_translation_matrix(*global_translation)
@@ -92,42 +89,47 @@ class SpriteRenderer:
 
         global_matrix = g_s @ g_t @ g_r
 
-        for parts_list, translation, rotation, scale in img_data:
-            l_s = self.get_scale_matrix(*scale)
-            l_t = self.get_translation_matrix(*translation)
-            l_r = self.get_rotation_matrix(*rotation)
+        for real_draw in [False, True]:
 
-            local_matrix = l_s @ l_t @ l_r
+            if not real_draw: self.context.blend_func = (moderngl.ONE, moderngl.ZERO, moderngl.ONE, moderngl.ZERO)
+            else:             self.context.blend_func = (moderngl.SRC_ALPHA, moderngl.ONE_MINUS_SRC_ALPHA)
 
-            for graphics_buffer, size, offset, base_matrix in parts_list:
-                a, b, x, c, d, y = base_matrix
-                
-                part_sr = numpy.array([
-                    [a * size[0], -b * size[1], 0,  x],
-                    [-c * size[0], d * size[1], 0, -y],
-                    [0, 0, 1,  0],
-                    [0, 0, 0,  1],
-                ], dtype='f4')
+            for parts_list, translation, rotation, scale in img_data:
+                l_s = self.get_scale_matrix(*scale)
+                l_t = self.get_translation_matrix(*translation)
+                l_r = self.get_rotation_matrix(*rotation)
 
-                part_t = numpy.array([
-                    [1, 0, 0, offset[0] / size[0]],
-                    [0, 1, 0, offset[1] / size[1]],
-                    [0, 0, 1, 0],
-                    [0, 0, 0, 1],
-                ], dtype='f4')
+                local_matrix = l_s @ l_t @ l_r
 
-                part_matrix = part_sr @ part_t
+                for graphics_buffer, size, offset, base_matrix in parts_list:
+                    a, b, x, c, d, y = base_matrix
 
-                full_matrix = self.projection @ global_matrix @ local_matrix @ part_matrix
-                
-                tex = self.context.texture(size, 4, graphics_buffer)
-                tex.filter = (moderngl.NEAREST, moderngl.NEAREST)
-                tex.use(0)
-                
-                self.program['u_matrix'].write(full_matrix.T.astype('f4').tobytes())
-                self.vertex_array.render(moderngl.TRIANGLE_STRIP)
-                
-                tex.release()
+                    part_sr = numpy.array([
+                        [a * size[0], -b * size[1], 0,  x],
+                        [-c * size[0], d * size[1], 0, -y],
+                        [0, 0, 1,  0],
+                        [0, 0, 0,  1],
+                    ], dtype='f4')
+
+                    part_t = numpy.array([
+                        [1, 0, 0, offset[0] / size[0]],
+                        [0, 1, 0, offset[1] / size[1]],
+                        [0, 0, 1, 0],
+                        [0, 0, 0, 1],
+                    ], dtype='f4')
+
+                    part_matrix = part_sr @ part_t
+
+                    full_matrix = self.projection @ global_matrix @ local_matrix @ part_matrix
+
+                    tex = self.context.texture(size, 4, graphics_buffer)
+                    tex.filter = (moderngl.NEAREST, moderngl.NEAREST)
+                    tex.use(0)
+
+                    self.program['u_matrix'].write(full_matrix.T.astype('f4').tobytes())
+                    self.vertex_array.render(moderngl.TRIANGLE_STRIP)
+
+                    tex.release()
 
         return self.framebuffer.read(components=4, dtype='f1')
 
