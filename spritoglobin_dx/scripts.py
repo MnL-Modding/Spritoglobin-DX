@@ -184,15 +184,16 @@ def get_sprite_part_set_graphic(obj_anim_data, graph_file, first_part, total_par
             anim_data = obj_anim_data.get_anim_data(current_anim_index)
 
             tile = apply_sprite_color(
-                img                 = tile,
-                obj_anim_data       = obj_anim_data,
-                color_data          = color_data,
-                renderer_data       = renderer_data,
-                current_anim_index  = current_anim_index,
-                global_anim_index   = color_anim_index,
-                current_time_anim   = current_time_anim,
-                current_time_color  = current_time_color,
-                current_anim_length = anim_data.anim_length
+                img                     = tile,
+                obj_anim_data           = obj_anim_data,
+                color_data              = color_data,
+                renderer_data           = renderer_data,
+                default_renderer_colors = obj_anim_data.default_renderer_colors,
+                current_anim_index      = current_anim_index,
+                global_anim_index       = color_anim_index,
+                current_time_anim       = current_time_anim,
+                current_time_color      = current_time_color,
+                current_anim_length     = anim_data.anim_length
             )
 
         x = offset_x - (tile_size[0] // 2) + part_data.x_offset
@@ -378,7 +379,7 @@ def draw_part(part_data, graph_file, obj_anim_data, alpha_divisor = None, ignore
     
     return out, (img_width, img_height)
 
-def apply_sprite_color(img, obj_anim_data, color_data, renderer_data, current_anim_index, global_anim_index, current_time_anim, current_time_color, current_anim_length):
+def apply_sprite_color(img, obj_anim_data, color_data, renderer_data, default_renderer_colors, current_anim_index, global_anim_index, current_time_anim, current_time_color, current_anim_length):
     anim_set = color_data.get_rgba(
         anim_index        = current_anim_index,
         global_anim_index = global_anim_index,
@@ -392,17 +393,15 @@ def apply_sprite_color(img, obj_anim_data, color_data, renderer_data, current_an
         [  0,   0,   0, 255], # light
     ]
 
-    anim_set.append([[0, 0, 0, 0], renderer_data.default_envelope])
-
+    renderer_colors = default_renderer_colors
     for color_mod, renderer_channel in anim_set:
+        renderer_colors[renderer_channel] = color_mod
+
+    for i, (pass_dict, color_mod_index) in enumerate(renderer_data.pass_list):
+        color_mod = renderer_colors.get(color_mod_index, [0xFF, 0xFF, 0xFF, 0xFF])
         img_split = cv2.split(img)
         img_split_out = []
         for channel in range(4):
-            pass_dict = None
-
-            if renderer_channel in renderer_data.listening_channels:
-                pass_dict = renderer_data.pass_list[renderer_data.listening_channels.index(renderer_channel)]
-
             channel_key = ["rgb", "rgb", "rgb", "alpha"][channel]
 
             if color_mod[channel] is None or pass_dict is None:
@@ -420,7 +419,7 @@ def apply_sprite_color(img, obj_anim_data, color_data, renderer_data, current_an
                 if current_source == 0xF:
                     current_source = last_source
                 
-                last_source = current_source
+                # last_source = current_source
                 
                 match current_source: # TODO: add the rest of these
                     case 0x1:
@@ -483,6 +482,9 @@ def apply_sprite_color(img, obj_anim_data, color_data, renderer_data, current_an
             img_split_out.append(numpy.array(img_channel).clip(0, 255).astype(numpy.uint8))
 
         img = cv2.merge(img_split_out)
+
+        if color_mod_index == -1:
+            break
     
     return img
 

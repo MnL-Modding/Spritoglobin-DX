@@ -7,7 +7,6 @@ from PySide6 import QtWidgets, QtGui
 from spritoglobin_dx.classes import ObjFile, InvalidObjectFileError
 from spritoglobin_dx.constants import *
 from spritoglobin_dx.gui import InteractiveGraphicsWindow
-from spritoglobin_dx.render import render_object_scene
 
 
 def grab_icon(index): # TODO: GET RID OF THIS THING, THIS IS ONLY TEMPORARY

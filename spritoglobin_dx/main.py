@@ -411,6 +411,7 @@ class MainWindow(QtWidgets.QMainWindow):
             min_scale = 0.5,
             max_scale = 16.0,
             grid_size = 32,
+            three_dimensional = True,
         )
         self.sprite_viewer.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
         self.sprite_viewer.setMinimumWidth(512)

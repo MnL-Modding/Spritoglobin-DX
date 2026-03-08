@@ -478,7 +478,7 @@ class ObjFile:
             except Exception:
                 return data
 
-    class AnimData: # TODO: unknowns here
+    class AnimData:
         def __init__(self, input_data, game_id, test = False):
             self.input_data = BytesIO(input_data)
             # with open("test.dat", "wb") as test:
@@ -530,8 +530,9 @@ class ObjFile:
             if unused != 0 and not test: print(f"THE 'unused' VALUE IN CLASS ObjFile.AnimData IS USED ACTUALLY: unused = {unused}")
             if trans_offset - unused_offset_0 != 0 and not test: print(f"THE 'unused_offset_0' VALUE IN CLASS ObjFile.AnimData IS USED ACTUALLY: unused_offset_0 size = {trans_offset - unused_offset_0}")
     
-            # buncha unknowns here
-            self.input_data.seek(0x40, 1)
+            self.default_renderer_colors = {}
+            for i in range(16):
+                self.default_renderer_colors[i] = struct.unpack('4B', self.input_data.read(4)) 
 
             self.color_mode = [ # key, bits-per-pixel
                 ["RGBA8888", 32],
@@ -597,7 +598,8 @@ class ObjFile:
             def __init__(self, input_data, game_id):
                 input_data = BytesIO(input_data)
 
-                pass_list_num, self.default_envelope, unused = struct.unpack('<BbH', input_data.read(4))
+                # TODO: unknown
+                pass_list_num, unk, unused = struct.unpack('<BbH', input_data.read(4))
 
                 self.pass_list = []
                 for i in range(pass_list_num):
@@ -621,11 +623,13 @@ class ObjFile:
                     pass_dict["rgb_combine_mode"]   = (combine_modes >>  0) & 0xF
                     pass_dict["alpha_combine_mode"] = (combine_modes >> 16) & 0xF
 
-                    self.pass_list.append(pass_dict)
+                    self.pass_list.append([pass_dict])
 
                 input_data.seek(12 * (6 - pass_list_num), 1)
 
-                self.listening_channels = struct.unpack(f'<{pass_list_num}b', input_data.read(pass_list_num))
+                for i in range(pass_list_num):
+                    channel = struct.unpack(f'b', input_data.read(1))[0]
+                    self.pass_list[i].append(channel)
 
                 if unused != 0: print(f"THE 'unused' VALUE IN CLASS ObjFile.AnimData.Renderer IS USED ACTUALLY: unused = {unused}")
     

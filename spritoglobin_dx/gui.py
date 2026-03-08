@@ -2,7 +2,7 @@ import numpy
 from PySide6 import QtWidgets, QtGui
 
 from spritoglobin_dx.constants import *
-from spritoglobin_dx.render import render_object_scene
+from spritoglobin_dx.render import SpriteRenderer
 from spritoglobin_dx.scripts import create_transform_demo
 
 
@@ -73,7 +73,7 @@ class ItemDelegate(QtWidgets.QStyledItemDelegate):
 class InteractiveGraphicsWindow(QtWidgets.QLabel):
     background_color = QtCore.Qt.GlobalColor.black
 
-    def __init__(self, font, size, default_scale, default_offset, min_scale, max_scale, grid_size, disable_controls = False, even_center = False):
+    def __init__(self, font, size, default_scale, default_offset, min_scale, max_scale, grid_size, disable_controls = False, even_center = False, three_dimensional = False):
         super().__init__()
         self.disable_controls = disable_controls
         self.even_center = even_center
@@ -127,6 +127,11 @@ class InteractiveGraphicsWindow(QtWidgets.QLabel):
         self.grid_size = grid_size
         self.bounding_boxes = []
 
+        if three_dimensional:
+            self.renderer = SpriteRenderer(self.size)
+        else:
+            self.renderer = None
+
         self.img = None
         self.img_data = None
         self.reset_view()
@@ -134,11 +139,14 @@ class InteractiveGraphicsWindow(QtWidgets.QLabel):
     def resizeEvent(self, event):
         size = event.size()
         self.resize([size.width(), size.height()])
+        if self.renderer is not None:
+            self.renderer.resize([size.width(), size.height()])
+        self.update_image()
     
     def mousePressEvent(self, event):
         if self.disable_controls: return
 
-        if event.buttons() & QtCore.Qt.LeftButton:
+        if (event.buttons() & QtCore.Qt.LeftButton) or ((event.buttons() & QtCore.Qt.LeftButton != 0) and self.renderer is not None):
             self.dragging = True
             self.setCursor(QtCore.Qt.ClosedHandCursor)
             pos = event.pos()
@@ -152,6 +160,12 @@ class InteractiveGraphicsWindow(QtWidgets.QLabel):
                 pos = event.pos()
                 self.offset[0] += pos.x() - self.mouse_last_pos[0]
                 self.offset[1] += pos.y() - self.mouse_last_pos[1]
+                self.mouse_last_pos = [pos.x(), pos.y()]
+                self.update_image()
+            elif (event.buttons() & QtCore.Qt.RightButton != 0) and self.renderer is not None:
+                pos = event.pos()
+                #self.rotation[1] += pos.x() - self.mouse_last_pos[0]
+                #self.rotation[0] += pos.y() - self.mouse_last_pos[1]
                 self.mouse_last_pos = [pos.x(), pos.y()]
                 self.update_image()
     
@@ -205,6 +219,7 @@ class InteractiveGraphicsWindow(QtWidgets.QLabel):
     
     def reset_view(self):
         self.offset = list(self.default_offset)
+        self.rotation = [0, 0]
         self.scale = self.default_scale
         self.update_image()
     
@@ -275,14 +290,27 @@ class InteractiveGraphicsWindow(QtWidgets.QLabel):
             qp.setCompositionMode(QtGui.QPainter.CompositionMode.CompositionMode_SourceOver)
             qp.drawImage(img_x, img_y, img)
         
-        if self.img_data is not None:
-            obj_canvas = render_object_scene(
-                canvas_size        = self.size,
-                global_translation = (float(offset[0] / self.scale), float(offset[1] / self.scale), 0),
-                global_rotation    = (0, 0, 0),
-                global_scale       = (float(self.scale),) * 3,
-                img_data           = self.img_data,
+        if self.img_data is not None and self.renderer is not None:
+            buffer = self.renderer.render_object_scene(
+                global_translation = (
+                    float(( offset[0] + self.center[0]) / self.scale),
+                    float((-offset[1] + self.center[1]) / self.scale),
+                    -0.5),
+                global_rotation = (
+                    self.rotation[0],
+                    self.rotation[1],
+                    0),
+                global_scale = (
+                    float(self.scale),
+                    float(self.scale),
+                    1),
+                img_data = self.img_data,
             )
+
+            img = QtGui.QImage(buffer, *self.renderer.canvas_size, QtGui.QImage.Format_RGBA8888)
+
+            qp.setCompositionMode(QtGui.QPainter.CompositionMode.CompositionMode_SourceOver)
+            qp.drawImage(0, 0, img)
         
         for bounding_box in self.bounding_boxes:
             x_pos = offset[0] + (( bounding_box[0] + center_offset) * self.scale) + self.center[0]
