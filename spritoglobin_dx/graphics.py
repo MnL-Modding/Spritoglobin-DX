@@ -448,6 +448,9 @@ def apply_sprite_color(img, obj_anim_data, color_data, renderer_data, default_re
                         print(f"utilizes unimplemented operand {pass_dict[f"{channel_key}_operand_{i}"]}")
 
                 for j in range(4):
+                    if sources[i][j] is None:
+                        continue
+
                     if isinstance(sources[i][j], int):
                         sources[i][j] = numpy.full(len(img_split[channel].flatten()), sources[i][j]).reshape(img_split[channel].shape)
                 
@@ -466,14 +469,14 @@ def apply_sprite_color(img, obj_anim_data, color_data, renderer_data, default_re
                         x1 = (sources[0][i] * 2) - 1
                         x2 = (sources[1][i] * 2) - 1
                         img_channel += x1 * x2
-                    numpy.clip(img_channel, 0.0, 1.0)
+                    img_channel = numpy.clip(img_channel, 0.0, 1.0)
                 case 0x7: # dot3 rgba
                     img_channel = sources[0][0] * 0
                     for i in range(4):
                         x1 = (sources[0][i] * 2) - 1
                         x2 = (sources[1][i] * 2) - 1
                         img_channel += x1 * x2
-                    numpy.clip(img_channel, 0.0, 1.0)
+                    img_channel = numpy.clip(img_channel, 0.0, 1.0)
                 case 0x8: # multiply then add
                     img_channel = sources[0][channel] * sources[1][channel]
                     img_channel = img_channel         + sources[2][channel]
