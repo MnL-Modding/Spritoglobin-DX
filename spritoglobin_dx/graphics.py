@@ -464,19 +464,15 @@ def apply_sprite_color(img, obj_anim_data, color_data, renderer_data, default_re
                 case 0x2: # add
                     img_channel = sources[0][channel] + sources[1][channel]
                 case 0x6: # dot3 rgb
-                    img_channel = sources[0][0] * 0
-                    for i in range(3):
-                        x1 = (sources[0][i] * 2) - 1
-                        x2 = (sources[1][i] * 2) - 1
-                        img_channel += x1 * x2
-                    img_channel = numpy.clip(img_channel, 0.0, 1.0)
+                    source0 = (numpy.array(sources[0][:3]) * 2.0) - 1.0
+                    source1 = (numpy.array(sources[1][:3]) * 2.0) - 1.0
+                    img_channel = numpy.sum(source0 * source1, axis=0)
+                    numpy.clip(img_channel, 0.0, 1.0, out = img_channel)
                 case 0x7: # dot3 rgba
-                    img_channel = sources[0][0] * 0
-                    for i in range(4):
-                        x1 = (sources[0][i] * 2) - 1
-                        x2 = (sources[1][i] * 2) - 1
-                        img_channel += x1 * x2
-                    img_channel = numpy.clip(img_channel, 0.0, 1.0)
+                    source0 = (numpy.array(sources[0]) * 2.0) - 1.0
+                    source1 = (numpy.array(sources[1]) * 2.0) - 1.0
+                    img_channel = numpy.sum(source0 * source1, axis=0)
+                    numpy.clip(img_channel, 0.0, 1.0, out = img_channel)
                 case 0x8: # multiply then add
                     img_channel = sources[0][channel] * sources[1][channel]
                     img_channel = img_channel         + sources[2][channel]
