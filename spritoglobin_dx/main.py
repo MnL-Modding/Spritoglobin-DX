@@ -585,12 +585,35 @@ class MainWindow(QtWidgets.QMainWindow):
         line.setFrameShadow(QtWidgets.QFrame.Sunken)
         sprite_part_info_layout.addWidget(line, 7, 0, 1, 2)
 
-        self.sprite_part_renderer_info_text = QtWidgets.QLabel()
-        sprite_part_info_layout.addWidget(self.sprite_part_renderer_info_text, 8, 0, 1, 2, alignment = QtCore.Qt.AlignmentFlag.AlignCenter)
+        # string = QtWidgets.QLabel("global palette")
+        # string.setEnabled(False)
+        # sprite_part_info_layout.addWidget(string, 8, 0, 1, 2, alignment = QtCore.Qt.AlignmentFlag.AlignCenter)
 
-        string = QtWidgets.QLabel("Renderer/Lighting Data Display NYI")
+        global_palette = QtWidgets.QWidget()
+        global_palette_layout = QtWidgets.QGridLayout(global_palette)
+        global_palette_layout.setContentsMargins(0, 0, 0, 0)
+        self.global_palette_labels = []
+        palette_row_width = 8
+        palette_total = 16
+        for i in range(palette_total):
+            palette_label = QtWidgets.QLabel()
+            palette_label.setSizePolicy(QtWidgets.QSizePolicy.Ignored, palette_label.sizePolicy().verticalPolicy())
+            global_palette_layout.addWidget(palette_label, i // palette_row_width, i % palette_row_width)
+            self.global_palette_labels.append(palette_label)
+
+        # only one of them needs to be given this
+        self.global_palette_size = 1
+        self.global_palette_line_thickness = 1
+        self.global_palette_labels[palette_total - 1].resizeEvent = self.resize_global_palette
+
+        sprite_part_info_layout.addWidget(global_palette, 9, 0, 1, 2)
+
+        self.sprite_part_renderer_info_text = QtWidgets.QLabel()
+        sprite_part_info_layout.addWidget(self.sprite_part_renderer_info_text, 10, 0, 1, 2, alignment = QtCore.Qt.AlignmentFlag.AlignCenter)
+
+        string = QtWidgets.QLabel("Lighting Data Display NYI")
         string.setEnabled(False)
-        sprite_part_info_layout.addWidget(string, 9, 0, 1, 2, alignment = QtCore.Qt.AlignmentFlag.AlignCenter)
+        sprite_part_info_layout.addWidget(string, 11, 0, 1, 2, alignment = QtCore.Qt.AlignmentFlag.AlignCenter)
 
         try:
             dist = importlib.metadata.distribution(APP_NAME)
@@ -602,7 +625,7 @@ class MainWindow(QtWidgets.QMainWindow):
         version_number.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
         version_number.setAlignment(QtCore.Qt.AlignmentFlag.AlignBottom | QtCore.Qt.AlignmentFlag.AlignRight)
         version_number.setEnabled(False)
-        sprite_part_info_layout.addWidget(version_number, 10, 0, 1, -1)
+        sprite_part_info_layout.addWidget(version_number, 12, 0, 1, -1)
 
         sprite_part_info_layout.setColumnStretch(0, 1)
         sprite_part_info_layout.setColumnStretch(1, 1)
@@ -893,6 +916,7 @@ class MainWindow(QtWidgets.QMainWindow):
             self.sprite_anim_timeline.bounding_box_toggle_string.setVisible(False)
 
             self.change_highlighted_sprite_part()
+            self.change_object()
 
         self.anim_list_box.setCurrentRow(0)
 
@@ -1141,6 +1165,7 @@ class MainWindow(QtWidgets.QMainWindow):
             self.sprite_color_anim_timeline.set_time(0)
             self.global_color_anim_timeline.send_color_data()
             self.global_color_anim_timeline.set_time(0)
+            self.update_global_palette()
             return
         
         object_properties = self.obj_data.get_object_properties(object_name = self.obj_list_box.currentText())
@@ -1199,6 +1224,8 @@ class MainWindow(QtWidgets.QMainWindow):
             self.global_color_anim_timeline.set_time(color_timer)
         else:
             self.global_color_anim_timeline.set_time(sprite_timer)
+
+        self.update_global_palette()
 
 
     def change_sprite_parts(self):
@@ -1354,6 +1381,65 @@ class MainWindow(QtWidgets.QMainWindow):
         string += self.tr("SpritePartRendererTitle").format(renderer_index)
 
         self.sprite_part_renderer_info_text.setText(string)
+    
+    def resize_global_palette(self, event = None):
+        if event is None:
+            width = 40
+        else:
+            width = event.size().width()
+
+        self.global_palette_line_thickness = min(2, (width // 40) + 1)
+        self.global_palette_size = ((width - (self.global_palette_line_thickness * 4)) // 2)
+        self.update_renderer_data()
+    
+    def update_global_palette(self):
+        if self.obj_data is not None:
+            object_name = self.obj_list_box.currentText()
+
+            object_properties = self.obj_data.get_object_properties(object_name = object_name)
+
+            color_anim_index = -1
+            if self.color_anim_list_box.currentRow() != 0 and object_properties["has_color_data"] and self.color_anim_list_box.currentItem() is not None:
+                color_anim_index = int(self.color_anim_list_box.currentItem().text())
+
+            palette = self.obj_data.get_object_palette(
+                object_name      = object_name,
+                animation_index  = self.anim_list_box.currentRow(),
+                color_anim_index = color_anim_index,
+            )
+        else:
+            palette = [[0xFF, 0xFF, 0xFF, 0xFF], [0x00, 0x00, 0x00, 0xFF]] * 8
+        
+        self.global_palette_data = palette
+        self.update_renderer_data()
+
+    def update_renderer_data(self):
+        size = self.global_palette_size
+        for i, label in enumerate(self.global_palette_labels):
+            r, g, b, a = self.global_palette_data[i]
+
+            thickness = self.global_palette_line_thickness
+            color_label = QtGui.QPixmap((size * 2) + (thickness * 4), size + (thickness * 4))
+            color_label.fill(QtGui.QColor(r, g, b))
+            qp = QtGui.QPainter(color_label)
+
+            qp.fillRect(color_label.width() // 2, 0, color_label.width() // 2, color_label.height(), QtGui.QBrush(QtGui.QColor(a, a, a)))
+
+            pen = QtGui.QPen()
+            pen.setWidth(thickness)
+            pen.setJoinStyle(QtCore.Qt.MiterJoin)
+            qp.setPen(pen)
+
+            pen.setColor(QtGui.QColor(THEME_COLORS["P_COLOR_0"]))
+            qp.setPen(pen)
+            qp.drawRect(thickness // 2, thickness // 2, (size * 2) + ((thickness * 4) - thickness), size + ((thickness * 4) - thickness))
+
+            pen.setColor(QtGui.QColor(THEME_COLORS["WHITE"]))
+            qp.setPen(pen)
+            qp.drawRect(thickness + (thickness // 2), thickness + (thickness // 2), (size * 2) + ((thickness * 4) - (thickness * 3)), size + ((thickness * 4) - (thickness * 3)))
+
+            qp.end()
+            label.setPixmap(color_label)
 
 
     def tick_timer(self):

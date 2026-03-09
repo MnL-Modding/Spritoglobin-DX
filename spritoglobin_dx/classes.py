@@ -1,3 +1,4 @@
+import copy
 import struct
 from io import BytesIO
 
@@ -92,6 +93,36 @@ class ObjFile:
         return {
             "game_id": self.game_id,
         }
+    
+    def get_object_palette(self, object_name, animation_index, color_anim_index = None):
+        self.cache_object(object_name)
+
+        obj_data = self.cached_object.obj_anim_data
+        color_data = self.cached_object.color_data
+        anim_data = obj_data.get_anim_data(animation_index)
+
+        try:
+            animation_timer = self.animation_timer
+            color_timer = self.color_timer
+        except AttributeError:
+            animation_timer = 0
+            color_timer = 0
+
+        anim_set = color_data.get_rgba(
+            anim_index        = animation_index,
+            global_anim_index = color_anim_index,
+            time_anim         = animation_timer,
+            time_color        = color_timer,
+            anim_length       = anim_data.anim_length,
+        )
+
+        renderer_colors = copy.deepcopy(obj_data.default_renderer_colors)
+        for color_mod, renderer_channel in anim_set:
+            for i, channel in enumerate(color_mod):
+                if channel is not None:
+                    renderer_colors[renderer_channel][i] = channel
+        
+        return renderer_colors
     
     def get_object_properties(self, object_name):
         self.cache_object(object_name)
@@ -532,7 +563,7 @@ class ObjFile:
     
             self.default_renderer_colors = {}
             for i in range(16):
-                self.default_renderer_colors[i] = struct.unpack('4B', self.input_data.read(4)) 
+                self.default_renderer_colors[i] = list(struct.unpack('4B', self.input_data.read(4)))
 
             self.color_mode = [ # key, bits-per-pixel
                 ["RGBA8888", 32],

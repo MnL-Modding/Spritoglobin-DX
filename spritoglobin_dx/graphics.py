@@ -393,12 +393,12 @@ def apply_sprite_color(img, obj_anim_data, color_data, renderer_data, default_re
         [  0,   0,   0, 255], # light
     ]
 
-    renderer_colors = default_renderer_colors
+    renderer_colors = dict(default_renderer_colors)
     for color_mod, renderer_channel in anim_set:
         renderer_colors[renderer_channel] = color_mod
 
-    for i, (pass_dict, color_mod_index) in enumerate(renderer_data.pass_list):
-        color_mod = renderer_colors.get(color_mod_index, [0xFF, 0xFF, 0xFF, 0xFF])
+    for pass_dict, color_mod_index in renderer_data.pass_list:
+        color_mod = renderer_colors.get(color_mod_index, [0x00, 0x00, 0x00, 0x00])
         img_split = cv2.split(img)
         img_split_out = []
         for channel in range(4):
@@ -433,58 +433,60 @@ def apply_sprite_color(img, obj_anim_data, color_data, renderer_data, default_re
                     case 0xE:
                         source = color_mod
                     case _:
-                        print("FUCK")
+                        print(f"utilizes unimplemented source {current_source}")
             
                 match pass_dict[f"{channel_key}_operand_{i}"]:
                     case 0x0:
-                        sources[i] = source[channel]
+                        sources[i] = list(source)
                     case 0x1:
-                        sources[i] = 1 - source[channel]
+                        sources[i] = list(1 - source)
                     case 0x2:
-                        sources[i] = source[3]
+                        sources[i] = [source[3]] * 4
                     case 0x3:
-                        sources[i] = 1 - source[3]
+                        sources[i] = [1 - source[3]] * 4
                     case _:
-                        print("FUCK")
-                    
-                if isinstance(sources[i], int):
-                    sources[i] = numpy.full(len(img_split[channel].flatten()), sources[i]).reshape(img_split[channel].shape)
+                        print(f"utilizes unimplemented operand {pass_dict[f"{channel_key}_operand_{i}"]}")
+
+                for j in range(4):
+                    if isinstance(sources[i][j], int):
+                        sources[i][j] = numpy.full(len(img_split[channel].flatten()), sources[i][j]).reshape(img_split[channel].shape)
                 
-                sources[i] = sources[i].astype(float) / 255.0
+                    sources[i][j] = sources[i][j].astype(float) / 255.0
 
             match pass_dict[f"{channel_key}_combine_mode"]: # TODO: add the rest of these
-                case 0x0:
-                    img_channel[:] = sources[0]
-                case 0x1:
-                    img_channel = cv2.multiply(
-                        sources[0],
-                        sources[1])
-                case 0x2:
-                    img_channel = cv2.add(
-                        sources[0],
-                        sources[1])
-                case 0x8:
-                    img_channel = cv2.multiply(
-                        sources[0],
-                        sources[1])
-                    img_channel = cv2.add(
-                        img_channel,
-                        sources[2])
-                case 0x9:
-                    img_channel = cv2.add(
-                        sources[0],
-                        sources[1])
-                    img_channel = cv2.multiply(
-                        img_channel,
-                        sources[2])
+                case 0x0: # set
+                    img_channel[:] = sources[0][channel]
+                case 0x1: # modulate
+                    img_channel = sources[0][channel] * sources[1][channel]
+                case 0x2: # add
+                    img_channel = sources[0][channel] + sources[1][channel]
+                case 0x6: # dot3 rgb
+                    img_channel = sources[0][0] * 0
+                    for i in range(3):
+                        x1 = (sources[0][i] * 2) - 1
+                        x2 = (sources[1][i] * 2) - 1
+                        img_channel += x1 * x2
+                    numpy.clip(img_channel, 0.0, 1.0)
+                case 0x7: # dot3 rgba
+                    img_channel = sources[0][0] * 0
+                    for i in range(4):
+                        x1 = (sources[0][i] * 2) - 1
+                        x2 = (sources[1][i] * 2) - 1
+                        img_channel += x1 * x2
+                    numpy.clip(img_channel, 0.0, 1.0)
+                case 0x8: # multiply then add
+                    img_channel = sources[0][channel] * sources[1][channel]
+                    img_channel = img_channel         + sources[2][channel]
+                case 0x9: # add then multiply
+                    img_channel = sources[0][channel] + sources[1][channel]
+                    img_channel = img_channel         * sources[2][channel]
+                case _:
+                    print(f"utilizes unimplemented combine mode {pass_dict[f"{channel_key}_combine_mode"]}")
             
             img_channel = numpy.clip(img_channel, 0, 1) * 255
             img_split_out.append(numpy.array(img_channel).clip(0, 255).astype(numpy.uint8))
 
         img = cv2.merge(img_split_out)
-
-        if color_mod_index == -1:
-            break
     
     return img
 
