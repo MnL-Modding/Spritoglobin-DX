@@ -43,7 +43,7 @@ THEME_PRESETS = [
     ["#f81810", "#18f868", "#f79c14", "#dddddd"], # mlkp
     ["#aee714", "#ff3c75", "#cf2cff", "#555596"], # gmgd
     ["#f05ec7", "#edd20a", "#9f5cda", "#14bb59"], # the globins
-    ["#883800", "#ffe898", "#ff9000", "#404050"], # chococat
+    ["#883800", "#ffe898", "#ff7020", "#404050"], # chococat
     ["#ff9b56", "#d462a6", "#a40062", "#d62800"], # lesbean flag
     ["#26ceaa", "#5049cc", "#7bade2", "#98e8c1"], # toothpaste flag
     ["#fff433", "#9b59d0", "#2d2d2d", "#dddddd"], # en-bee flag

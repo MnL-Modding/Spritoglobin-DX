@@ -619,7 +619,7 @@ class MainWindow(QtWidgets.QMainWindow):
             dist = importlib.metadata.distribution(APP_NAME)
             ver_num = f"{APP_DISPLAY_NAME} v{dist.version}"
         except PackageNotFoundError:
-            ver_num = "unknown version"
+            ver_num = "(Unknown Version)"
 
         version_number = QtWidgets.QLabel(ver_num)
         version_number.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
@@ -1174,11 +1174,36 @@ class MainWindow(QtWidgets.QMainWindow):
         if self.color_anim_list_box.currentRow() != 0 and object_properties["has_color_data"] and self.color_anim_list_box.currentItem() is not None:
             color_anim_index = int(self.color_anim_list_box.currentItem().text())
 
-        img_data = self.obj_data.get_sprite_part_entities(
-            object_name      = self.obj_list_box.currentText(), 
-            animation_index  = self.anim_list_box.currentRow(),
-            color_anim_index = color_anim_index,
-        )
+        # for testing
+        renderer_to_use = 1
+
+        match renderer_to_use:
+            case 0:
+                img, size, offset = self.obj_data.get_sprite_with_offset(
+                    object_name      = self.obj_list_box.currentText(), 
+                    animation_index  = self.anim_list_box.currentRow(),
+                    color_anim_index = color_anim_index,
+                )
+
+                if img is not None:
+                    self.sprite_viewer.draw_image(QtGui.QImage(img, *size, QtGui.QImage.Format_RGBA8888), offset)
+                else:
+                    self.sprite_viewer.draw_image(None, (0, 0))
+            case 1:
+                img_data = self.obj_data.get_sprite_part_entities(
+                    object_name      = self.obj_list_box.currentText(), 
+                    animation_index  = self.anim_list_box.currentRow(),
+                    color_anim_index = color_anim_index,
+                )
+        
+                base_sprite = [
+                    img_data,  # sprite parts list
+                    (0, 0, 0), # translation
+                    (0, 0, 0), # rotation
+                    (1, 1, 1), # scale
+                ]
+
+                self.sprite_viewer.draw_3d_image([base_sprite])
 
         bounding_boxes = []
         if self.sprite_anim_timeline.bounding_box_toggle.isChecked():
@@ -1193,15 +1218,6 @@ class MainWindow(QtWidgets.QMainWindow):
             bounding_boxes.append(box)
         
         self.sprite_viewer.bounding_boxes = bounding_boxes
-
-        base_sprite = [
-            img_data,  # sprite parts list
-            (0, 0, 0), # translation
-            (0, 0, 0), # rotation
-            (1, 1, 1), # scale
-        ]
-
-        self.sprite_viewer.draw_3d_image([base_sprite])
 
         frame_properties = self.obj_data.get_frame_properties(
             object_name     = self.obj_list_box.currentText(), 
@@ -1415,31 +1431,48 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def update_renderer_data(self):
         size = self.global_palette_size
+        thickness = self.global_palette_line_thickness
+        color_label_base = QtGui.QPixmap((size * 2) + (thickness * 4), size + (thickness * 4))
+
+        color_label_base.fill(QtCore.Qt.transparent)
+        qp = QtGui.QPainter(color_label_base)
+
+        pen = QtGui.QPen()
+        pen.setWidth(thickness)
+        pen.setJoinStyle(QtCore.Qt.MiterJoin)
+        qp.setPen(pen)
+
+        pen.setColor(QtGui.QColor(THEME_COLORS["P_COLOR_0"]))
+        qp.setPen(pen)
+        qp.drawRect(thickness // 2, thickness // 2, (size * 2) + ((thickness * 4) - thickness), size + ((thickness * 4) - thickness))
+
+        pen.setColor(QtGui.QColor(THEME_COLORS["WHITE"]))
+        qp.setPen(pen)
+        qp.drawRect(thickness + (thickness // 2), thickness + (thickness // 2), (size * 2) + ((thickness * 4) - (thickness * 3)), size + ((thickness * 4) - (thickness * 3)))
+
+        qp.end()
+
         for i, label in enumerate(self.global_palette_labels):
             r, g, b, a = self.global_palette_data[i]
 
-            thickness = self.global_palette_line_thickness
-            color_label = QtGui.QPixmap((size * 2) + (thickness * 4), size + (thickness * 4))
-            color_label.fill(QtGui.QColor(r, g, b))
-            qp = QtGui.QPainter(color_label)
-
-            qp.fillRect(color_label.width() // 2, 0, color_label.width() // 2, color_label.height(), QtGui.QBrush(QtGui.QColor(a, a, a)))
-
-            pen = QtGui.QPen()
-            pen.setWidth(thickness)
-            pen.setJoinStyle(QtCore.Qt.MiterJoin)
-            qp.setPen(pen)
-
-            pen.setColor(QtGui.QColor(THEME_COLORS["P_COLOR_0"]))
-            qp.setPen(pen)
-            qp.drawRect(thickness // 2, thickness // 2, (size * 2) + ((thickness * 4) - thickness), size + ((thickness * 4) - thickness))
-
-            pen.setColor(QtGui.QColor(THEME_COLORS["WHITE"]))
-            qp.setPen(pen)
-            qp.drawRect(thickness + (thickness // 2), thickness + (thickness // 2), (size * 2) + ((thickness * 4) - (thickness * 3)), size + ((thickness * 4) - (thickness * 3)))
-
+            qp = QtGui.QPainter(color_label_base)
+            qp.fillRect(
+                thickness * 2,
+                thickness * 2,
+                (color_label_base.width() // 2) - (thickness * 2),
+                color_label_base.height() - (thickness * 4),
+                QtGui.QBrush(QtGui.QColor(r, g, b))
+            )
+            qp.fillRect(
+                color_label_base.width() // 2,
+                thickness * 2,
+                (color_label_base.width() // 2) - (thickness * 2),
+                color_label_base.height() - (thickness * 4),
+                QtGui.QBrush(QtGui.QColor(a, a, a))
+            )
             qp.end()
-            label.setPixmap(color_label)
+
+            label.setPixmap(color_label_base)
 
 
     def tick_timer(self):

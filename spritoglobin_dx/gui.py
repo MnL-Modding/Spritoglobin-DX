@@ -311,7 +311,7 @@ class InteractiveGraphicsWindow(QtWidgets.QLabel):
 
             qp.setCompositionMode(QtGui.QPainter.CompositionMode.CompositionMode_SourceOver)
             qp.drawImage(0, 0, img)
-        
+
         for bounding_box in self.bounding_boxes:
             x_pos = offset[0] + (( bounding_box[0] + center_offset) * self.scale) + self.center[0]
             y_pos = offset[1] + ((-bounding_box[3] + center_offset) * self.scale) + self.center[1]

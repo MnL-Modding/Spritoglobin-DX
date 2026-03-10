@@ -1,4 +1,5 @@
 import configparser
+import math
 import os
 
 from PIL import Image
@@ -583,7 +584,7 @@ class GifExportWindow(QtWidgets.QDialog):
                 animation_index = anim_num,
             )
 
-            for i in range(animation_properties["length"] // advance_amt):
+            for i in range(math.ceil(animation_properties["length"] / advance_amt)):
                 img, (w, h), (x, y) = self.obj_data.get_sprite_with_offset(
                     object_name      = object_name, 
                     animation_index  = anim_num,

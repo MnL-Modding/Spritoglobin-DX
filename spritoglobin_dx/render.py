@@ -91,8 +91,8 @@ class SpriteRenderer:
 
         for real_draw in [False, True]:
 
-            if not real_draw: self.context.blend_func = (moderngl.ONE, moderngl.ZERO, moderngl.ONE, moderngl.ZERO)
-            else:             self.context.blend_func = (moderngl.SRC_ALPHA, moderngl.ONE_MINUS_SRC_ALPHA)
+            if not real_draw: self.context.blend_func = (moderngl.ONE, moderngl.ZERO, moderngl.ZERO, moderngl.ZERO)
+            else:             self.context.blend_func = (moderngl.SRC_ALPHA, moderngl.ONE_MINUS_SRC_ALPHA, moderngl.ONE, moderngl.ONE)
 
             for parts_list, translation, rotation, scale in img_data:
                 l_s = self.get_scale_matrix(*scale)
