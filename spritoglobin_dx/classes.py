@@ -191,7 +191,7 @@ class ObjFile:
 
         if transform_matrix != []:
             if frame_data.invert_matrix_rotation is None:
-                invert_matrix = transform_matrix[0] < 0 and not transform_matrix[4] < 0 # TODO: idk how paper jam does matrix inversion
+                invert_matrix = (transform_matrix[0] < 0) != (transform_matrix[4] < 0)
             else:
                 invert_matrix = frame_data.invert_matrix_rotation == 1
         else:

@@ -27,7 +27,7 @@ def get_sprite_graphic(obj_anim_data, graph_file, current_anim_index, color_anim
         transform_data = obj_anim_data.get_transform_data(frame_data.transform - 1)
         matrix = list(transform_data.matrix)
         if frame_data.invert_matrix_rotation is None:
-            invert_matrix = matrix[0] < 0 and not matrix[4] < 0 # TODO: idk how paper jam does matrix inversion
+            invert_matrix = (matrix[0] < 0) != (matrix[4] < 0)
         else:
             invert_matrix = frame_data.invert_matrix_rotation == 1
 
@@ -389,7 +389,7 @@ def apply_sprite_color(img, obj_anim_data, color_data, renderer_data, default_re
         anim_length       = current_anim_length,
     )
 
-    fragment_light = [ # TODO: expose this to the user
+    fragment_light = [
         [255, 255, 255, 255], # shadow
         [  0,   0,   0, 255], # light
     ]
@@ -468,13 +468,19 @@ def apply_sprite_color(img, obj_anim_data, color_data, renderer_data, default_re
                 
                     sources[i][j] = sources[i][j].astype(float) / 255.0
 
-            match pass_dict[f"{channel_key}_combine_mode"]: # TODO: add the rest of these
+            match pass_dict[f"{channel_key}_combine_mode"]:
                 case 0x0: # set
                     img_channel[:] = sources[0][channel]
                 case 0x1: # modulate
                     img_channel = sources[0][channel] * sources[1][channel]
                 case 0x2: # add
                     img_channel = sources[0][channel] + sources[1][channel]
+                case 0x3: # add signed
+                    img_channel = (sources[0][channel] - 0.5) + (sources[1][channel] - 0.5)
+                case 0x4: # interpolate
+                    img_channel = numpy.interp(sources[0][channel], sources[1][channel], sources[2][channel])
+                case 0x5: # subtract
+                    img_channel = sources[0][channel] - sources[1][channel]
                 case 0x6: # dot3 rgb
                     source0 = (numpy.array(sources[0][:3]) * 2.0) - 1.0
                     source1 = (numpy.array(sources[1][:3]) * 2.0) - 1.0
