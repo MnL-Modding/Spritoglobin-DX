@@ -180,7 +180,7 @@ def get_sprite_part_set_graphic(obj_anim_data, graph_file, first_part, total_par
             alpha_divisor = alpha_divisor,
         )
 
-        if color_data is not None and renderer_data is not None:
+        if color_data is not None and renderer_data is not None and not separate:
             anim_data = obj_anim_data.get_anim_data(current_anim_index)
 
             tile = apply_sprite_color(
@@ -205,7 +205,8 @@ def get_sprite_part_set_graphic(obj_anim_data, graph_file, first_part, total_par
         if separate:
             if matrix is None:
                 matrix = [1, 0, 0, 0, 1, 0]
-            sprite_part_list.append([tile.flatten(), (w, h), (part_data.x_offset, part_data.y_offset), matrix])
+
+            sprite_part_list.append([tile.flatten(), (w, h), (part_data.x_offset, part_data.y_offset), matrix, renderer_data])
             continue
 
         target_area = img[y:y+h, x:x+w].astype(numpy.float32)
@@ -397,6 +398,12 @@ def apply_sprite_color(img, obj_anim_data, color_data, renderer_data, default_re
     for color_mod, renderer_channel in anim_set:
         renderer_colors[renderer_channel] = color_mod
 
+    primary_color = [0, 0, 0, 0]
+    texture_0 = cv2.split(img)
+    texture_1 = None
+    texture_2 = None
+    texture_3 = None
+
     for pass_dict, color_mod_index in renderer_data.pass_list:
         color_mod = renderer_colors.get(color_mod_index, [0x00, 0x00, 0x00, 0x00])
         img_split = cv2.split(img)
@@ -412,26 +419,31 @@ def apply_sprite_color(img, obj_anim_data, color_data, renderer_data, default_re
             # https://problemkaputt.de/gbatek-3ds-gpu-internal-registers-texturing-registers-environment.htm
 
             sources = [0, 0, 0]
-            last_source = 3
 
             for i in range(3):
                 current_source = pass_dict[f"{channel_key}_source_{i}"]
-                if current_source == 0xF:
-                    current_source = last_source
                 
-                # last_source = current_source
-                
-                match current_source: # TODO: add the rest of these
+                match current_source:
+                    case 0x0:
+                        source = primary_color
                     case 0x1:
                         source = fragment_light[0]
                     case 0x2:
                         source = fragment_light[1]
                     case 0x3:
-                        source = img_split
+                        source = texture_0
+                    case 0x4:
+                        source = texture_1
+                    case 0x5:
+                        source = texture_2
+                    case 0x6:
+                        source = texture_3
                     case 0xD:
                         source = 0
                     case 0xE:
                         source = color_mod
+                    case 0xF:
+                        source = img_split
                     case _:
                         print(f"utilizes unimplemented source {current_source}")
             

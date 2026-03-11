@@ -1203,7 +1203,15 @@ class MainWindow(QtWidgets.QMainWindow):
                     (1, 1, 1), # scale
                 ]
 
-                self.sprite_viewer.draw_3d_image([base_sprite])
+                palette = self.obj_data.get_object_palette(
+                    object_name      = self.obj_list_box.currentText(),
+                    animation_index  = self.anim_list_box.currentRow(),
+                    color_anim_index = color_anim_index,
+                )
+
+                fragment_light = [(1.0, 1.0, 1.0, 1.0), (0.0, 0.0, 0.0, 1.0)]
+
+                self.sprite_viewer.draw_3d_image([[base_sprite], palette, fragment_light])
 
         bounding_boxes = []
         if self.sprite_anim_timeline.bounding_box_toggle.isChecked():
