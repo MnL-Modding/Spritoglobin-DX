@@ -17,11 +17,22 @@ LANG_DIR = SCRIPT_DIR / 'lang'
 CONFIG_DIR = Path(QtCore.QStandardPaths.writableLocation(QtCore.QStandardPaths.StandardLocation.AppConfigLocation))
 
 
+THEME_PRESETS = {
+    'mlkp': ["#f81810", "#18f868", "#f79c14", "#dddddd"], # mario, luigi, koopa, pmario
+    'gmgd': ["#aee714", "#ff3c75", "#cf2cff", "#555596"], # geraco, mboss, gedonko, dstar
+    'glob': ["#f05ec7", "#edd20a", "#9f5cda", "#14bb59"], # the globins
+    'choc': ["#883800", "#ffe898", "#ff7020", "#404050"], # chococat
+    'f_ww': ["#ff9b56", "#d462a6", "#a40062", "#d62800"], # lesbean flag
+    'f_mm': ["#26ceaa", "#5049cc", "#7bade2", "#98e8c1"], # toothpaste flag
+    'f_nb': ["#fff433", "#9b59d0", "#2d2d2d", "#dddddd"], # en-bee flag
+    'f_py': ["#009fe3", "#e50051", "#340c46", "#fcbf00"], # poly want a cracker flag
+}
+
 THEME_COLORS = {
-    "M_COLOR_0": "#f81810", # mario
-    "L_COLOR_0": "#18f868", # luigi
-    "K_COLOR_0": "#f79c14", # koopa
-    "P_COLOR_0": "#dddddd", # paper
+    "M_COLOR_0": THEME_PRESETS['mlkp'][0], # mario
+    "L_COLOR_0": THEME_PRESETS['mlkp'][1], # luigi
+    "K_COLOR_0": THEME_PRESETS['mlkp'][2], # koopa
+    "P_COLOR_0": THEME_PRESETS['mlkp'][3], # paper
 
     "WHITE": "#ffffffff",
 
@@ -39,19 +50,8 @@ THEME_COLOR_ICON_MASKS = {
     "P_COLOR_0": ("#00FFFF", "#BFFFFF", "#008080"),
 }
 
-THEME_PRESETS = [
-    ["#f81810", "#18f868", "#f79c14", "#dddddd"], # mlkp
-    ["#aee714", "#ff3c75", "#cf2cff", "#555596"], # gmgd
-    ["#f05ec7", "#edd20a", "#9f5cda", "#14bb59"], # the globins
-    ["#883800", "#ffe898", "#ff7020", "#404050"], # chococat
-    ["#ff9b56", "#d462a6", "#a40062", "#d62800"], # lesbean flag
-    ["#26ceaa", "#5049cc", "#7bade2", "#98e8c1"], # toothpaste flag
-    ["#fff433", "#9b59d0", "#2d2d2d", "#dddddd"], # en-bee flag
-    ["#009fe3", "#e50051", "#340c46", "#fcbf00"], # poly want a cracker flag
-]
-
 # temp test thingy
-preset = 0
+preset = 'mlkp'
 THEME_COLORS["M_COLOR_0"] = THEME_PRESETS[preset][0]
 THEME_COLORS["L_COLOR_0"] = THEME_PRESETS[preset][1]
 THEME_COLORS["K_COLOR_0"] = THEME_PRESETS[preset][2]

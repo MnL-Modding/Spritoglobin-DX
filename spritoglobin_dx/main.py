@@ -120,7 +120,6 @@ class MainWindow(QtWidgets.QMainWindow):
 
         self.theme_icons = {}
         self.current_theme_file_path = 'img_icons_dx'
-        self.set_theme_icons(self.current_theme_file_path, True)
 
         self.theme_icons_current_obj_color_anim_icon = 'blank'
         self.theme_icons_current_single_color_anim_timeline_icon = 'blank'
@@ -189,7 +188,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
 
         self.init_ui()
-        self.apply_theme_icons()
+        self.update_program_theme()
 
 
     def check_for_updates(self, force = True):
@@ -1582,25 +1581,19 @@ class MainWindow(QtWidgets.QMainWindow):
         else:    background_color = QtCore.Qt.GlobalColor.lightGray
 
         self.sprite_viewer.background_color = background_color
-        if update: self.sprite_viewer.update_image()
         self.sprite_part_viewer.background_color = background_color
-        if update: self.sprite_part_viewer.update_image()
         self.sprite_part_tile_viewer.background_color = background_color
-        if update: self.sprite_part_tile_viewer.update_image()
 
-        
         tabs_palette = QtWidgets.QTabWidget().palette()
         if dark: tabs_palette.setColor(QtGui.QPalette.ColorRole.Button, QtGui.QPalette().color(QtGui.QPalette.ColorRole.Dark))
         else:    tabs_palette.setColor(QtGui.QPalette.ColorRole.Button, QtGui.QPalette().color(QtGui.QPalette.ColorRole.Light))
         self.timeline_tabs.setPalette(tabs_palette)
 
-
         self.sprite_anim_timeline.background_color = background_color
-        if update: self.sprite_anim_timeline.draw_full()
         self.sprite_color_anim_timeline.background_color = background_color
-        if update: self.sprite_color_anim_timeline.draw_full()
         self.global_color_anim_timeline.background_color = background_color
-        if update: self.global_color_anim_timeline.draw_full()
+
+        if update: self.update_program_theme()
     
     def update_program_theme(self):
         if self.current_game_id in GAME_IDS_THAT_ARE_ON_3DS or self.current_game_id is None:
@@ -1615,11 +1608,18 @@ class MainWindow(QtWidgets.QMainWindow):
         self.set_theme_icons(self.current_theme_file_path, True)
         self.apply_theme_icons()
         self.setWindowIcon(self.current_window_icon)
+
+        self.sprite_viewer.update_image()
+        self.sprite_part_viewer.update_image()
+        self.sprite_part_tile_viewer.update_image()
+
+        self.sprite_anim_timeline.draw_full()
+        self.sprite_color_anim_timeline.draw_full()
+        self.global_color_anim_timeline.draw_full()
     
     def globin_theme_toggle(self):
-        THEME_COLORS["M_COLOR_0"], THEME_COLORS["L_COLOR_0"], THEME_COLORS["K_COLOR_0"], THEME_COLORS["P_COLOR_0"] = THEME_PRESETS[2]
-        self.set_theme_icons(self.current_theme_file_path, True)
-        self.apply_theme_icons()
+        THEME_COLORS["M_COLOR_0"], THEME_COLORS["L_COLOR_0"], THEME_COLORS["K_COLOR_0"], THEME_COLORS["P_COLOR_0"] = THEME_PRESETS['glob']
+        self.update_program_theme()
 
     def set_theme_icons(self, icon_path, map_theme_colors):
         self.theme_icons['blank']     = self.grab_theme_icon(icon_path,  0, (16, 16), map_theme_colors)
