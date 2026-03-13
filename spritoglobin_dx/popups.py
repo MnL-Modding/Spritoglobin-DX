@@ -10,64 +10,6 @@ from spritoglobin_dx.constants import *
 from spritoglobin_dx.gui import InteractiveGraphicsWindow
 
 
-def grab_icon(index): # TODO: GET RID OF THIS THING, THIS IS ONLY TEMPORARY
-    map_theme_colors = True
-    icon_size = 16, 16
-    file_path = 'img_icons_dx'
-
-    # this function is being misused horribly rn
-    # this type of thing is for caching, not for grabbing a bunch of shit in real time
-    # it also doesn't need to be global like this for the system i'm planning on replacing it with
-    # i'm sick of working on v0.1 tho so this is what you get for now lmao
-
-    if index == 0:
-        icon = QtGui.QPixmap(*icon_size)
-        icon.fill(QtCore.Qt.transparent)
-        return icon
-
-    icon_sheet = QtGui.QPixmap(str(FILES_DIR / f'{file_path}.png'))
-    num_columns = icon_sheet.width() // icon_size[0]
-
-    index -= 1
-    x = (index % num_columns) * icon_size[0]
-    y = (index // num_columns) * icon_size[1]
-
-    img_rect = QtCore.QRect(x, y, *icon_size)
-    icon = icon_sheet.copy(img_rect)
-
-    if not map_theme_colors:
-        return icon
-    
-    qp = QtGui.QPainter(icon)
-    qp.setPen(QtCore.Qt.NoPen)
-
-    icon_map_sheet = QtGui.QPixmap(str(FILES_DIR / f'{file_path}_map.png'))
-    icon_map = icon_map_sheet.copy(img_rect)
-
-    for color in THEME_COLOR_ICON_MASKS:
-        base_color = QtGui.QColor(THEME_COLORS[color])
-
-        replace_colors = [
-            base_color,
-            base_color.lighter(150),
-            base_color.darker(150),
-        ]
-
-        for i in range(3):
-            replace_color = QtGui.QColor(THEME_COLOR_ICON_MASKS[color][i])
-            replace_region = QtGui.QRegion(icon_map.createMaskFromColor(replace_color, QtCore.Qt.MaskMode.MaskOutColor))
-
-            qp.setClipRegion(replace_region)
-            qp.setBrush(QtGui.QColor(replace_colors[i]))
-
-            qp.drawRect(icon.rect())
-    
-    qp.end()
-
-    return icon
-
-
-
 class FileImportWindow(QtWidgets.QDialog):
     def __init__(self, parent, game_title_strings, current_window_icon):
         super().__init__()
@@ -89,7 +31,7 @@ class FileImportWindow(QtWidgets.QDialog):
         layout = QtWidgets.QGridLayout()
 
         self.choose_file_button = QtWidgets.QPushButton(self.tr("ImportChooseFileButton"))
-        self.choose_file_button.setIcon(grab_icon(14))
+        self.choose_file_button.setIcon(self.parent.theme_icons['open'])
         self.choose_file_button.clicked.connect(self.import_obj_file)
 
         file_info_none_string = self.tr("FileInfoNone")
@@ -100,7 +42,7 @@ class FileImportWindow(QtWidgets.QDialog):
         self.sort_contents_toggle.setVisible(False)
 
         self.import_button = QtWidgets.QPushButton(self.tr("ImportAcceptButton"))
-        self.import_button.setIcon(grab_icon(1))
+        self.import_button.setIcon(self.parent.theme_icons['sprito'])
         self.import_button.clicked.connect(self.finalize)
         self.import_button.setEnabled(False)
 
@@ -256,19 +198,19 @@ class GifExportWindow(QtWidgets.QDialog):
         self.anim_list_box.currentRowChanged.connect(self.update_anim_options)
 
         self.add_button = QtWidgets.QPushButton()
-        self.add_button.setIcon(grab_icon(9))
+        self.add_button.setIcon(self.parent.theme_icons['add'])
         self.add_button.clicked.connect(self.add_anim)
 
         self.remove_button = QtWidgets.QPushButton()
-        self.remove_button.setIcon(grab_icon(10))
+        self.remove_button.setIcon(self.parent.theme_icons['subtract'])
         self.remove_button.clicked.connect(self.remove_anim)
 
         self.move_up_button = QtWidgets.QPushButton()
-        self.move_up_button.setIcon(grab_icon(11))
+        self.move_up_button.setIcon(self.parent.theme_icons['up'])
         self.move_up_button.clicked.connect(self.move_anim_up)
 
         self.move_down_button = QtWidgets.QPushButton()
-        self.move_down_button.setIcon(grab_icon(12))
+        self.move_down_button.setIcon(self.parent.theme_icons['down'])
         self.move_down_button.clicked.connect(self.move_anim_down)
 
         self.anim_choose_list_box = QtWidgets.QComboBox()
@@ -280,7 +222,7 @@ class GifExportWindow(QtWidgets.QDialog):
         self.loop_choose_spin_box.valueChanged.connect(self.change_current_anim_data)
 
         self.export_button = QtWidgets.QPushButton(self.tr("ExportAcceptButton"))
-        self.export_button.setIcon(grab_icon(16))
+        self.export_button.setIcon(self.parent.theme_icons['export'])
         self.export_button.clicked.connect(self.export_gif)
 
         mono_font = QtGui.QFont()

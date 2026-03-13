@@ -118,6 +118,14 @@ class MainWindow(QtWidgets.QMainWindow):
         self.success_jingle.setSource(QtCore.QUrl.fromLocalFile(FILES_DIR / "snd_success_dx.wav"))
         self.success_jingle.setVolume(0.3)
 
+        self.theme_icons = {}
+        self.current_theme_file_path = 'img_icons_dx'
+        self.set_theme_icons(self.current_theme_file_path, True)
+
+        self.theme_icons_current_obj_color_anim_icon = 'blank'
+        self.theme_icons_current_single_color_anim_timeline_icon = 'blank'
+        self.theme_icons_current_obj_color_anim_timeline_icon = 'blank'
+
         self.parent = parent
 
         self.obj_data = None
@@ -173,9 +181,16 @@ class MainWindow(QtWidgets.QMainWindow):
         action.triggered.connect(self.color_timeline_toggle_playback)
         self.addAction(action)
 
+        # Ctrl+Shift+G = Globin Theme Toggle (Secret, Mostly for Testing)
+        action = QtGui.QAction(self)
+        action.setShortcut(QtGui.QKeySequence(QtCore.Qt.ControlModifier | QtCore.Qt.ShiftModifier | QtCore.Qt.Key_G))
+        action.triggered.connect(self.globin_theme_toggle)
+        self.addAction(action)
+
 
         self.init_ui()
-    
+        self.apply_theme_icons()
+
 
     def check_for_updates(self, force = True):
         config = configparser.ConfigParser()
@@ -281,44 +296,34 @@ class MainWindow(QtWidgets.QMainWindow):
     
         menu_bar_file = menu_bar.addMenu(self.tr("MenuBarFileTitle"))
 
-        menu_bar_file.addAction(
-            grab_icon(14),
-            self.tr("MenuBarFileOpenOption"),
-            QtGui.QKeySequence.StandardKey.Open,
-            self.open_file,
-        )
+        self.menu_bar_file_open_action = QtGui.QAction(self.tr("MenuBarFileOpenOption"), self)
+        self.menu_bar_file_open_action.setShortcut(QtGui.QKeySequence.StandardKey.Open)
+        self.menu_bar_file_open_action.triggered.connect(self.open_file)
+        menu_bar_file.addAction(self.menu_bar_file_open_action)
 
-        menu_bar_file.addAction(
-            grab_icon(13),
-            self.tr("MenuBarFileCloseOption"),
-            QtGui.QKeySequence.StandardKey.Close,
-            self.close_file,
-        )
+        self.menu_bar_file_close_action = QtGui.QAction(self.tr("MenuBarFileCloseOption"), self)
+        self.menu_bar_file_close_action.setShortcut(QtGui.QKeySequence.StandardKey.Close)
+        self.menu_bar_file_close_action.triggered.connect(self.close_file)
+        menu_bar_file.addAction(self.menu_bar_file_close_action)
 
         menu_bar_file.addSeparator() # -----------------------------------------
 
-        menu_bar_file.addAction(
-            grab_icon(16),
-            self.tr("MenuBarFileQuickExportOption"),
-            QtGui.QKeySequence.StandardKey.Save,
-            partial(self.export_file, True),
-        )
+        self.menu_bar_file_quick_export_action = QtGui.QAction(self.tr("MenuBarFileQuickExportOption"), self)
+        self.menu_bar_file_quick_export_action.setShortcut(QtGui.QKeySequence.StandardKey.Save)
+        self.menu_bar_file_quick_export_action.triggered.connect(partial(self.export_file, True))
+        menu_bar_file.addAction(self.menu_bar_file_quick_export_action)
 
-        menu_bar_file.addAction(
-            grab_icon(16),
-            self.tr("MenuBarFileExportOption"),
-            QtGui.QKeySequence.StandardKey.SaveAs,
-            partial(self.export_file, False),
-        )
+        self.menu_bar_file_export_action = QtGui.QAction(self.tr("MenuBarFileExportOption"), self)
+        self.menu_bar_file_export_action.setShortcut(QtGui.QKeySequence.StandardKey.SaveAs)
+        self.menu_bar_file_export_action.triggered.connect(partial(self.export_file, False))
+        menu_bar_file.addAction(self.menu_bar_file_export_action)
 
         menu_bar_file.addSeparator() # -----------------------------------------
 
-        menu_bar_file.addAction(
-            grab_icon(15),
-            self.tr("MenuBarFileQuitOption"),
-            QtGui.QKeySequence.StandardKey.Quit,
-            QtWidgets.QApplication.quit,
-        )
+        self.menu_bar_file_quit_action = QtGui.QAction(self.tr("MenuBarFileQuitOption"), self)
+        self.menu_bar_file_quit_action.setShortcut(QtGui.QKeySequence.StandardKey.Quit)
+        self.menu_bar_file_quit_action.triggered.connect(QtWidgets.QApplication.quit)
+        menu_bar_file.addAction(self.menu_bar_file_quit_action)
 
 
         menu_bar_options = menu_bar.addMenu(self.tr("MenuBarOptionsTitle"))
@@ -383,7 +388,6 @@ class MainWindow(QtWidgets.QMainWindow):
         menu_bar_help = menu_bar.addMenu(self.tr("MenuBarHelpTitle"))
 
         menu_bar_help.addAction(
-            # grab_icon(14),
             self.tr("MenuBarHelpCheckUpdates"),
             self.check_for_updates,
         )
@@ -500,20 +504,13 @@ class MainWindow(QtWidgets.QMainWindow):
         global_color_anim_layout.addWidget(self.global_color_anim_timeline, 0, 1, 2, 1)
         self.global_color_anim_timeline.layout.setContentsMargins(0, 0, 0, 0)
 
-        pal_icon = grab_icon(8)
-        pal_icon = pal_icon.toImage()
-        gray_pal_icon = pal_icon.convertToFormat(QtGui.QImage.Format.Format_Grayscale8)
-        gray_pal_icon = gray_pal_icon.convertToFormat(QtGui.QImage.Format.Format_RGBA8888)
-        gray_pal_icon.setAlphaChannel(pal_icon.convertToFormat(QtGui.QImage.Format.Format_Alpha8))
-        gray_pal_icon = QtGui.QPixmap.fromImage(gray_pal_icon)
-
         self.timeline_tabs = QtWidgets.QTabWidget()
         self.timeline_tabs.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Fixed)
         self.timeline_tabs.setMinimumWidth(320)
         self.timeline_tabs.setTabPosition(QtWidgets.QTabWidget.South)
-        self.timeline_tabs.addTab(self.sprite_anim_timeline, grab_icon(1), self.tr("AnimationTabsSpriteAnimTitle"))
-        self.timeline_tabs.addTab(self.sprite_color_anim_timeline, gray_pal_icon, self.tr("AnimationTabsSpriteColorAnimTitle"))
-        self.timeline_tabs.addTab(global_color_anim, gray_pal_icon, self.tr("AnimationTabsSpriteGlobalAnimTitle"))
+        self.timeline_tabs.addTab(self.sprite_anim_timeline, self.tr("AnimationTabsSpriteAnimTitle"))
+        self.timeline_tabs.addTab(self.sprite_color_anim_timeline, self.tr("AnimationTabsSpriteColorAnimTitle"))
+        self.timeline_tabs.addTab(global_color_anim, self.tr("AnimationTabsSpriteGlobalAnimTitle"))
         self.timeline_tabs.setAutoFillBackground(True)
 
 
@@ -657,7 +654,6 @@ class MainWindow(QtWidgets.QMainWindow):
         lists_and_stuff_layout.addWidget(line, 3, 0, 1, 2)
 
         self.global_animation_icon = QtWidgets.QLabel()
-        self.global_animation_icon.setPixmap(grab_icon(0))
         lists_and_stuff_layout.addWidget(self.global_animation_icon, 4, 1, 1, 1, alignment = QtCore.Qt.AlignmentFlag.AlignRight)
 
 
@@ -898,14 +894,15 @@ class MainWindow(QtWidgets.QMainWindow):
             self.object_bounding_box_enable.blockSignals(False)
             self.sprite_anim_timeline.bounding_box_toggle.blockSignals(False)
 
-
             self.obj_data.init_timers()
 
             cellanims = list(self.obj_data.cellanim_files)
             if sort_contents: cellanims = sorted(cellanims)
 
+            self.obj_list_box.blockSignals(True)
             for cellanim in cellanims:
                 self.obj_list_box.addItem(self.obj_data.cellanim_files[cellanim].name)
+            self.obj_list_box.blockSignals(False)
         else:
             self.obj_list_box.clear()
 
@@ -916,7 +913,9 @@ class MainWindow(QtWidgets.QMainWindow):
             self.sprite_anim_timeline.bounding_box_toggle_string.setVisible(False)
 
             self.change_highlighted_sprite_part()
-            self.change_object()
+
+        self.update_program_theme()
+        self.change_object()
 
         self.anim_list_box.setCurrentRow(0)
 
@@ -924,33 +923,25 @@ class MainWindow(QtWidgets.QMainWindow):
             self.color_anim_list_box.setCurrentRow(1)
         else:
             self.color_anim_list_box.setCurrentRow(0)
-
-        if self.current_game_id in GAME_IDS_THAT_ARE_ON_3DS or self.current_game_id is None:
-            self.current_window_icon = QtGui.QIcon(str(FILES_DIR / 'ico_sprito_dx.ico'))
-            self.success_jingle.setSource(QtCore.QUrl.fromLocalFile(FILES_DIR / "snd_success_dx.wav"))
-        else:
-            self.current_window_icon = QtGui.QIcon(str(FILES_DIR / 'ico_sprito.ico'))
-            self.success_jingle.setSource(QtCore.QUrl.fromLocalFile(FILES_DIR / "snd_success.wav"))
-
-        self.setWindowIcon(self.current_window_icon)
     
     def change_object(self):
         if self.obj_data is None:
-            pal_icon = grab_icon(8)
-            pal_icon = pal_icon.toImage()
-            gray_pal_icon = pal_icon.convertToFormat(QtGui.QImage.Format.Format_Grayscale8)
-            gray_pal_icon = gray_pal_icon.convertToFormat(QtGui.QImage.Format.Format_RGBA8888)
-            gray_pal_icon.setAlphaChannel(pal_icon.convertToFormat(QtGui.QImage.Format.Format_Alpha8))
-            gray_pal_icon = QtGui.QPixmap.fromImage(gray_pal_icon)
-
             self.animation_timer.stop()
             self.anim_list_box.clear()
             self.color_mode_info_text.setVisible(False)
             self.sprite_part_set_list_box.clear()
             self.update_sprite_viewer(force = True)
-            self.timeline_tabs.setTabIcon(2, gray_pal_icon)
+
+            self.theme_icons_current_single_color_anim_timeline_icon = 'g_palette'
+            self.timeline_tabs.setTabIcon(1, self.theme_icons[self.theme_icons_current_single_color_anim_timeline_icon])
+            self.sprite_color_anim_timeline.setEnabled(False)
+
+            self.theme_icons_current_obj_color_anim_timeline_icon = 'g_palette'
+            self.timeline_tabs.setTabIcon(2, self.theme_icons[self.theme_icons_current_obj_color_anim_timeline_icon])
             self.global_color_anim_timeline.setEnabled(False)
-            self.global_animation_icon.setPixmap(grab_icon(0))
+
+            self.theme_icons_current_obj_color_anim_icon = 'blank'
+            self.global_animation_icon.setPixmap(self.theme_icons[self.theme_icons_current_obj_color_anim_icon])
             
             self.color_anim_list_box.blockSignals(True)
             self.color_anim_list_box.clear()
@@ -989,18 +980,18 @@ class MainWindow(QtWidgets.QMainWindow):
         self.obj_data.set_timers(0, color_timer = True)
         self.global_color_anim_timeline.set_time(0)
 
-        pal_icon = grab_icon(8)
         if object_properties["has_color_data"]:
-            self.global_animation_icon.setPixmap(pal_icon)
-            self.timeline_tabs.setTabIcon(2, pal_icon)
+            self.theme_icons_current_obj_color_anim_icon = 'palette'
+            self.global_animation_icon.setPixmap(self.theme_icons[self.theme_icons_current_obj_color_anim_icon])
+
+            self.theme_icons_current_obj_color_anim_timeline_icon = 'palette'
+            self.timeline_tabs.setTabIcon(2, self.theme_icons[self.theme_icons_current_obj_color_anim_timeline_icon])
         else:
-            self.global_animation_icon.setPixmap(grab_icon(0))
-            pal_icon = pal_icon.toImage()
-            gray_pal_icon = pal_icon.convertToFormat(QtGui.QImage.Format.Format_Grayscale8)
-            gray_pal_icon = gray_pal_icon.convertToFormat(QtGui.QImage.Format.Format_RGBA8888)
-            gray_pal_icon.setAlphaChannel(pal_icon.convertToFormat(QtGui.QImage.Format.Format_Alpha8))
-            gray_pal_icon = QtGui.QPixmap.fromImage(gray_pal_icon)
-            self.timeline_tabs.setTabIcon(2, gray_pal_icon)
+            self.theme_icons_current_obj_color_anim_icon = 'blank'
+            self.global_animation_icon.setPixmap(self.theme_icons[self.theme_icons_current_obj_color_anim_icon])
+
+            self.theme_icons_current_obj_color_anim_timeline_icon = 'g_palette'
+            self.timeline_tabs.setTabIcon(2, self.theme_icons[self.theme_icons_current_obj_color_anim_timeline_icon])
 
         self.global_color_anim_timeline.setEnabled(object_properties["has_color_data"])
         self.color_anim_list_box.setEnabled(object_properties["has_color_data"])
@@ -1008,15 +999,17 @@ class MainWindow(QtWidgets.QMainWindow):
 
         for i in range(object_properties["animation_number"]):
             item = QtWidgets.QListWidgetItem(str(i))
-            if self.obj_data.get_animation_properties(
-                object_name     = self.obj_list_box.currentText(), 
-                animation_index = i,
-            )["has_color_data"]:
-                item.setIcon(grab_icon(8))
-            else:
-                item.setIcon(grab_icon(0))
+            # if self.obj_data.get_animation_properties(
+            #     object_name     = self.obj_list_box.currentText(), 
+            #     animation_index = i,
+            # )["has_color_data"]:
+            #     item.setIcon(self.theme_icons['palette'])
+            # else:
+            #     item.setIcon(self.theme_icons['blank'])
             self.anim_list_box.addItem(item)
         self.anim_list_box.setCurrentRow(0)
+
+        self.set_anim_list_box_palette_icons()
 
 
         self.obj_data.reset_timers()
@@ -1055,20 +1048,31 @@ class MainWindow(QtWidgets.QMainWindow):
             else:
                 self.sprite_part_set_list_box.addItem(f"{sprite_part_set[0]} - {sum(sprite_part_set) - 1}")
     
+    def set_anim_list_box_palette_icons(self):
+        if self.obj_data is None:
+            return
+
+        for i in range(self.anim_list_box.count()):
+            item = self.anim_list_box.item(i)
+            if self.obj_data.get_animation_properties(
+                object_name     = self.obj_list_box.currentText(), 
+                animation_index = i,
+            )["has_color_data"]:
+                item.setIcon(self.theme_icons['palette'])
+            else:
+                item.setIcon(self.theme_icons['blank'])
+    
     def change_animation(self):
         if self.obj_data is None:
-            pal_icon = grab_icon(8)
-            pal_icon = pal_icon.toImage()
-            gray_pal_icon = pal_icon.convertToFormat(QtGui.QImage.Format.Format_Grayscale8)
-            gray_pal_icon = gray_pal_icon.convertToFormat(QtGui.QImage.Format.Format_RGBA8888)
-            gray_pal_icon.setAlphaChannel(pal_icon.convertToFormat(QtGui.QImage.Format.Format_Alpha8))
-            gray_pal_icon = QtGui.QPixmap.fromImage(gray_pal_icon)
-
             self.sprite_anim_timeline.update_timeline()
             self.sprite_color_anim_timeline.send_color_data()
-            self.timeline_tabs.setTabIcon(1, gray_pal_icon)
+
+            self.theme_icons_current_single_color_anim_timeline_icon = 'g_palette'
+            self.timeline_tabs.setTabIcon(1, self.theme_icons[self.theme_icons_current_single_color_anim_timeline_icon])
             self.sprite_color_anim_timeline.setEnabled(False)
-            self.timeline_tabs.setTabIcon(2, gray_pal_icon)
+
+            self.theme_icons_current_obj_color_anim_timeline_icon = 'g_palette'
+            self.timeline_tabs.setTabIcon(2, self.theme_icons[self.theme_icons_current_obj_color_anim_timeline_icon])
             self.global_color_anim_timeline.setEnabled(False)
 
             self.color_anim_list_box.setEnabled(False)
@@ -1099,16 +1103,12 @@ class MainWindow(QtWidgets.QMainWindow):
         else:
             self.sprite_color_anim_timeline.send_color_data()
 
-        pal_icon = grab_icon(8)
         if animation_properties["has_color_data"]:
-            self.timeline_tabs.setTabIcon(1, pal_icon)
+            self.theme_icons_current_single_color_anim_timeline_icon = 'palette'
+            self.timeline_tabs.setTabIcon(1, self.theme_icons[self.theme_icons_current_single_color_anim_timeline_icon])
         else:
-            pal_icon = pal_icon.toImage()
-            gray_pal_icon = pal_icon.convertToFormat(QtGui.QImage.Format.Format_Grayscale8)
-            gray_pal_icon = gray_pal_icon.convertToFormat(QtGui.QImage.Format.Format_RGBA8888)
-            gray_pal_icon.setAlphaChannel(pal_icon.convertToFormat(QtGui.QImage.Format.Format_Alpha8))
-            gray_pal_icon = QtGui.QPixmap.fromImage(gray_pal_icon)
-            self.timeline_tabs.setTabIcon(1, gray_pal_icon)
+            self.theme_icons_current_single_color_anim_timeline_icon = 'g_palette'
+            self.timeline_tabs.setTabIcon(1, self.theme_icons[self.theme_icons_current_single_color_anim_timeline_icon])
             
         self.sprite_color_anim_timeline.setEnabled(animation_properties["has_color_data"])
 
@@ -1601,3 +1601,118 @@ class MainWindow(QtWidgets.QMainWindow):
         if update: self.sprite_color_anim_timeline.draw_full()
         self.global_color_anim_timeline.background_color = background_color
         if update: self.global_color_anim_timeline.draw_full()
+    
+    def update_program_theme(self):
+        if self.current_game_id in GAME_IDS_THAT_ARE_ON_3DS or self.current_game_id is None:
+            self.current_window_icon = QtGui.QIcon(str(FILES_DIR / 'ico_sprito_dx.ico'))
+            self.success_jingle.setSource(QtCore.QUrl.fromLocalFile(FILES_DIR / "snd_success_dx.wav"))
+            self.current_theme_file_path = 'img_icons_dx'
+        else:
+            self.current_window_icon = QtGui.QIcon(str(FILES_DIR / 'ico_sprito.ico'))
+            self.success_jingle.setSource(QtCore.QUrl.fromLocalFile(FILES_DIR / "snd_success.wav"))
+            self.current_theme_file_path = 'img_icons'
+
+        self.set_theme_icons(self.current_theme_file_path, True)
+        self.apply_theme_icons()
+        self.setWindowIcon(self.current_window_icon)
+    
+    def globin_theme_toggle(self):
+        THEME_COLORS["M_COLOR_0"], THEME_COLORS["L_COLOR_0"], THEME_COLORS["K_COLOR_0"], THEME_COLORS["P_COLOR_0"] = THEME_PRESETS[2]
+        self.set_theme_icons(self.current_theme_file_path, True)
+        self.apply_theme_icons()
+
+    def set_theme_icons(self, icon_path, map_theme_colors):
+        self.theme_icons['blank']     = self.grab_theme_icon(icon_path,  0, (16, 16), map_theme_colors)
+        self.theme_icons['sprito']    = self.grab_theme_icon(icon_path,  1, (16, 16), map_theme_colors)
+        self.theme_icons['zoom_in']   = self.grab_theme_icon(icon_path,  2, (16, 16), map_theme_colors)
+        self.theme_icons['zoom_out']  = self.grab_theme_icon(icon_path,  3, (16, 16), map_theme_colors)
+        self.theme_icons['reset']     = self.grab_theme_icon(icon_path,  4, (16, 16), map_theme_colors)
+        self.theme_icons['play']      = self.grab_theme_icon(icon_path,  5, (16, 16), map_theme_colors)
+        self.theme_icons['pause']     = self.grab_theme_icon(icon_path,  6, (16, 16), map_theme_colors)
+        self.theme_icons['stop']      = self.grab_theme_icon(icon_path,  7, (16, 16), map_theme_colors)
+        self.theme_icons['palette']   = self.grab_theme_icon(icon_path,  8, (16, 16), map_theme_colors)
+        self.theme_icons['add']       = self.grab_theme_icon(icon_path,  9, (16, 16), map_theme_colors)
+        self.theme_icons['subtract']  = self.grab_theme_icon(icon_path, 10, (16, 16), map_theme_colors)
+        self.theme_icons['up']        = self.grab_theme_icon(icon_path, 11, (16, 16), map_theme_colors)
+        self.theme_icons['down']      = self.grab_theme_icon(icon_path, 12, (16, 16), map_theme_colors)
+        self.theme_icons['close']     = self.grab_theme_icon(icon_path, 13, (16, 16), map_theme_colors)
+        self.theme_icons['open']      = self.grab_theme_icon(icon_path, 14, (16, 16), map_theme_colors)
+        self.theme_icons['exit']      = self.grab_theme_icon(icon_path, 15, (16, 16), map_theme_colors)
+        self.theme_icons['export']    = self.grab_theme_icon(icon_path, 16, (16, 16), map_theme_colors)
+
+        self.theme_icons['g_palette'] = self.grab_disabled_icon(self.theme_icons['palette'])
+
+    def apply_theme_icons(self):
+        self.menu_bar_file_open_action.setIcon(self.theme_icons['open'])
+        self.menu_bar_file_close_action.setIcon(self.theme_icons['close'])
+        self.menu_bar_file_quick_export_action.setIcon(self.theme_icons['export'])
+        self.menu_bar_file_export_action.setIcon(self.theme_icons['export'])
+        self.menu_bar_file_quit_action.setIcon(self.theme_icons['exit'])
+
+        self.global_animation_icon.setPixmap(self.theme_icons[self.theme_icons_current_obj_color_anim_icon])
+        self.set_anim_list_box_palette_icons()
+
+        self.timeline_tabs.setTabIcon(0, self.theme_icons['sprito'])
+        self.timeline_tabs.setTabIcon(1, self.theme_icons[self.theme_icons_current_single_color_anim_timeline_icon])
+        self.timeline_tabs.setTabIcon(2, self.theme_icons[self.theme_icons_current_obj_color_anim_timeline_icon])
+
+    def grab_theme_icon(self, file_path, index, icon_size, map_theme_colors = False):
+        if index == 0:
+            if icon_size is None:
+                icon = QtGui.QPixmap(str(FILES_DIR / f'{file_path}.png'))
+            else:
+                icon = QtGui.QPixmap(*icon_size)
+            icon.fill(QtCore.Qt.transparent)
+            return icon
+
+        icon_sheet = QtGui.QPixmap(str(FILES_DIR / f'{file_path}.png'))
+
+        if icon_size is not None:
+            num_columns = icon_sheet.width() // icon_size[0]
+
+            index -= 1
+            x = (index % num_columns) * icon_size[0]
+            y = (index // num_columns) * icon_size[1]
+
+            img_rect = QtCore.QRect(x, y, *icon_size)
+            icon = icon_sheet.copy(img_rect)
+        else:
+            icon = icon_sheet
+
+        if not map_theme_colors:
+            return icon
+
+        qp = QtGui.QPainter(icon)
+        qp.setPen(QtCore.Qt.NoPen)
+
+        icon_map_sheet = QtGui.QPixmap(str(FILES_DIR / f'{file_path}_map.png'))
+        icon_map = icon_map_sheet.copy(img_rect)
+
+        for color in THEME_COLOR_ICON_MASKS:
+            base_color = QtGui.QColor(THEME_COLORS[color])
+
+            replace_colors = [
+                base_color,
+                base_color.lighter(150),
+                base_color.darker(150),
+            ]
+
+            for i in range(3):
+                replace_color = QtGui.QColor(THEME_COLOR_ICON_MASKS[color][i])
+                replace_region = QtGui.QRegion(icon_map.createMaskFromColor(replace_color, QtCore.Qt.MaskMode.MaskOutColor))
+
+                qp.setClipRegion(replace_region)
+                qp.setBrush(QtGui.QColor(replace_colors[i]))
+
+                qp.drawRect(icon.rect())
+
+        qp.end()
+
+        return icon
+    
+    def grab_disabled_icon(self, icon):
+        icon = icon.toImage()
+        gray_icon = icon.convertToFormat(QtGui.QImage.Format.Format_Grayscale8)
+        gray_icon = gray_icon.convertToFormat(QtGui.QImage.Format.Format_RGBA8888)
+        gray_icon.setAlphaChannel(icon.convertToFormat(QtGui.QImage.Format.Format_Alpha8))
+        return QtGui.QPixmap.fromImage(gray_icon)
