@@ -1124,6 +1124,20 @@ class MainWindow(QtWidgets.QMainWindow):
         if self.color_anim_list_box.currentRow() != 0 and object_properties["has_color_data"] and self.color_anim_list_box.currentItem() is not None:
             color_anim_index = int(self.color_anim_list_box.currentItem().text())
 
+        bounding_boxes = []
+        if self.sprite_anim_timeline.bounding_box_toggle.isChecked():
+            box = self.obj_data.get_animation_properties(
+                object_name     = self.obj_list_box.currentText(), 
+                animation_index = self.anim_list_box.currentRow(),
+            )["bounding_box"]
+            bounding_boxes.append(box)
+
+        if self.object_bounding_box_enable.isChecked():
+            box = object_properties["bounding_box"]
+            bounding_boxes.append(box)
+        
+        self.sprite_viewer.bounding_boxes = bounding_boxes
+
         # for testing
         renderer_to_use = 1
 
@@ -1162,20 +1176,6 @@ class MainWindow(QtWidgets.QMainWindow):
                 fragment_light = [(1.0, 1.0, 1.0, 1.0), (0.0, 0.0, 0.0, 1.0)]
 
                 self.sprite_viewer.draw_3d_image([[base_sprite], palette, fragment_light])
-
-        bounding_boxes = []
-        if self.sprite_anim_timeline.bounding_box_toggle.isChecked():
-            box = self.obj_data.get_animation_properties(
-                object_name     = self.obj_list_box.currentText(), 
-                animation_index = self.anim_list_box.currentRow(),
-            )["bounding_box"]
-            bounding_boxes.append(box)
-
-        if self.object_bounding_box_enable.isChecked():
-            box = object_properties["bounding_box"]
-            bounding_boxes.append(box)
-        
-        self.sprite_viewer.bounding_boxes = bounding_boxes
 
         frame_properties = self.obj_data.get_frame_properties(
             object_name     = self.obj_list_box.currentText(), 
