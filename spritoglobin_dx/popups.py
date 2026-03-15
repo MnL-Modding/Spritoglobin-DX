@@ -230,6 +230,7 @@ class GifExportWindow(QtWidgets.QDialog):
         mono_font.setFixedPitch(True)
 
         self.gif_preview = InteractiveGraphicsWindow(
+            parent = self.parent,
             font = mono_font,
             size = [514, 514],
             default_scale = 2,
@@ -242,6 +243,7 @@ class GifExportWindow(QtWidgets.QDialog):
         self.gif_preview.setMinimumWidth(514)
         self.gif_preview.setMinimumHeight(514)
         self.gif_preview.background_color = QtCore.Qt.transparent
+        self.gif_preview.update_program_theme()
 
         self.gif_timer_text = QtWidgets.QLabel(f"{0:3} / {0:3}")
         self.gif_timer_text.setFont(mono_font)

@@ -6,63 +6,6 @@ from spritoglobin_dx.render import SpriteRenderer
 from spritoglobin_dx.graphics import create_transform_demo
 
 
-def grab_icon(index): # TODO: GET RID OF THIS THING, THIS IS ONLY TEMPORARY
-    map_theme_colors = True
-    icon_size = 16, 16
-    file_path = 'img_icons_dx'
-
-    # this function is being misused horribly rn
-    # this type of thing is for caching, not for grabbing a bunch of shit in real time
-    # it also doesn't need to be global like this for the system i'm planning on replacing it with
-    # i'm sick of working on v0.1 tho so this is what you get for now lmao
-
-    if index == 0:
-        icon = QtGui.QPixmap(*icon_size)
-        icon.fill(QtCore.Qt.transparent)
-        return icon
-
-    icon_sheet = QtGui.QPixmap(str(FILES_DIR / f'{file_path}.png'))
-    num_columns = icon_sheet.width() // icon_size[0]
-
-    index -= 1
-    x = (index % num_columns) * icon_size[0]
-    y = (index // num_columns) * icon_size[1]
-
-    img_rect = QtCore.QRect(x, y, *icon_size)
-    icon = icon_sheet.copy(img_rect)
-
-    if not map_theme_colors:
-        return icon
-    
-    qp = QtGui.QPainter(icon)
-    qp.setPen(QtCore.Qt.NoPen)
-
-    icon_map_sheet = QtGui.QPixmap(str(FILES_DIR / f'{file_path}_map.png'))
-    icon_map = icon_map_sheet.copy(img_rect)
-
-    for color in THEME_COLOR_ICON_MASKS:
-        base_color = QtGui.QColor(THEME_COLORS[color])
-
-        replace_colors = [
-            base_color,
-            base_color.lighter(150),
-            base_color.darker(150),
-        ]
-
-        for i in range(3):
-            replace_color = QtGui.QColor(THEME_COLOR_ICON_MASKS[color][i])
-            replace_region = QtGui.QRegion(icon_map.createMaskFromColor(replace_color, QtCore.Qt.MaskMode.MaskOutColor))
-
-            qp.setClipRegion(replace_region)
-            qp.setBrush(QtGui.QColor(replace_colors[i]))
-
-            qp.drawRect(icon.rect())
-    
-    qp.end()
-
-    return icon
-
-
 class ItemDelegate(QtWidgets.QStyledItemDelegate):
     def paint(self, painter, option, index):
         option.decorationPosition = QtWidgets.QStyleOptionViewItem.Right
@@ -73,10 +16,13 @@ class ItemDelegate(QtWidgets.QStyledItemDelegate):
 class InteractiveGraphicsWindow(QtWidgets.QLabel):
     background_color = QtCore.Qt.GlobalColor.black
 
-    def __init__(self, font, size, default_scale, default_offset, min_scale, max_scale, grid_size, disable_controls = False, even_center = False, three_dimensional = False):
+    def __init__(self, parent, font, size, default_scale, default_offset, min_scale, max_scale, grid_size, disable_controls = False, even_center = False, three_dimensional = False):
         super().__init__()
+
+        self.parent = parent
         self.disable_controls = disable_controls
         self.even_center = even_center
+
         if not self.disable_controls:
             self.setCursor(QtCore.Qt.OpenHandCursor)
 
@@ -94,19 +40,16 @@ class InteractiveGraphicsWindow(QtWidgets.QLabel):
             layout.addWidget(self.info_text, 0, 1, 1, -1)
 
             self.zoom_in_button = QtWidgets.QPushButton()
-            self.zoom_in_button.setIcon(grab_icon(3))
             self.zoom_in_button.clicked.connect(self.zoom_in)
             self.zoom_in_button.setCursor(QtCore.Qt.ArrowCursor)
             layout.addWidget(self.zoom_in_button, 2, 1)
 
             self.zoom_out_button = QtWidgets.QPushButton()
-            self.zoom_out_button.setIcon(grab_icon(2))
             self.zoom_out_button.clicked.connect(self.zoom_out)
             self.zoom_out_button.setCursor(QtCore.Qt.ArrowCursor)
             layout.addWidget(self.zoom_out_button, 2, 2)
 
             self.reset_button = QtWidgets.QPushButton()
-            self.reset_button.setIcon(grab_icon(4))
             self.reset_button.clicked.connect(self.reset_view)
             self.reset_button.setCursor(QtCore.Qt.ArrowCursor)
             layout.addWidget(self.reset_button, 2, 3)
@@ -348,6 +291,14 @@ class InteractiveGraphicsWindow(QtWidgets.QLabel):
         self.img_offset = (0, 0)
         self.img_data = img_data
         self.update_image()
+    
+    def update_program_theme(self):
+        if not self.disable_controls:
+            self.zoom_in_button.setIcon(self.parent.theme_icons['zoom_in'])
+            self.zoom_out_button.setIcon(self.parent.theme_icons['zoom_out'])
+            self.reset_button.setIcon(self.parent.theme_icons['reset'])
+
+        self.update_image()
 
 
 
@@ -358,8 +309,11 @@ class AnimationTimeline(QtWidgets.QWidget):
     playbackStopped = QtCore.Signal()
     timelineScrubbed = QtCore.Signal(int)
 
-    def __init__(self, font, padding_amount, timeline_height, timeline_amt, keyframe_padding, playhead_height):
+    def __init__(self, parent, font, padding_amount, timeline_height, timeline_amt, keyframe_padding, playhead_height):
         super().__init__()
+
+        self.parent = parent
+        self.theme_icons_current_play_button_icon = 'play'
 
         self.layout = QtWidgets.QGridLayout()
 
@@ -368,12 +322,10 @@ class AnimationTimeline(QtWidgets.QWidget):
         padding.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
 
         self.play_button = QtWidgets.QPushButton()
-        self.play_button.setIcon(grab_icon(5))
         self.play_button.clicked.connect(self.toggle_playback)
         self.layout.addWidget(self.play_button, 0, 0)
 
         self.stop_button = QtWidgets.QPushButton()
-        self.stop_button.setIcon(grab_icon(7))
         self.stop_button.clicked.connect(self.stop_playback)
         self.layout.addWidget(self.stop_button, 0, 1)
 
@@ -431,16 +383,19 @@ class AnimationTimeline(QtWidgets.QWidget):
         self.playing = not self.playing
 
         if self.playing:
-            self.play_button.setIcon(grab_icon(6))
+            self.theme_icons_current_play_button_icon = 'pause'
+            self.play_button.setIcon(self.parent.theme_icons[self.theme_icons_current_play_button_icon])
         else:
-            self.play_button.setIcon(grab_icon(5))
+            self.theme_icons_current_play_button_icon = 'play'
+            self.play_button.setIcon(self.parent.theme_icons[self.theme_icons_current_play_button_icon])
 
         self.playbackToggled.emit(self.playing)
     
     def stop_playback(self):
         self.playing = False
 
-        self.play_button.setIcon(grab_icon(5))
+        self.theme_icons_current_play_button_icon = 'play'
+        self.play_button.setIcon(self.parent.theme_icons[self.theme_icons_current_play_button_icon])
         self.timeline_scrollarea.horizontalScrollBar().setValue(0)
 
         self.playbackStopped.emit()
@@ -583,13 +538,19 @@ class AnimationTimeline(QtWidgets.QWidget):
         self.current_keyframe_list = keyframes
 
         self.draw_base()
+    
+    def update_program_theme(self):
+        self.play_button.setIcon(self.parent.theme_icons[self.theme_icons_current_play_button_icon])
+        self.stop_button.setIcon(self.parent.theme_icons['stop'])
+
+        self.draw_base()
 
 
 
 class GraphicsAnimationTimeline(AnimationTimeline):
     boundingBoxToggled = QtCore.Signal(bool)
 
-    def __init__(self, font, padding_amount, timeline_height, keyframe_padding, playhead_height):
+    def __init__(self, parent, font, padding_amount, timeline_height, keyframe_padding, playhead_height):
         self.bounding_box_visible = False
         self.current_parts = None
         self.current_matrix = None
@@ -629,7 +590,7 @@ class GraphicsAnimationTimeline(AnimationTimeline):
         frame_data_layout.addWidget(self.matrix_demo, 0, 7, 2, 1, alignment = QtCore.Qt.AlignmentFlag.AlignCenter)
 
         timeline_amt = 1
-        super().__init__(font, padding_amount, timeline_height, timeline_amt, keyframe_padding, playhead_height)
+        super().__init__(parent, font, padding_amount, timeline_height, timeline_amt, keyframe_padding, playhead_height)
 
         self.layout.addWidget(self.bounding_box_toggle_string, 0, 3)
         self.layout.addWidget(self.bounding_box_toggle, 0, 4)
@@ -795,7 +756,7 @@ class GraphicsAnimationTimeline(AnimationTimeline):
 class ColorAnimationTimeline(AnimationTimeline):
     sendLayerPersistance = QtCore.Signal(bool)
 
-    def __init__(self, font, boolean_strings, padding_amount, timeline_height, keyframe_padding, playhead_height):
+    def __init__(self, parent, font, boolean_strings, padding_amount, timeline_height, keyframe_padding, playhead_height):
         self.boolean_strings = boolean_strings
         self.layer_toggle_list_string = QtWidgets.QLabel()
 
@@ -828,7 +789,7 @@ class ColorAnimationTimeline(AnimationTimeline):
         layer_info_layout.addWidget(self.layer_info_alpha, 3, 1, alignment = QtCore.Qt.AlignmentFlag.AlignLeft)
 
         timeline_amt = 4
-        super().__init__(font, padding_amount, timeline_height, timeline_amt, keyframe_padding, playhead_height)
+        super().__init__(parent, font, padding_amount, timeline_height, timeline_amt, keyframe_padding, playhead_height)
 
         self.layout.addWidget(self.layer_toggle_list_string, 0, 4, 1, 2)
         self.layout.addWidget(self.layer_toggle_list, 0, 6)

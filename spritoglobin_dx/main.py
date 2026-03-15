@@ -48,63 +48,6 @@ if __name__ == '__main__':
     main()
 
 
-def grab_icon(index):
-    map_theme_colors = True
-    icon_size = 16, 16
-    file_path = 'img_icons_dx'
-
-    # this function is being misused horribly rn
-    # this type of thing is for caching, not for grabbing a bunch of shit in real time
-    # it also doesn't need to be global like this for the system i'm planning on replacing it with
-    # i'm sick of working on v0.1 tho so this is what you get for now lmao
-
-    if index == 0:
-        icon = QtGui.QPixmap(*icon_size)
-        icon.fill(QtCore.Qt.transparent)
-        return icon
-
-    icon_sheet = QtGui.QPixmap(str(FILES_DIR / f'{file_path}.png'))
-    num_columns = icon_sheet.width() // icon_size[0]
-
-    index -= 1
-    x = (index % num_columns) * icon_size[0]
-    y = (index // num_columns) * icon_size[1]
-
-    img_rect = QtCore.QRect(x, y, *icon_size)
-    icon = icon_sheet.copy(img_rect)
-
-    if not map_theme_colors:
-        return icon
-    
-    qp = QtGui.QPainter(icon)
-    qp.setPen(QtCore.Qt.NoPen)
-
-    icon_map_sheet = QtGui.QPixmap(str(FILES_DIR / f'{file_path}_map.png'))
-    icon_map = icon_map_sheet.copy(img_rect)
-
-    for color in THEME_COLOR_ICON_MASKS:
-        base_color = QtGui.QColor(THEME_COLORS[color])
-
-        replace_colors = [
-            base_color,
-            base_color.lighter(150),
-            base_color.darker(150),
-        ]
-
-        for i in range(3):
-            replace_color = QtGui.QColor(THEME_COLOR_ICON_MASKS[color][i])
-            replace_region = QtGui.QRegion(icon_map.createMaskFromColor(replace_color, QtCore.Qt.MaskMode.MaskOutColor))
-
-            qp.setClipRegion(replace_region)
-            qp.setBrush(QtGui.QColor(replace_colors[i]))
-
-            qp.drawRect(icon.rect())
-    
-    qp.end()
-
-    return icon
-
-
 class MainWindow(QtWidgets.QMainWindow):
     def __init__(self, parent):
         super(MainWindow, self).__init__()
@@ -122,8 +65,8 @@ class MainWindow(QtWidgets.QMainWindow):
         self.current_theme_file_path = 'img_icons_dx'
 
         self.theme_icons_current_obj_color_anim_icon = 'blank'
-        self.theme_icons_current_single_color_anim_timeline_icon = 'blank'
-        self.theme_icons_current_obj_color_anim_timeline_icon = 'blank'
+        self.theme_icons_current_single_color_anim_timeline_icon = 'g_palette'
+        self.theme_icons_current_obj_color_anim_timeline_icon = 'g_palette'
 
         self.parent = parent
 
@@ -407,6 +350,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.anim_list_box.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOn)
 
         self.sprite_viewer = InteractiveGraphicsWindow(
+            parent = self,
             font = mono_font,
             size = [512, 512],
             default_scale = 2,
@@ -421,6 +365,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.sprite_viewer.setMinimumHeight(512)
 
         self.sprite_anim_timeline = GraphicsAnimationTimeline(
+            parent           = self,
             font             = mono_font,
             padding_amount   = 9,
             timeline_height  = 39,
@@ -433,6 +378,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.sprite_anim_timeline.timelineScrubbed.connect(self.set_animation_timer)
 
         self.sprite_color_anim_timeline = ColorAnimationTimeline(
+            parent           = self,
             font             = mono_font,
             boolean_strings  = self.boolean_strings,
             padding_amount   = 9,
@@ -446,6 +392,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.sprite_color_anim_timeline.setEnabled(False)
 
         self.global_color_anim_timeline = ColorAnimationTimeline(
+            parent           = self,
             font             = mono_font,
             boolean_strings  = self.boolean_strings,
             padding_amount   = 9,
@@ -530,6 +477,7 @@ class MainWindow(QtWidgets.QMainWindow):
         sprite_part_info_layout.addWidget(string, 0, 0, 1, -1)
 
         self.sprite_part_viewer = InteractiveGraphicsWindow(
+            parent = self,
             font = mono_font,
             size = [256, 256],
             default_scale = 1,
@@ -561,6 +509,7 @@ class MainWindow(QtWidgets.QMainWindow):
         
         tile_viewer_size = (64 * 2) + 8
         self.sprite_part_tile_viewer = InteractiveGraphicsWindow(
+            parent = self,
             font = mono_font,
             size = [tile_viewer_size, tile_viewer_size],
             default_scale = 2,
@@ -659,6 +608,8 @@ class MainWindow(QtWidgets.QMainWindow):
 
         self.animation_timer_going = False
         self.color_timer_going = False
+
+        self.update_global_palette()
 
 
 
@@ -1506,18 +1457,24 @@ class MainWindow(QtWidgets.QMainWindow):
         if play:
             self.animation_timer_going = True
             self.sprite_color_anim_timeline.playing = True
-            self.sprite_color_anim_timeline.play_button.setIcon(grab_icon(6))
+
+            self.sprite_color_anim_timeline.theme_icons_current_play_button_icon = 'pause'
+            self.sprite_color_anim_timeline.play_button.setIcon(self.theme_icons[self.sprite_color_anim_timeline.theme_icons_current_play_button_icon])
         else:
             self.animation_timer_going = False
             self.sprite_color_anim_timeline.playing = False
-            self.sprite_color_anim_timeline.play_button.setIcon(grab_icon(5))
+
+            self.sprite_color_anim_timeline.theme_icons_current_play_button_icon = 'play'
+            self.sprite_color_anim_timeline.play_button.setIcon(self.theme_icons[self.sprite_color_anim_timeline.theme_icons_current_play_button_icon])
     
     def sprite_anim_stop_playback(self):
         self.animation_timer_going = False
         self.obj_data.set_timers(0, animation_timer = True)
 
         self.sprite_color_anim_timeline.playing = False
-        self.sprite_color_anim_timeline.play_button.setIcon(grab_icon(5))
+
+        self.sprite_color_anim_timeline.theme_icons_current_play_button_icon = 'play'
+        self.sprite_color_anim_timeline.play_button.setIcon(self.theme_icons[self.sprite_color_anim_timeline.theme_icons_current_play_button_icon])
 
         self.sprite_anim_timeline.set_time(0)
         self.sprite_color_anim_timeline.set_time(0)
@@ -1528,18 +1485,24 @@ class MainWindow(QtWidgets.QMainWindow):
         if play:
             self.animation_timer_going = True
             self.sprite_anim_timeline.playing = True
-            self.sprite_anim_timeline.play_button.setIcon(grab_icon(6))
+
+            self.sprite_anim_timeline.theme_icons_current_play_button_icon = 'pause'
+            self.sprite_anim_timeline.play_button.setIcon(self.theme_icons[self.sprite_anim_timeline.theme_icons_current_play_button_icon])
         else:
             self.animation_timer_going = False
             self.sprite_anim_timeline.playing = False
-            self.sprite_anim_timeline.play_button.setIcon(grab_icon(5))
+
+            self.sprite_anim_timeline.theme_icons_current_play_button_icon = 'play'
+            self.sprite_anim_timeline.play_button.setIcon(self.theme_icons[self.sprite_anim_timeline.theme_icons_current_play_button_icon])
     
     def sprite_color_anim_stop_playback(self):
         self.animation_timer_going = False
         self.obj_data.set_timers(0, animation_timer = True)
 
         self.sprite_anim_timeline.playing = False
-        self.sprite_anim_timeline.play_button.setIcon(grab_icon(5))
+
+        self.sprite_anim_timeline.theme_icons_current_play_button_icon = 'play'
+        self.sprite_anim_timeline.play_button.setIcon(self.theme_icons[self.sprite_anim_timeline.theme_icons_current_play_button_icon])
 
         self.sprite_anim_timeline.set_time(0)
         self.sprite_color_anim_timeline.set_time(0)
@@ -1609,13 +1572,15 @@ class MainWindow(QtWidgets.QMainWindow):
         self.apply_theme_icons()
         self.setWindowIcon(self.current_window_icon)
 
-        self.sprite_viewer.update_image()
-        self.sprite_part_viewer.update_image()
-        self.sprite_part_tile_viewer.update_image()
+        self.sprite_viewer.update_program_theme()
+        self.sprite_part_viewer.update_program_theme()
+        self.sprite_part_tile_viewer.update_program_theme()
 
-        self.sprite_anim_timeline.draw_full()
-        self.sprite_color_anim_timeline.draw_full()
-        self.global_color_anim_timeline.draw_full()
+        self.sprite_anim_timeline.update_program_theme()
+        self.sprite_color_anim_timeline.update_program_theme()
+        self.global_color_anim_timeline.update_program_theme()
+
+        self.update_renderer_data()
     
     def globin_theme_toggle(self):
         THEME_COLORS["M_COLOR_0"], THEME_COLORS["L_COLOR_0"], THEME_COLORS["K_COLOR_0"], THEME_COLORS["P_COLOR_0"] = THEME_PRESETS['glob']
@@ -1624,8 +1589,8 @@ class MainWindow(QtWidgets.QMainWindow):
     def set_theme_icons(self, icon_path, map_theme_colors):
         self.theme_icons['blank']     = self.grab_theme_icon(icon_path,  0, (16, 16), map_theme_colors)
         self.theme_icons['sprito']    = self.grab_theme_icon(icon_path,  1, (16, 16), map_theme_colors)
-        self.theme_icons['zoom_in']   = self.grab_theme_icon(icon_path,  2, (16, 16), map_theme_colors)
-        self.theme_icons['zoom_out']  = self.grab_theme_icon(icon_path,  3, (16, 16), map_theme_colors)
+        self.theme_icons['zoom_out']  = self.grab_theme_icon(icon_path,  2, (16, 16), map_theme_colors)
+        self.theme_icons['zoom_in']   = self.grab_theme_icon(icon_path,  3, (16, 16), map_theme_colors)
         self.theme_icons['reset']     = self.grab_theme_icon(icon_path,  4, (16, 16), map_theme_colors)
         self.theme_icons['play']      = self.grab_theme_icon(icon_path,  5, (16, 16), map_theme_colors)
         self.theme_icons['pause']     = self.grab_theme_icon(icon_path,  6, (16, 16), map_theme_colors)
