@@ -133,8 +133,9 @@ class ObjFile:
         has_color_data = color_data.global_animations != {}
 
         return {
-            "color_mode":       obj_data.color_mode,
             "animation_number": obj_data.anim_num,
+            "color_mode":       obj_data.color_mode,
+            "renderer_number":  obj_data.renderer_num,
             "bounding_box":     obj_data.bounding_box,
             "has_color_data":   has_color_data,
             "color_data":       color_data.global_animations,

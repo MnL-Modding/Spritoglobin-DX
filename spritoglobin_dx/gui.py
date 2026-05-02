@@ -762,8 +762,8 @@ class GraphicsAnimationTimeline(AnimationTimeline):
 class ColorAnimationTimeline(AnimationTimeline):
     sendLayerPersistance = QtCore.Signal(bool)
 
-    def __init__(self, parent, font, boolean_strings, padding_amount, timeline_height, keyframe_padding, playhead_height):
-        self.boolean_strings = boolean_strings
+    def __init__(self, parent, font, generic_strings, padding_amount, timeline_height, keyframe_padding, playhead_height):
+        self.generic_strings = generic_strings
         self.layer_toggle_list_string = QtWidgets.QLabel()
 
         self.layer_toggle_list = QtWidgets.QComboBox()
@@ -912,7 +912,7 @@ class ColorAnimationTimeline(AnimationTimeline):
 
         if self.current_anim_length != 0:
             channel = self.animation_data[self.current_layer]["render_channel"]
-            persistant = self.boolean_strings[self.animation_data[self.current_layer]["is_persistant"]]
+            persistant = self.generic_strings[self.animation_data[self.current_layer]["is_persistant"]]
         else:
             channel = "?"
             persistant = "?"

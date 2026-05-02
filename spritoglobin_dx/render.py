@@ -273,9 +273,12 @@ class SpriteRenderer:
                     tex.filter = (moderngl.NEAREST, moderngl.NEAREST)
                     tex.use(0)
 
-                    pass_data = [value for render_pass in renderer_data.pass_list for value in [*render_pass[0].values()] + [render_pass[1], 1]]
-                    pass_data.extend([0] * (96 - len(pass_data)))
-                    pass_bytes = struct.pack('96i', *pass_data)
+                    if renderer_data is not None:
+                        pass_data = [value for render_pass in renderer_data.pass_list for value in [*render_pass[0].values()] + [render_pass[1], 1]]
+                        pass_data.extend([0] * (96 - len(pass_data)))
+                        pass_bytes = struct.pack('96i', *pass_data)
+                    else:
+                        pass_bytes = struct.pack('96i', *bytes(96))
 
                     pass_data_buffer = self.context.buffer(pass_bytes)
                     self.program['PassBlock'].binding = 0

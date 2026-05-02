@@ -281,7 +281,7 @@
         <translation>Show Object Bounding Box</translation>
     </message>
     <message>
-        <location filename="../main.py" line="991"/>
+        <location filename="../main.py" line="992"/>
         <source>ColorModeInfo</source>
         <translation>Color Mode: {0}</translation>
     </message>
@@ -302,12 +302,6 @@
         <translation>Color Animations:</translation>
     </message>
     <message>
-        <location filename="../main.py" line="920"/>
-        <location filename="../main.py" line="940"/>
-        <source>ColorAnimSelectorNone</source>
-        <translation>None</translation>
-    </message>
-    <message>
         <location filename="../main.py" line="689"/>
         <source>ExportFailNoDataTitle</source>
         <translation>No Object Data</translation>
@@ -318,12 +312,12 @@
         <translation>There is no currently loaded Object data! Please load an Object archive before attempting to export a file.</translation>
     </message>
     <message>
-        <location filename="../main.py" line="828"/>
+        <location filename="../main.py" line="829"/>
         <source>CheckUpdateQueryTitle</source>
         <translation>Automatic Update Checking</translation>
     </message>
     <message>
-        <location filename="../main.py" line="829"/>
+        <location filename="../main.py" line="830"/>
         <source>CheckUpdateQueryBlurb</source>
         <translation>Would you like to allow Spritoglobin DX to automatically connect to the internet and check for updates?
 
@@ -332,7 +326,7 @@ This can always be changed later in the options.
 Note: This will make a request to GitHub&apos;s servers, which will receive your IP address and process it as per their {0}.</translation>
     </message>
     <message>
-        <location filename="../main.py" line="819"/>
+        <location filename="../main.py" line="820"/>
         <source>CheckUpdateQueryLinkString</source>
         <translation>Privacy Statement</translation>
     </message>
@@ -489,82 +483,82 @@ Download it on {2}</translation>
         <translation>False</translation>
     </message>
     <message>
-        <location filename="../main.py" line="1238"/>
-        <source>SpritePartSelectorNone</source>
-        <translation>None Selected</translation>
-    </message>
-    <message>
-        <location filename="../main.py" line="1350"/>
+        <location filename="../main.py" line="1354"/>
         <source>SpritePartSizeTitle</source>
         <translation>Size: {0}</translation>
     </message>
     <message>
-        <location filename="../main.py" line="1327"/>
+        <location filename="../main.py" line="1331"/>
         <source>SpritePartBufferOffset</source>
         <translation>Graphics Buffer Data: {0}h - {1}h</translation>
     </message>
     <message>
-        <location filename="../main.py" line="1334"/>
+        <location filename="../main.py" line="1338"/>
         <source>SpritePartSize0</source>
         <translation>0 (Small)</translation>
     </message>
     <message>
-        <location filename="../main.py" line="1334"/>
+        <location filename="../main.py" line="1338"/>
         <source>SpritePartSize1</source>
         <translation>1 (Medium)</translation>
     </message>
     <message>
-        <location filename="../main.py" line="1334"/>
+        <location filename="../main.py" line="1338"/>
         <source>SpritePartSize2</source>
         <translation>2 (Large)</translation>
     </message>
     <message>
-        <location filename="../main.py" line="1334"/>
+        <location filename="../main.py" line="1338"/>
         <source>SpritePartSize3</source>
         <translation>3 (Extra Large)</translation>
     </message>
     <message>
-        <location filename="../main.py" line="1352"/>
+        <location filename="../main.py" line="1356"/>
         <source>SpritePartShapeTitle</source>
         <translation>Shape: {0}</translation>
     </message>
     <message>
-        <location filename="../main.py" line="1335"/>
+        <location filename="../main.py" line="1339"/>
         <source>SpritePartShape0</source>
         <translation>0 (Square)</translation>
     </message>
     <message>
-        <location filename="../main.py" line="1335"/>
+        <location filename="../main.py" line="767"/>
+        <source>GenericDataNone</source>
+        <translation>None</translation>
+    </message>
+    <message>
+        <location filename="../main.py" line="1339"/>
         <source>SpritePartShape1</source>
         <translation>1 (Wide)</translation>
     </message>
     <message>
-        <location filename="../main.py" line="1335"/>
+        <location filename="../main.py" line="1339"/>
         <source>SpritePartShape2</source>
         <translation>2 (Tall)</translation>
     </message>
     <message>
-        <location filename="../main.py" line="1354"/>
+        <location filename="../main.py" line="1358"/>
         <source>SpritePartSizePixels</source>
         <translation>({0}px, {1}px)</translation>
     </message>
     <message>
-        <location filename="../main.py" line="1356"/>
+        <location filename="../main.py" line="1360"/>
         <source>SpritePartFlipHorizontal</source>
         <translation>H. Flip: {0}</translation>
     </message>
     <message>
-        <location filename="../main.py" line="1358"/>
+        <location filename="../main.py" line="1362"/>
         <source>SpritePartFlipVertical</source>
         <translation>V. Flip: {0}</translation>
     </message>
     <message>
-        <location filename="../main.py" line="1360"/>
+        <location filename="../main.py" line="1364"/>
         <source>SpritePartOffset</source>
         <translation>Offset: ({0}px, {1}px)</translation>
     </message>
     <message>
-        <location filename="../main.py" line="1376"/>
+        <location filename="../main.py" line="1384"/>
         <source>SpritePartRendererTitle</source>
         <translation>Renderer: {0}</translation>
     </message>
@@ -612,27 +606,27 @@ Download it on {2}</translation>
         <translation>Edit Theme</translation>
     </message>
     <message>
-        <location filename="../popups.py" line="658"/>
+        <location filename="../popups.py" line="659"/>
         <source>ThemeMapColorsToggle</source>
         <translation>Recolor Icons According to Theme</translation>
     </message>
     <message>
-        <location filename="../popups.py" line="764"/>
+        <location filename="../popups.py" line="765"/>
         <source>ThemeSettingsTitle</source>
         <translation>Theme Settings:</translation>
     </message>
     <message>
-        <location filename="../popups.py" line="768"/>
+        <location filename="../popups.py" line="769"/>
         <source>ThemePresetsTitle</source>
         <translation>Theme Presets:</translation>
     </message>
     <message>
-        <location filename="../popups.py" line="752"/>
+        <location filename="../popups.py" line="753"/>
         <source>ThemeAcceptButton</source>
         <translation>Apply Theme!</translation>
     </message>
     <message>
-        <location filename="../popups.py" line="772"/>
+        <location filename="../popups.py" line="773"/>
         <source>ThemePreviewTitle</source>
         <translation>Preview:</translation>
     </message>

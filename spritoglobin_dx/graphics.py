@@ -168,6 +168,7 @@ def get_sprite_part_set_graphic(obj_anim_data, graph_file, first_part, total_par
             renderer_data = obj_anim_data.get_renderer_data(part_data.renderer)
         else:
             renderer_data = None
+            # renderer_data = obj_anim_data.get_renderer_data(part_data.renderer)
 
         alpha_divisor = None
         if highlighted_part is not None and highlighted_part != i:

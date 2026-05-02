@@ -401,7 +401,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.sprite_color_anim_timeline = ColorAnimationTimeline(
             parent           = self,
             font             = mono_font,
-            boolean_strings  = self.boolean_strings,
+            generic_strings  = self.generic_strings,
             padding_amount   = 9,
             timeline_height  = 29,
             keyframe_padding = 2,
@@ -415,7 +415,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.global_color_anim_timeline = ColorAnimationTimeline(
             parent           = self,
             font             = mono_font,
-            boolean_strings  = self.boolean_strings,
+            generic_strings  = self.generic_strings,
             padding_amount   = 9,
             timeline_height  = 29,
             keyframe_padding = 2,
@@ -761,9 +761,10 @@ class MainWindow(QtWidgets.QMainWindow):
             "GameTitleML3R": self.tr("GameTitleML3R"),
         }
 
-        self.boolean_strings = {
+        self.generic_strings = {
             True:  self.tr("GenericBooleanAffirmative"),
             False: self.tr("GenericBooleanNegative"),
+            None:  self.tr("GenericDataNone"),
         }
 
         self.write_config()
@@ -917,7 +918,7 @@ class MainWindow(QtWidgets.QMainWindow):
             self.color_anim_list_box.blockSignals(True)
             self.color_anim_list_box.clear()
             self.color_anim_list_box.blockSignals(False)
-            self.color_anim_list_box.addItem(self.tr("ColorAnimSelectorNone"))
+            self.color_anim_list_box.addItem(self.generic_strings[None])
             self.color_anim_list_box.setEnabled(False)
             return
 
@@ -937,7 +938,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.color_anim_list_box.blockSignals(True)
         self.color_anim_list_box.clear()
 
-        self.color_anim_list_box.addItem(self.tr("ColorAnimSelectorNone"))
+        self.color_anim_list_box.addItem(self.generic_strings[None])
 
         for i in object_properties["color_data"].keys():
             self.color_anim_list_box.addItem(str(i))
@@ -1235,7 +1236,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.sprite_part_list_box.blockSignals(True)
         self.sprite_part_list_box.clear()
 
-        self.sprite_part_list_box.addItem(self.tr("SpritePartSelectorNone"))
+        self.sprite_part_list_box.addItem(self.generic_strings[None])
         [self.sprite_part_list_box.addItem(f"{sprite_part_set[0] + i}") for i in range(sprite_part_set[1])]
         self.sprite_part_list_box.blockSignals(False)
 
@@ -1306,10 +1307,13 @@ class MainWindow(QtWidgets.QMainWindow):
             self.sprite_part_tile_viewer.draw_image(None, (0, 0))
     
     def set_highlighted_sprite_part_info(self, sprite_part_properties):
+        object_properties = None
+        if self.obj_data is not None:
+            object_properties = self.obj_data.get_object_properties(object_name = self.obj_list_box.currentText())
+        
         if sprite_part_properties is not None:
             self.sprite_part_graphics_buffer_info_text.setEnabled(True)
 
-            object_properties = self.obj_data.get_object_properties(object_name = self.obj_list_box.currentText())
             buf_off = sprite_part_properties["buffer_offset"] * 128
             buf_size = (sprite_part_properties["size"][0] * sprite_part_properties["size"][1])
             buf_size *= object_properties["color_mode"][1] / 8
@@ -1334,8 +1338,8 @@ class MainWindow(QtWidgets.QMainWindow):
             size = [self.tr("SpritePartSize0"), self.tr("SpritePartSize1"), self.tr("SpritePartSize2"), self.tr("SpritePartSize3")][sprite_part_properties["oam_size"]]
             shape = [self.tr("SpritePartShape0"), self.tr("SpritePartShape1"), self.tr("SpritePartShape2")][sprite_part_properties["oam_shape"]]
             px_size = sprite_part_properties["size"]
-            h_flip = self.boolean_strings[sprite_part_properties["horizontal_flip"]]
-            v_flip = self.boolean_strings[sprite_part_properties["vertical_flip"]]
+            h_flip = self.generic_strings[sprite_part_properties["horizontal_flip"]]
+            v_flip = self.generic_strings[sprite_part_properties["vertical_flip"]]
             offset = sprite_part_properties["offset"]
         else:
             self.sprite_part_info_text.setEnabled(False)
@@ -1364,7 +1368,11 @@ class MainWindow(QtWidgets.QMainWindow):
 
         string = ""
 
-        if sprite_part_properties is not None:
+        if object_properties is not None and object_properties["renderer_number"] == 0:
+            self.sprite_part_renderer_info_text.setEnabled(False)
+
+            renderer_index = self.generic_strings[None]
+        elif sprite_part_properties is not None:
             self.sprite_part_renderer_info_text.setEnabled(True)
 
             renderer_index = sprite_part_properties["renderer_index"]
