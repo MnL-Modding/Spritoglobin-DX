@@ -2,6 +2,7 @@ import configparser
 import math
 import os
 from functools import partial
+from itertools import groupby
 
 from PIL import Image
 from PySide6 import QtWidgets, QtGui
@@ -506,7 +507,6 @@ class GifExportWindow(QtWidgets.QDialog):
         self.reset_timer()
         self.animation_timer.stop()
         object_properties = self.obj_data.get_object_properties(object_name = self.obj_data.cached_object.name)
-        animations = [anim for anim, count in self.current_anim_list for _ in range(count)]
 
         color_animation = -1
         if self.color_anim_list_box.currentIndex() != 0:
@@ -522,20 +522,26 @@ class GifExportWindow(QtWidgets.QDialog):
         image_data = []
         min_x, max_x, min_y, max_y = 0, 0, 0, 0
 
-        for anim_num in animations:
+        anim_list = []
+        for key, group in groupby(self.current_anim_list, key = lambda x: x[0]):
+            anim_list.append([key, sum(count for _, count in group)])
+
+        for anim, count in anim_list:
             object_name = self.obj_data.cached_object.name
 
             self.obj_data.set_timers(0, animation_timer = True)
 
             animation_properties = self.obj_data.get_animation_properties(
                 object_name     = object_name,
-                animation_index = anim_num,
+                animation_index = anim,
             )
 
-            for i in range(math.ceil(animation_properties["length"] / advance_amt)):
+            anim_length = animation_properties["length"] * count
+
+            for i in range(math.ceil(anim_length / advance_amt)):
                 img, (w, h), (x, y) = self.obj_data.get_sprite_with_offset(
                     object_name      = object_name, 
-                    animation_index  = anim_num,
+                    animation_index  = anim,
                     color_anim_index = color_animation,
                 )
 
