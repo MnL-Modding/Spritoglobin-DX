@@ -199,6 +199,16 @@ class GifExportWindow(QtWidgets.QDialog):
         self.color_anim_list_box = QtWidgets.QComboBox()
         self.color_anim_list_box.currentIndexChanged.connect(self.reset_timer)
 
+        self.speed_controller = QtWidgets.QDoubleSpinBox()
+        self.speed_controller.setRange(0.1, 100)
+        self.speed_controller.setSingleStep(0.1)
+        self.speed_controller.setValue(1)
+
+        self.scale_controller = QtWidgets.QDoubleSpinBox()
+        self.scale_controller.setRange(0.1, 100)
+        self.scale_controller.setSingleStep(0.1)
+        self.scale_controller.setValue(1)
+
         self.anim_list_box = QtWidgets.QListWidget()
         self.anim_list_box.currentRowChanged.connect(self.update_anim_options)
 
@@ -238,7 +248,7 @@ class GifExportWindow(QtWidgets.QDialog):
             parent = self.parent,
             font = mono_font,
             size = [514, 514],
-            default_scale = 2,
+            default_scale = 1,
             default_offset = [0.0, 0.0],
             min_scale = 0.5,
             max_scale = 16.0,
@@ -256,16 +266,18 @@ class GifExportWindow(QtWidgets.QDialog):
 
         layout.addWidget(self.framerate_choose_box, 1, 0, 1, 2)
         layout.addWidget(self.color_anim_list_box, 1, 2, 1, 2)
-        layout.addWidget(self.anim_list_box, 3, 0, 1, 4)
-        layout.addWidget(self.add_button, 4, 0)
-        layout.addWidget(self.remove_button, 4, 1)
-        layout.addWidget(self.move_up_button, 4, 2)
-        layout.addWidget(self.move_down_button, 4, 3)
-        layout.addWidget(self.anim_choose_list_box, 8, 0, 1, 2)
-        layout.addWidget(self.loop_choose_spin_box, 8, 2, 1, 2)
-        layout.addWidget(self.export_button, 9, 0, 1, 4, alignment = QtCore.Qt.AlignmentFlag.AlignCenter)
-        layout.addWidget(self.gif_preview, 0, 4, 9, 1)
-        layout.addWidget(self.gif_timer_text, 9, 4, alignment = QtCore.Qt.AlignmentFlag.AlignRight)
+        layout.addWidget(self.speed_controller, 3, 0, 1, 2)
+        layout.addWidget(self.scale_controller, 3, 2, 1, 2)
+        layout.addWidget(self.anim_list_box, 5, 0, 1, 4)
+        layout.addWidget(self.add_button, 6, 0)
+        layout.addWidget(self.remove_button, 6, 1)
+        layout.addWidget(self.move_up_button, 6, 2)
+        layout.addWidget(self.move_down_button, 6, 3)
+        layout.addWidget(self.anim_choose_list_box, 10, 0, 1, 2)
+        layout.addWidget(self.loop_choose_spin_box, 10, 2, 1, 2)
+        layout.addWidget(self.export_button, 11, 0, 1, 4, alignment = QtCore.Qt.AlignmentFlag.AlignCenter)
+        layout.addWidget(self.gif_preview, 0, 4, 11, 1)
+        layout.addWidget(self.gif_timer_text, 11, 4, alignment = QtCore.Qt.AlignmentFlag.AlignRight)
 
         string = QtWidgets.QLabel(self.tr("AnimationOptionFramerateTitle"))
         string.setBuddy(self.framerate_choose_box)
@@ -277,25 +289,35 @@ class GifExportWindow(QtWidgets.QDialog):
         string.setEnabled(False)
         layout.addWidget(string, 0, 2, 1, 2)
 
+        string = QtWidgets.QLabel(self.tr("AnimationOptionSpeedTitle"))
+        string.setBuddy(self.speed_controller)
+        string.setEnabled(False)
+        layout.addWidget(string, 2, 0, 1, 2)
+
+        string = QtWidgets.QLabel(self.tr("AnimationOptionScaleTitle"))
+        string.setBuddy(self.scale_controller)
+        string.setEnabled(False)
+        layout.addWidget(string, 2, 2, 1, 2)
+
         string = QtWidgets.QLabel(self.tr("ExportAnimationListTitle"))
         string.setBuddy(self.anim_list_box)
         string.setEnabled(False)
-        layout.addWidget(string, 2, 0, 1, 4)
+        layout.addWidget(string, 4, 0, 1, 4)
 
         string = QtWidgets.QLabel(self.tr("AnimationListDataCurrentAnim"))
         string.setBuddy(self.anim_choose_list_box)
         string.setEnabled(False)
-        layout.addWidget(string, 7, 0, 1, 2)
+        layout.addWidget(string, 9, 0, 1, 2)
 
         string = QtWidgets.QLabel(self.tr("AnimationListDataCurrentLoops"))
         string.setBuddy(self.loop_choose_spin_box)
         string.setEnabled(False)
-        layout.addWidget(string, 7, 2, 1, 2)
+        layout.addWidget(string, 9, 2, 1, 2)
 
         line = QtWidgets.QFrame()
         line.setFrameShape(QtWidgets.QFrame.HLine)
         line.setFrameShadow(QtWidgets.QFrame.Sunken)
-        layout.addWidget(line, 6, 0, 1, 4)
+        layout.addWidget(line, 8, 0, 1, 4)
 
         self.setLayout(layout)
         self.export_button.setFocus()
@@ -318,8 +340,12 @@ class GifExportWindow(QtWidgets.QDialog):
         framerate = self.framerate_choose_box.currentIndex()
         # 60 / 50 fps, 30 / 25 fps
         advance_amt = [ 1,  2][framerate]
+        
+        speed = self.speed_controller.value()
 
-        self.obj_data.increment_timers(advance_amt, animation_timer = True, color_timer = True)
+        advance_amt_adjusted = advance_amt * speed
+
+        self.obj_data.increment_timers(advance_amt_adjusted, animation_timer = True, color_timer = True)
         
         self.update_preview()
 
@@ -336,6 +362,8 @@ class GifExportWindow(QtWidgets.QDialog):
     def update_preview(self):
         anim, _ = self.current_anim_list[self.anim_list_box.currentRow()]
 
+        scale = self.scale_controller.value()
+
         color_animation = -1
         if self.color_anim_list_box.currentIndex() != 0:
             color_animation = int(self.color_anim_list_box.currentText())
@@ -350,7 +378,7 @@ class GifExportWindow(QtWidgets.QDialog):
             img_data,  # sprite parts list
             (0, 0, 0), # translation
             (0, 0, 0), # rotation
-            (1, 1, 1), # scale
+            (scale, scale, 1), # scale
         ]
 
         palette = self.obj_data.get_object_palette(
@@ -369,7 +397,7 @@ class GifExportWindow(QtWidgets.QDialog):
         )
         
         total_time = animation_properties["length"]
-        current_time = self.obj_data.get_timers(color_timer = True)[0] % total_time
+        current_time = math.floor(self.obj_data.get_timers(color_timer = True)[0]) % total_time
 
         self.gif_timer_text.setText(f"{(current_time):3} / {total_time:3}")
 
@@ -530,7 +558,10 @@ class GifExportWindow(QtWidgets.QDialog):
         # 60 / 50 fps, 30 / 25 fps
         advance_amt = [ 1,  2][framerate]
         
-        scale = 1
+        speed = self.speed_controller.value()
+        scale = self.scale_controller.value()
+
+        advance_amt_adjusted = advance_amt * speed
         
         self.obj_data.init_timers()
 
@@ -554,7 +585,7 @@ class GifExportWindow(QtWidgets.QDialog):
 
             anim_length = animation_properties["length"] * count
 
-            for i in range(math.ceil(anim_length / advance_amt)):
+            for i in range(math.ceil(anim_length / advance_amt_adjusted)):
                 img, (w, h), (x, y) = self.obj_data.get_sprite_with_offset(
                     object_name      = object_name, 
                     animation_index  = anim,
@@ -596,7 +627,7 @@ class GifExportWindow(QtWidgets.QDialog):
                 image_data.append(img)
 
                 self.obj_data.increment_timers(
-                    advance_amt,
+                    advance_amt_adjusted,
                     animation_timer = True,
                     color_timer     = color_animation >= 0,
                 )
@@ -637,8 +668,7 @@ class GifExportWindow(QtWidgets.QDialog):
                 img_data = img,
             )
 
-            img = Image.frombytes("RGBA", image_size, img)
-            img_out.paste(img, (0, 0), img)
+            img_out = Image.frombytes("RGBA", image_size, img)
 
             image_array.append(img_out)
             test_img.alpha_composite(img_out)

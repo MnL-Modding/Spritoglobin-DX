@@ -4,32 +4,32 @@
 <context>
     <name>ColorAnimationTimeline</name>
     <message>
-        <location filename="../gui.py" line="1017"/>
+        <location filename="../gui.py" line="1022"/>
         <source>LayerToggleTitle</source>
         <translation>Current Animation Layer ({0} Total)</translation>
     </message>
     <message>
-        <location filename="../gui.py" line="920"/>
+        <location filename="../gui.py" line="925"/>
         <source>LayerInfoPaletteColor</source>
         <translation>Global Palette Color: {0}</translation>
     </message>
     <message>
-        <location filename="../gui.py" line="922"/>
+        <location filename="../gui.py" line="927"/>
         <source>LayerInfoPersistant</source>
         <translation>Persistent: {0}</translation>
     </message>
     <message>
-        <location filename="../gui.py" line="963"/>
+        <location filename="../gui.py" line="968"/>
         <source>LayerInfoStartEndColor</source>
         <translation>Start/End Colors:</translation>
     </message>
     <message>
-        <location filename="../gui.py" line="785"/>
+        <location filename="../gui.py" line="790"/>
         <source>LayerInfoColorRGB</source>
         <translation>Color:</translation>
     </message>
     <message>
-        <location filename="../gui.py" line="787"/>
+        <location filename="../gui.py" line="792"/>
         <source>LayerInfoColorA</source>
         <translation>Alpha:</translation>
     </message>
@@ -37,83 +37,83 @@
 <context>
     <name>FileImportWindow</name>
     <message>
-        <location filename="../popups.py" line="29"/>
+        <location filename="../popups.py" line="31"/>
         <source>ImportWindowTitle</source>
         <translation>Import Object File</translation>
     </message>
     <message>
-        <location filename="../popups.py" line="34"/>
+        <location filename="../popups.py" line="36"/>
         <source>ImportChooseFileButton</source>
         <translation>Choose File</translation>
     </message>
     <message>
-        <location filename="../popups.py" line="79"/>
-        <location filename="../popups.py" line="85"/>
+        <location filename="../popups.py" line="81"/>
+        <location filename="../popups.py" line="87"/>
         <source>ImportChooseFileTitle</source>
         <translation>Choose Object Archive</translation>
     </message>
     <message>
-        <location filename="../popups.py" line="80"/>
+        <location filename="../popups.py" line="82"/>
         <source>ImportChooseFileBlurb</source>
         <translation>Please choose an Object archive from {0}, or {1}.</translation>
     </message>
     <message>
-        <location filename="../popups.py" line="123"/>
+        <location filename="../popups.py" line="125"/>
         <source>ImportFileFailureTitle</source>
         <translation>Failed to Import File</translation>
     </message>
     <message>
-        <location filename="../popups.py" line="125"/>
+        <location filename="../popups.py" line="127"/>
         <source>ImportFileFailureBlurb</source>
         <translation>The chosen file raised an error: &quot;{0}&quot;
 
 {1}</translation>
     </message>
     <message>
-        <location filename="../popups.py" line="118"/>
+        <location filename="../popups.py" line="120"/>
         <source>ImportFileError100</source>
         <translation>The file appears to be a valid Object archive, but the data appears to be corrupted or in an unrecognized format.</translation>
     </message>
     <message>
-        <location filename="../popups.py" line="119"/>
+        <location filename="../popups.py" line="121"/>
         <source>ImportFileError101</source>
         <translation>The file does not appear to be a valid Object archive.</translation>
     </message>
     <message>
-        <location filename="../popups.py" line="120"/>
+        <location filename="../popups.py" line="122"/>
         <source>ImportFileError102</source>
         <translation>The file does not appear to be a valid Object archive. Only Object archives from {0}, and {1} are currently supported.</translation>
     </message>
     <message>
-        <location filename="../popups.py" line="39"/>
-        <location filename="../popups.py" line="131"/>
+        <location filename="../popups.py" line="41"/>
+        <location filename="../popups.py" line="133"/>
         <source>FileInfoNone</source>
         <translation>No File Selected</translation>
     </message>
     <message>
-        <location filename="../popups.py" line="139"/>
         <location filename="../popups.py" line="141"/>
+        <location filename="../popups.py" line="143"/>
         <source>FileInfoBG4TitleAndVersion</source>
         <translation>BG4 Archive (Version {0}.{1})</translation>
     </message>
     <message>
-        <location filename="../popups.py" line="153"/>
-        <location filename="../popups.py" line="160"/>
+        <location filename="../popups.py" line="155"/>
+        <location filename="../popups.py" line="162"/>
         <source>FileInfoValidEntryCount</source>
         <translation>{0} Valid Entries, {1} Invalid Entries</translation>
     </message>
     <message>
-        <location filename="../popups.py" line="148"/>
+        <location filename="../popups.py" line="150"/>
         <source>FileInfoCellAnimeTitle</source>
         <translation>CellAnime Info</translation>
     </message>
     <message>
-        <location filename="../popups.py" line="42"/>
+        <location filename="../popups.py" line="44"/>
         <source>ImportAlphabetizeToggle</source>
         <translation>Alphabetize File Contents After Import</translation>
     </message>
     <message>
-        <location filename="../popups.py" line="45"/>
+        <location filename="../popups.py" line="47"/>
         <source>ImportAcceptButton</source>
         <translation>Import File!</translation>
     </message>
@@ -121,73 +121,83 @@
 <context>
     <name>GifExportWindow</name>
     <message>
-        <location filename="../popups.py" line="183"/>
+        <location filename="../popups.py" line="185"/>
         <source>ExportWindowTitle</source>
         <translation>Export File</translation>
     </message>
     <message>
-        <location filename="../popups.py" line="277"/>
+        <location filename="../popups.py" line="292"/>
+        <source>AnimationOptionSpeedTitle</source>
+        <translation>Playback Speed:</translation>
+    </message>
+    <message>
+        <location filename="../popups.py" line="297"/>
+        <source>AnimationOptionScaleTitle</source>
+        <translation>Export Scale:</translation>
+    </message>
+    <message>
+        <location filename="../popups.py" line="302"/>
         <source>ExportAnimationListTitle</source>
         <translation>Animation Sequence:</translation>
     </message>
     <message>
-        <location filename="../popups.py" line="448"/>
+        <location filename="../popups.py" line="485"/>
         <source>ExportAnimationListData</source>
         <translation>Animation {0}</translation>
     </message>
     <message>
-        <location filename="../popups.py" line="450"/>
+        <location filename="../popups.py" line="487"/>
         <source>ExportAnimationListDataWithLoop</source>
         <translation>Animation {0} ({1} Loops)</translation>
     </message>
     <message>
-        <location filename="../popups.py" line="267"/>
+        <location filename="../popups.py" line="282"/>
         <source>AnimationOptionFramerateTitle</source>
         <translation>Framerate:</translation>
     </message>
     <message>
-        <location filename="../popups.py" line="190"/>
-        <location filename="../popups.py" line="191"/>
+        <location filename="../popups.py" line="192"/>
+        <location filename="../popups.py" line="193"/>
         <source>AnimationOptionFramerate</source>
         <translation>{0} fps</translation>
     </message>
     <message>
-        <location filename="../popups.py" line="272"/>
+        <location filename="../popups.py" line="287"/>
         <source>AnimationOptionColorAnimTitle</source>
         <translation>Color Animation:</translation>
     </message>
     <message>
-        <location filename="../popups.py" line="423"/>
+        <location filename="../popups.py" line="460"/>
         <source>AnimationOptionColorAnimNone</source>
         <translation>None</translation>
     </message>
     <message>
-        <location filename="../popups.py" line="282"/>
+        <location filename="../popups.py" line="307"/>
         <source>AnimationListDataCurrentAnim</source>
         <translation>Animation:</translation>
     </message>
     <message>
-        <location filename="../popups.py" line="287"/>
+        <location filename="../popups.py" line="312"/>
         <source>AnimationListDataCurrentLoops</source>
         <translation>Loops:</translation>
     </message>
     <message>
-        <location filename="../popups.py" line="227"/>
+        <location filename="../popups.py" line="239"/>
         <source>ExportAcceptButton</source>
         <translation>Export File!</translation>
     </message>
     <message>
-        <location filename="../popups.py" line="489"/>
+        <location filename="../popups.py" line="526"/>
         <source>ExportChooseFileTitle</source>
         <translation>Export File</translation>
     </message>
     <message>
-        <location filename="../popups.py" line="616"/>
+        <location filename="../popups.py" line="706"/>
         <source>ExportFileSuccessTitle</source>
         <translation>Export Successful</translation>
     </message>
     <message>
-        <location filename="../popups.py" line="617"/>
+        <location filename="../popups.py" line="707"/>
         <source>ExportFileSuccessBlurb</source>
         <translation>File {0} has been successfully exported!</translation>
     </message>
@@ -195,65 +205,65 @@
 <context>
     <name>GraphicsAnimationTimeline</name>
     <message>
-        <location filename="../gui.py" line="562"/>
+        <location filename="../gui.py" line="567"/>
         <source>ShowBoundingBoxToggle</source>
         <translation>Show Animation Bounding Box</translation>
     </message>
     <message>
-        <location filename="../gui.py" line="665"/>
-        <location filename="../gui.py" line="667"/>
-        <location filename="../gui.py" line="671"/>
+        <location filename="../gui.py" line="670"/>
+        <location filename="../gui.py" line="672"/>
+        <location filename="../gui.py" line="676"/>
         <source>FrameDataSpritePartsUsed</source>
         <translation>Sprite Part(s) Used: {0}</translation>
     </message>
     <message>
-        <location filename="../gui.py" line="670"/>
+        <location filename="../gui.py" line="675"/>
         <source>FrameDataSpritePartsUsedNone</source>
         <translation>No Sprite Parts Used!</translation>
     </message>
     <message>
-        <location filename="../gui.py" line="676"/>
-        <location filename="../gui.py" line="680"/>
+        <location filename="../gui.py" line="681"/>
+        <location filename="../gui.py" line="685"/>
         <source>FrameDataTransformMatrixUsed</source>
         <translation>Transformation Matrix Used: {0}</translation>
     </message>
     <message>
-        <location filename="../gui.py" line="679"/>
+        <location filename="../gui.py" line="684"/>
         <source>FrameDataTransformMatrixUsedNone</source>
         <translation>No Transformation Matrix Used!</translation>
     </message>
     <message>
-        <location filename="../gui.py" line="685"/>
+        <location filename="../gui.py" line="690"/>
         <source>FrameDataTransformMatrixInverted</source>
         <translation>(Rotation is Inverted)</translation>
     </message>
     <message>
-        <location filename="../gui.py" line="700"/>
+        <location filename="../gui.py" line="705"/>
         <source>FrameDataTransformMatrixXShear</source>
         <translation>X Shear: {0}</translation>
     </message>
     <message>
-        <location filename="../gui.py" line="702"/>
+        <location filename="../gui.py" line="707"/>
         <source>FrameDataTransformMatrixYShear</source>
         <translation>Y Shear: {0}</translation>
     </message>
     <message>
-        <location filename="../gui.py" line="699"/>
+        <location filename="../gui.py" line="704"/>
         <source>FrameDataTransformMatrixXScale</source>
         <translation>X Scale: {0}</translation>
     </message>
     <message>
-        <location filename="../gui.py" line="703"/>
+        <location filename="../gui.py" line="708"/>
         <source>FrameDataTransformMatrixYScale</source>
         <translation>Y Scale: {0}</translation>
     </message>
     <message>
-        <location filename="../gui.py" line="701"/>
+        <location filename="../gui.py" line="706"/>
         <source>FrameDataTransformMatrixXPos</source>
         <translation>X Position: {1}</translation>
     </message>
     <message>
-        <location filename="../gui.py" line="704"/>
+        <location filename="../gui.py" line="709"/>
         <source>FrameDataTransformMatrixYPos</source>
         <translation>Y Position: {1}</translation>
     </message>
@@ -281,7 +291,7 @@
         <translation>Show Object Bounding Box</translation>
     </message>
     <message>
-        <location filename="../main.py" line="992"/>
+        <location filename="../main.py" line="993"/>
         <source>ColorModeInfo</source>
         <translation>Color Mode: {0}</translation>
     </message>
@@ -312,12 +322,12 @@
         <translation>There is no currently loaded Object data! Please load an Object archive before attempting to export a file.</translation>
     </message>
     <message>
-        <location filename="../main.py" line="829"/>
+        <location filename="../main.py" line="830"/>
         <source>CheckUpdateQueryTitle</source>
         <translation>Automatic Update Checking</translation>
     </message>
     <message>
-        <location filename="../main.py" line="830"/>
+        <location filename="../main.py" line="831"/>
         <source>CheckUpdateQueryBlurb</source>
         <translation>Would you like to allow Spritoglobin DX to automatically connect to the internet and check for updates?
 
@@ -326,7 +336,7 @@ This can always be changed later in the options.
 Note: This will make a request to GitHub&apos;s servers, which will receive your IP address and process it as per their {0}.</translation>
     </message>
     <message>
-        <location filename="../main.py" line="820"/>
+        <location filename="../main.py" line="821"/>
         <source>CheckUpdateQueryLinkString</source>
         <translation>Privacy Statement</translation>
     </message>
@@ -473,127 +483,127 @@ Download it on {2}</translation>
         <translation>Current Sprite Part:</translation>
     </message>
     <message>
-        <location filename="../main.py" line="765"/>
+        <location filename="../main.py" line="766"/>
         <source>GenericBooleanAffirmative</source>
         <translation>True</translation>
     </message>
     <message>
-        <location filename="../main.py" line="766"/>
+        <location filename="../main.py" line="767"/>
         <source>GenericBooleanNegative</source>
         <translation>False</translation>
     </message>
     <message>
-        <location filename="../main.py" line="1354"/>
+        <location filename="../main.py" line="1355"/>
         <source>SpritePartSizeTitle</source>
         <translation>Size: {0}</translation>
     </message>
     <message>
-        <location filename="../main.py" line="1331"/>
+        <location filename="../main.py" line="1332"/>
         <source>SpritePartBufferOffset</source>
         <translation>Graphics Buffer Data: {0}h - {1}h</translation>
     </message>
     <message>
-        <location filename="../main.py" line="1338"/>
+        <location filename="../main.py" line="1339"/>
         <source>SpritePartSize0</source>
         <translation>0 (Small)</translation>
     </message>
     <message>
-        <location filename="../main.py" line="1338"/>
+        <location filename="../main.py" line="1339"/>
         <source>SpritePartSize1</source>
         <translation>1 (Medium)</translation>
     </message>
     <message>
-        <location filename="../main.py" line="1338"/>
+        <location filename="../main.py" line="1339"/>
         <source>SpritePartSize2</source>
         <translation>2 (Large)</translation>
     </message>
     <message>
-        <location filename="../main.py" line="1338"/>
+        <location filename="../main.py" line="1339"/>
         <source>SpritePartSize3</source>
         <translation>3 (Extra Large)</translation>
     </message>
     <message>
-        <location filename="../main.py" line="1356"/>
+        <location filename="../main.py" line="1357"/>
         <source>SpritePartShapeTitle</source>
         <translation>Shape: {0}</translation>
     </message>
     <message>
-        <location filename="../main.py" line="1339"/>
+        <location filename="../main.py" line="1340"/>
         <source>SpritePartShape0</source>
         <translation>0 (Square)</translation>
     </message>
     <message>
-        <location filename="../main.py" line="767"/>
+        <location filename="../main.py" line="768"/>
         <source>GenericDataNone</source>
         <translation>None</translation>
     </message>
     <message>
-        <location filename="../main.py" line="1339"/>
+        <location filename="../main.py" line="1340"/>
         <source>SpritePartShape1</source>
         <translation>1 (Wide)</translation>
     </message>
     <message>
-        <location filename="../main.py" line="1339"/>
+        <location filename="../main.py" line="1340"/>
         <source>SpritePartShape2</source>
         <translation>2 (Tall)</translation>
     </message>
     <message>
-        <location filename="../main.py" line="1358"/>
+        <location filename="../main.py" line="1359"/>
         <source>SpritePartSizePixels</source>
         <translation>({0}px, {1}px)</translation>
     </message>
     <message>
-        <location filename="../main.py" line="1360"/>
+        <location filename="../main.py" line="1361"/>
         <source>SpritePartFlipHorizontal</source>
         <translation>H. Flip: {0}</translation>
     </message>
     <message>
-        <location filename="../main.py" line="1362"/>
+        <location filename="../main.py" line="1363"/>
         <source>SpritePartFlipVertical</source>
         <translation>V. Flip: {0}</translation>
     </message>
     <message>
-        <location filename="../main.py" line="1364"/>
+        <location filename="../main.py" line="1365"/>
         <source>SpritePartOffset</source>
         <translation>Offset: ({0}px, {1}px)</translation>
     </message>
     <message>
-        <location filename="../main.py" line="1384"/>
+        <location filename="../main.py" line="1385"/>
         <source>SpritePartRendererTitle</source>
         <translation>Renderer: {0}</translation>
     </message>
     <message>
-        <location filename="../main.py" line="755"/>
+        <location filename="../main.py" line="756"/>
         <source>GameTitleML1</source>
         <translation>Mario &amp; Luigi: Superstar Saga</translation>
     </message>
     <message>
-        <location filename="../main.py" line="756"/>
+        <location filename="../main.py" line="757"/>
         <source>GameTitleML2</source>
         <translation>Mario &amp; Luigi: Partners in Time</translation>
     </message>
     <message>
-        <location filename="../main.py" line="757"/>
+        <location filename="../main.py" line="758"/>
         <source>GameTitleML3</source>
         <translation>Mario &amp; Luigi: Bowser&apos;s Inside Story</translation>
     </message>
     <message>
-        <location filename="../main.py" line="758"/>
+        <location filename="../main.py" line="759"/>
         <source>GameTitleML4</source>
         <translation>Mario &amp; Luigi: Dream Team</translation>
     </message>
     <message>
-        <location filename="../main.py" line="759"/>
+        <location filename="../main.py" line="760"/>
         <source>GameTitleML5</source>
         <translation>Mario &amp; Luigi: Paper Jam</translation>
     </message>
     <message>
-        <location filename="../main.py" line="760"/>
+        <location filename="../main.py" line="761"/>
         <source>GameTitleML1R</source>
         <translation>Mario &amp; Luigi: Superstar Saga + Bowser&apos;s Minions</translation>
     </message>
     <message>
-        <location filename="../main.py" line="761"/>
+        <location filename="../main.py" line="762"/>
         <source>GameTitleML3R</source>
         <translation>Mario &amp; Luigi: Bowser&apos;s Inside Story + Bowser Jr.&apos;s Journey</translation>
     </message>
@@ -601,32 +611,32 @@ Download it on {2}</translation>
 <context>
     <name>ProgramThemeEditor</name>
     <message>
-        <location filename="../popups.py" line="634"/>
+        <location filename="../popups.py" line="725"/>
         <source>ThemeWindowTitle</source>
         <translation>Edit Theme</translation>
     </message>
     <message>
-        <location filename="../popups.py" line="659"/>
+        <location filename="../popups.py" line="750"/>
         <source>ThemeMapColorsToggle</source>
         <translation>Recolor Icons According to Theme</translation>
     </message>
     <message>
-        <location filename="../popups.py" line="765"/>
+        <location filename="../popups.py" line="857"/>
         <source>ThemeSettingsTitle</source>
         <translation>Theme Settings:</translation>
     </message>
     <message>
-        <location filename="../popups.py" line="769"/>
+        <location filename="../popups.py" line="861"/>
         <source>ThemePresetsTitle</source>
         <translation>Theme Presets:</translation>
     </message>
     <message>
-        <location filename="../popups.py" line="753"/>
+        <location filename="../popups.py" line="845"/>
         <source>ThemeAcceptButton</source>
         <translation>Apply Theme!</translation>
     </message>
     <message>
-        <location filename="../popups.py" line="773"/>
+        <location filename="../popups.py" line="865"/>
         <source>ThemePreviewTitle</source>
         <translation>Preview:</translation>
     </message>
