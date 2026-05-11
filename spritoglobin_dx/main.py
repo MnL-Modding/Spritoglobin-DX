@@ -1397,7 +1397,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.update_renderer_data()
     
     def update_global_palette(self):
-        if self.obj_data is not None:
+        if self.obj_data is not None and self.obj_list_box.currentText() != '':
             object_name = self.obj_list_box.currentText()
 
             object_properties = self.obj_data.get_object_properties(object_name = object_name)
