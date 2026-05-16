@@ -201,12 +201,14 @@ class GifExportWindow(QtWidgets.QDialog):
 
         self.speed_controller = QtWidgets.QDoubleSpinBox()
         self.speed_controller.setRange(0.1, 100)
-        self.speed_controller.setSingleStep(0.1)
+        self.speed_controller.setSingleStep(0.05)
+        self.speed_controller.setDecimals(4)
         self.speed_controller.setValue(1)
 
         self.scale_controller = QtWidgets.QDoubleSpinBox()
         self.scale_controller.setRange(0.1, 100)
         self.scale_controller.setSingleStep(0.1)
+        self.scale_controller.setDecimals(4)
         self.scale_controller.setValue(1)
 
         self.anim_list_box = QtWidgets.QListWidget()

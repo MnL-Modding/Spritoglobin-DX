@@ -153,23 +153,44 @@ class SpriteRenderer:
                 }
 
                 void main() {
-                    out_tex = texture(u_texture_0, v_texcoord);
+                    float blur_radius = 0.3;
+                    vec2 uv_per_screen_pixel = vec2(length(dFdx(v_texcoord)), length(dFdy(v_texcoord)));
+                    vec2 offset = uv_per_screen_pixel * blur_radius;
 
-                    for (int i = 0; i < 6; i++) {
-                        if (passes[i].keep_going == 0) break;
+                    vec4 total_color = vec4(0.0, 0.0, 0.0, 0.0);
+                    vec4 source_0;
+                    vec4 source_1;
+                    vec4 source_2;
+                    vec2 current_coord;
 
-                        vec4 source_0 = getSource(passes[i].rgb_source_0, passes[i].alpha_source_0, out_tex, v_texcoord, passes[i].const_color_index);
-                        vec4 source_1 = getSource(passes[i].rgb_source_1, passes[i].alpha_source_1, out_tex, v_texcoord, passes[i].const_color_index);
-                        vec4 source_2 = getSource(passes[i].rgb_source_2, passes[i].alpha_source_2, out_tex, v_texcoord, passes[i].const_color_index);
+                    for (float x = -1.0; x <= 1.0; x += 1.0) {
+                        for (float y = -1.0; y <= 1.0; y += 1.0) {
+                            current_coord = v_texcoord + vec2(x, y) * offset;
 
-                        source_0 = getOperand(passes[i].rgb_operand_0, passes[i].alpha_operand_0, source_0);
-                        source_1 = getOperand(passes[i].rgb_operand_1, passes[i].alpha_operand_1, source_1);
-                        source_2 = getOperand(passes[i].rgb_operand_2, passes[i].alpha_operand_2, source_2);
+                            if (any(lessThan(current_coord, vec2(0.0)))) continue;
+                            if (any(greaterThan(current_coord, vec2(1.0)))) continue;
 
-                        out_tex = getCombinedColor(passes[i].rgb_combine_mode, passes[i].alpha_combine_mode, source_0, source_1, source_2);
+                            out_tex = texture(u_texture_0, current_coord);
+
+                            for (int i = 0; i < 6; i++) {
+                                if (passes[i].keep_going == 0) break;
+
+                                source_0 = getSource(passes[i].rgb_source_0, passes[i].alpha_source_0, out_tex, current_coord, passes[i].const_color_index);
+                                source_1 = getSource(passes[i].rgb_source_1, passes[i].alpha_source_1, out_tex, current_coord, passes[i].const_color_index);
+                                source_2 = getSource(passes[i].rgb_source_2, passes[i].alpha_source_2, out_tex, current_coord, passes[i].const_color_index);
+
+                                source_0 = getOperand(passes[i].rgb_operand_0, passes[i].alpha_operand_0, source_0);
+                                source_1 = getOperand(passes[i].rgb_operand_1, passes[i].alpha_operand_1, source_1);
+                                source_2 = getOperand(passes[i].rgb_operand_2, passes[i].alpha_operand_2, source_2);
+
+                                out_tex = getCombinedColor(passes[i].rgb_combine_mode, passes[i].alpha_combine_mode, source_0, source_1, source_2);
+                            }
+                            
+                            total_color += out_tex;
+                        }
                     }
 
-                    f_color = out_tex;
+                    f_color = total_color / 9.0;
                     if (f_color.a <= 0.0) discard;
                 }
             """

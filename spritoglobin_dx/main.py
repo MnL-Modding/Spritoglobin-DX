@@ -577,7 +577,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.sprite_part_renderer_info_text = QtWidgets.QLabel()
         sprite_part_info_layout.addWidget(self.sprite_part_renderer_info_text, 10, 0, 1, 2, alignment = QtCore.Qt.AlignmentFlag.AlignCenter)
 
-        string = QtWidgets.QLabel("Lighting Data Display NYI")
+        string = QtWidgets.QLabel("Renderer/Lighting Data Display NYI")
         string.setEnabled(False)
         sprite_part_info_layout.addWidget(string, 11, 0, 1, 2, alignment = QtCore.Qt.AlignmentFlag.AlignCenter)
 
