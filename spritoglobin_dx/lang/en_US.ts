@@ -11,6 +11,7 @@
     <message>
         <location filename="../gui.py" line="925"/>
         <source>LayerInfoPaletteColor</source>
+        <translatorcomment>This is referring to which Color in the Global Palette is affected by the current Color Animation.</translatorcomment>
         <translation>Global Palette Color: {0}</translation>
     </message>
     <message>
@@ -133,7 +134,7 @@
     <message>
         <location filename="../popups.py" line="297"/>
         <source>AnimationOptionScaleTitle</source>
-        <translation>Export Scale:</translation>
+        <translation>Sprite Scale:</translation>
     </message>
     <message>
         <location filename="../popups.py" line="302"/>

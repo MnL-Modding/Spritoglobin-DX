@@ -133,7 +133,7 @@
     <message>
         <location filename="../popups.py" line="297"/>
         <source>AnimationOptionScaleTitle</source>
-        <translation>Export Scale:</translation>
+        <translation>Sprite Scale:</translation>
     </message>
     <message>
         <location filename="../popups.py" line="302"/>

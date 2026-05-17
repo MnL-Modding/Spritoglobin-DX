@@ -728,10 +728,10 @@ class MainWindow(QtWidgets.QMainWindow):
             config.write(config_file)
     
     def change_lang(self, lang_key, reset_ui = True):
-        self.settings["language"] = lang_key
-
         if lang_key == "None":
             lang_key = QtCore.QLocale.system().name()
+
+        self.settings["language"] = lang_key
     
         default_path = QtCore.QLibraryInfo.path(QtCore.QLibraryInfo.LibraryPath.TranslationsPath)
 
