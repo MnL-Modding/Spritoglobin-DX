@@ -1594,12 +1594,13 @@ class MainWindow(QtWidgets.QMainWindow):
 
         if editor_window.prematurely_closed:
             THEME_COLORS["M_COLOR_0"], THEME_COLORS["L_COLOR_0"], THEME_COLORS["K_COLOR_0"], THEME_COLORS["P_COLOR_0"] = save_colors
-            return
+        else:
+            THEME_COLORS["M_COLOR_0"], THEME_COLORS["L_COLOR_0"], THEME_COLORS["K_COLOR_0"], THEME_COLORS["P_COLOR_0"] = editor_window.theme_colors
+            self.theme_icons_map_theme_colors = editor_window.map_colors_toggle.isChecked()
+            self.update_program_theme(save_theme = True)
 
-        THEME_COLORS["M_COLOR_0"], THEME_COLORS["L_COLOR_0"], THEME_COLORS["K_COLOR_0"], THEME_COLORS["P_COLOR_0"] = editor_window.theme_colors
-        self.theme_icons_map_theme_colors = editor_window.map_colors_toggle.isChecked()
-        self.update_program_theme(save_theme = True)
-
+        
+        self.sprite_viewer.resizeEvent()
         self.animation_timer.start()
 
     def set_theme(self, update = True):

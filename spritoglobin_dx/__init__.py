@@ -3,6 +3,7 @@ from .main import main as main
 
 # main classes for spritoglobin
 from .classes import ObjFile, InvalidObjectFileError
+from .render import SpriteRenderer
 
 # game_id related constants
 from .constants import GAME_IDS_THAT_ARE_CURRENTLY_SUPPORTED

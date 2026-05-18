@@ -69,7 +69,7 @@ class SpriteRenderer:
                 vec4 getSource(int rgb_index, int a_index, vec4 out_tex, vec2 uv, int global_color_index) {
                     vec4 source_out = vec4(1.0, 0.0, 1.0, 0.5);
 
-                    if (rgb_index == 0)       source_out.rgb = u_primary_color.rgb;
+                    if      (rgb_index == 0)  source_out.rgb = u_primary_color.rgb;
                     else if (rgb_index == 1)  source_out.rgb = u_light_0.rgb;
                     else if (rgb_index == 2)  source_out.rgb = u_light_1.rgb;
                     else if (rgb_index == 3)  source_out.rgb = texture(u_texture_0, uv).rgb;
@@ -80,7 +80,7 @@ class SpriteRenderer:
                     else if (rgb_index == 14) source_out.rgb = u_globalPalette[global_color_index].rgb;
                     else if (rgb_index == 15) source_out.rgb = out_tex.rgb;
 
-                    if (a_index == 0)       source_out.a = u_primary_color.a;
+                    if      (a_index == 0)  source_out.a = u_primary_color.a;
                     else if (a_index == 1)  source_out.a = u_light_0.a;
                     else if (a_index == 2)  source_out.a = u_light_1.a;
                     else if (a_index == 3)  source_out.a = texture(u_texture_0, uv).a;
@@ -97,12 +97,12 @@ class SpriteRenderer:
                 vec4 getOperand(int rgb_index, int a_index, vec4 input) {
                     vec4 operand_out = vec4(1.0, 0.0, 1.0, 0.5);
 
-                    if (rgb_index == 0)      operand_out.rgb = input.rgb;
+                    if      (rgb_index == 0) operand_out.rgb = input.rgb;
                     else if (rgb_index == 1) operand_out.rgb = 1.0 - input.rgb;
                     else if (rgb_index == 2) operand_out.rgb = vec3(input.a);
                     else if (rgb_index == 3) operand_out.rgb = vec3(1.0 - input.a);
 
-                    if (a_index == 0)      operand_out.a = input.a;
+                    if      (a_index == 0) operand_out.a = input.a;
                     else if (a_index == 1) operand_out.a = 1.0 - input.a;
 
                     return operand_out;
@@ -111,7 +111,7 @@ class SpriteRenderer:
                 vec4 getCombinedColor(int rgb_index, int a_index, vec4 source_0, vec4 source_1, vec4 source_2) {
                     vec4 combineOut = vec4(1.0, 0.0, 1.0, 0.5);
 
-                    if (rgb_index == 0)      combineOut.rgb = source_0.rgb;
+                    if      (rgb_index == 0) combineOut.rgb = source_0.rgb;
                     else if (rgb_index == 1) combineOut.rgb = source_0.rgb * source_1.rgb;
                     else if (rgb_index == 2) combineOut.rgb = source_0.rgb + source_1.rgb;
                     else if (rgb_index == 3) combineOut.rgb = (source_0.rgb - 0.5) + (source_1.rgb - 0.5);
@@ -130,7 +130,7 @@ class SpriteRenderer:
                     else if (rgb_index == 8) combineOut.rgb = (source_0.rgb * source_1.rgb) + source_2.rgb;
                     else if (rgb_index == 9) combineOut.rgb = (source_0.rgb + source_1.rgb) * source_2.rgb;
 
-                    if (a_index == 0)      combineOut.a = source_0.a;
+                    if      (a_index == 0) combineOut.a = source_0.a;
                     else if (a_index == 1) combineOut.a = source_0.a * source_1.a;
                     else if (a_index == 2) combineOut.a = source_0.a + source_1.a;
                     else if (a_index == 3) combineOut.a = (source_0.a - 0.5) + (source_1.a - 0.5);
@@ -163,12 +163,21 @@ class SpriteRenderer:
                     vec4 source_2;
                     vec2 current_coord;
 
-                    for (float x = -1.0; x <= 1.0; x += 1.0) {
-                        for (float y = -1.0; y <= 1.0; y += 1.0) {
+                    float rgb_mix = 9.0;
+
+                    for (int x = -1; x <= 1; x += 1) {
+                        for (int y = -1; y <= 1; y += 1) {
                             current_coord = v_texcoord + vec2(x, y) * offset;
 
-                            if (any(lessThan(current_coord, vec2(0.0)))) continue;
-                            if (any(greaterThan(current_coord, vec2(1.0)))) continue;
+                            bool invalid_pixel = false;
+
+                            if (any(lessThan(current_coord, vec2(0.0)))) invalid_pixel = true;
+                            if (any(greaterThan(current_coord, vec2(1.0)))) invalid_pixel = true;
+
+                            if (invalid_pixel) {
+                                rgb_mix -= 1.0;
+                                continue;
+                            }
 
                             out_tex = texture(u_texture_0, current_coord);
 
@@ -190,7 +199,7 @@ class SpriteRenderer:
                         }
                     }
 
-                    f_color = total_color / 9.0;
+                    f_color = total_color / rgb_mix;
                     if (f_color.a <= 0.0) discard;
                 }
             """
