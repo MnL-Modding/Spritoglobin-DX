@@ -11,6 +11,7 @@ class SpriteRenderer:
         self.framebuffer = None
         
         self.context = moderngl.create_context(standalone=True)
+        self.context.gc_mode = "auto"
         self.context.enable(moderngl.BLEND)
 
         self.resize(canvas_size)
