@@ -15,6 +15,7 @@ from spritoglobin_dx.classes import ObjFile, GAME_IDS_THAT_USE_BOUNDING_BOXES
 from spritoglobin_dx.constants import *
 from spritoglobin_dx.gui import ItemDelegate, InteractiveGraphicsWindow, GraphicsAnimationTimeline, ColorAnimationTimeline
 from spritoglobin_dx.popups import FileImportWindow, GifExportWindow, ProgramThemeEditor
+from spritoglobin_dx.render import SpriteRenderer
 
 
 def main():
@@ -73,6 +74,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.obj_data = None
         self.current_path = None
         self.current_game_id = None
+        self.master_renderer = SpriteRenderer([1, 1])
 
         CONFIG_DIR.mkdir(parents=True, exist_ok=True)
         config = configparser.ConfigParser()
@@ -379,7 +381,7 @@ class MainWindow(QtWidgets.QMainWindow):
             min_scale = 0.5,
             max_scale = 16.0,
             grid_size = 32,
-            three_dimensional = True,
+            renderer = self.master_renderer,
         )
         self.sprite_viewer.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
         self.sprite_viewer.setMinimumWidth(512)
@@ -706,6 +708,7 @@ class MainWindow(QtWidgets.QMainWindow):
             current_window_icon = self.current_window_icon,
             success_jingle      = success_jingle,
             obj_data            = obj_data,
+            renderer            = self.master_renderer,
             use_low_framerate   = self.current_game_id in GAME_IDS_THAT_USE_LOW_FRAMERATE,
             initial_object      = self.obj_list_box.currentText(),
             initial_animation   = self.anim_list_box.currentRow(),
@@ -1584,6 +1587,7 @@ class MainWindow(QtWidgets.QMainWindow):
         editor_window = ProgramThemeEditor(
             parent               = self,
             current_window_icon  = self.current_window_icon,
+            renderer             = self.master_renderer,
             default_colors       = save_colors,
             default_map          = map_colors,
             icon_path            = self.current_theme_file_path,

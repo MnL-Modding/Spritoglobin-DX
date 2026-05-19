@@ -10,7 +10,6 @@ from PySide6 import QtWidgets, QtGui
 from spritoglobin_dx.classes import ObjFile, InvalidObjectFileError
 from spritoglobin_dx.constants import *
 from spritoglobin_dx.gui import InteractiveGraphicsWindow, GraphicsAnimationTimeline
-from spritoglobin_dx.render import SpriteRenderer
 
 
 class FileImportWindow(QtWidgets.QDialog):
@@ -173,7 +172,7 @@ class FileImportWindow(QtWidgets.QDialog):
 
 
 class GifExportWindow(QtWidgets.QDialog):
-    def __init__(self, parent, current_window_icon, success_jingle, obj_data, use_low_framerate, initial_object, initial_animation, initial_color_anim):
+    def __init__(self, parent, current_window_icon, success_jingle, obj_data, renderer, use_low_framerate, initial_object, initial_animation, initial_color_anim):
         super().__init__()
 
         self.parent = parent
@@ -184,6 +183,8 @@ class GifExportWindow(QtWidgets.QDialog):
 
         self.setWindowTitle(self.tr("ExportWindowTitle"))
         self.setWindowIcon(self.current_window_icon)
+
+        self.renderer = renderer
 
         layout = QtWidgets.QGridLayout()
 
@@ -255,7 +256,7 @@ class GifExportWindow(QtWidgets.QDialog):
             min_scale = 0.5,
             max_scale = 16.0,
             grid_size = 32,
-            three_dimensional = True,
+            renderer = self.renderer,
         )
         self.gif_preview.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
         self.gif_preview.setMinimumWidth(514)
@@ -647,7 +648,7 @@ class GifExportWindow(QtWidgets.QDialog):
             ((-min_y) + padding_amt) * scale,
         ]
 
-        self.renderer = SpriteRenderer(image_size)
+        self.renderer.resize(image_size)
         
         test_img = Image.new("RGBA", image_size)
 
@@ -722,7 +723,7 @@ class GifExportWindow(QtWidgets.QDialog):
 class ProgramThemeEditor(QtWidgets.QWidget):
     closed = QtCore.Signal()
 
-    def __init__(self, parent, current_window_icon, default_colors, default_map, icon_path, graphics_window_bg, graphics_timeline_bg):
+    def __init__(self, parent, current_window_icon, renderer, default_colors, default_map, icon_path, graphics_window_bg, graphics_timeline_bg):
         super().__init__()
 
         self.parent = parent
@@ -812,7 +813,7 @@ class ProgramThemeEditor(QtWidgets.QWidget):
             min_scale = 1.0,
             max_scale = 4.0,
             grid_size = 16,
-            three_dimensional = True,
+            renderer = renderer,
         )
         self.graphics_window_preview.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
         self.graphics_window_preview.setMinimumWidth(128)

@@ -2,7 +2,6 @@ import numpy
 from PySide6 import QtWidgets, QtGui
 
 from spritoglobin_dx.constants import *
-from spritoglobin_dx.render import SpriteRenderer
 from spritoglobin_dx.graphics import create_transform_demo
 
 
@@ -16,7 +15,7 @@ class ItemDelegate(QtWidgets.QStyledItemDelegate):
 class InteractiveGraphicsWindow(QtWidgets.QLabel):
     background_color = QtCore.Qt.GlobalColor.black
 
-    def __init__(self, parent, font, size, default_scale, default_offset, min_scale, max_scale, grid_size, disable_controls = False, even_center = False, three_dimensional = False):
+    def __init__(self, parent, font, size, default_scale, default_offset, min_scale, max_scale, grid_size, disable_controls = False, even_center = False, renderer = None):
         super().__init__()
 
         self.parent = parent
@@ -70,10 +69,9 @@ class InteractiveGraphicsWindow(QtWidgets.QLabel):
         self.grid_size = grid_size
         self.bounding_boxes = []
 
-        if three_dimensional:
-            self.renderer = SpriteRenderer(self.size)
-        else:
-            self.renderer = None
+        self.renderer = renderer
+        if self.renderer is not None:
+            self.renderer.resize(size)
 
         self.img = None
         self.img_data = None
