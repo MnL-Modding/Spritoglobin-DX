@@ -236,7 +236,7 @@ class GifExportWindow(QtWidgets.QDialog):
 
         self.loop_choose_spin_box = QtWidgets.QSpinBox()
         self.loop_choose_spin_box.setMinimum(1)
-        self.loop_choose_spin_box.setMaximum(99)
+        self.loop_choose_spin_box.setMaximum(999)
         self.loop_choose_spin_box.valueChanged.connect(self.change_current_anim_data)
 
         self.export_button = QtWidgets.QPushButton(self.tr("ExportAcceptButton"))
