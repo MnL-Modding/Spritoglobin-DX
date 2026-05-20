@@ -720,6 +720,8 @@ class MainWindow(QtWidgets.QMainWindow):
         else:
             export_window.exec()
         
+        export_window.ready_for_release()
+        
         self.sprite_viewer.resizeEvent()
         self.animation_timer.start()
 
@@ -1611,8 +1613,9 @@ class MainWindow(QtWidgets.QMainWindow):
             THEME_COLORS["M_COLOR_0"], THEME_COLORS["L_COLOR_0"], THEME_COLORS["K_COLOR_0"], THEME_COLORS["P_COLOR_0"] = editor_window.theme_colors
             self.theme_icons_map_theme_colors = editor_window.map_colors_toggle.isChecked()
             self.update_program_theme(save_theme = True)
-
         
+        editor_window.ready_for_release()
+
         self.sprite_viewer.resizeEvent()
         self.animation_timer.start()
 

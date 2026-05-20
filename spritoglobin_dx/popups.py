@@ -325,7 +325,7 @@ class GifExportWindow(QtWidgets.QDialog):
         self.setLayout(layout)
         self.export_button.setFocus()
 
-        self.animation_timer = QtCore.QTimer()
+        self.animation_timer = QtCore.QTimer(self)
         self.animation_timer.setTimerType(QtCore.Qt.PreciseTimer)
         self.animation_timer.timeout.connect(self.tick_timer)
 
@@ -718,6 +718,10 @@ class GifExportWindow(QtWidgets.QDialog):
         self.gif_preview.resizeEvent()
         self.animation_timer.start()
 
+    def ready_for_release(self):
+        self.animation_timer.stop()
+        self.animation_timer.deleteLater()
+
 
 
 class ProgramThemeEditor(QtWidgets.QWidget):
@@ -886,7 +890,7 @@ class ProgramThemeEditor(QtWidgets.QWidget):
 
         self.setLayout(layout)
 
-        self.animation_timer = QtCore.QTimer()
+        self.animation_timer = QtCore.QTimer(self)
         self.animation_timer.setTimerType(QtCore.Qt.PreciseTimer)
         framerate = [60, 30][self.parent.settings["framerate"]]
         self.timer_advance = [1, 2][self.parent.settings["framerate"]]
@@ -1035,6 +1039,10 @@ class ProgramThemeEditor(QtWidgets.QWidget):
             qp.end()
 
             label.setPixmap(color_label_base)
+
+    def ready_for_release(self):
+        self.animation_timer.stop()
+        self.animation_timer.deleteLater()
 
     def closeEvent(self, event):
         self.closed.emit()
