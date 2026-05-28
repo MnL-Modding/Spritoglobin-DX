@@ -296,9 +296,8 @@ class MainWindow(QtWidgets.QMainWindow):
             lang_string = lang[0]
             if lang_string is None:
                 lang_string = self.tr("MenuBarOptionsLanguageSystem")
-
-            #if lang[3]:
-            #    lang_string += "⚠"
+            elif lang[4]:
+                lang_string += "⚠"
 
             if self.settings["language"] == lang_key:
                 lang_string += " ✓"
