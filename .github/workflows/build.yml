@@ -30,6 +30,7 @@ jobs:
         run: |
           poetry install --no-interaction
           cp -rv "$(python3 -c 'import importlib.metadata; print(importlib.metadata.distribution("spritoglobin_dx")._path)')" "spritoglobin_dx.dist-info"  # Workaround for https://github.com/Nuitka/Nuitka/issues/2965
+          pip install jsonschema
       - name: Build executable
         uses: Nuitka/Nuitka-Action@main
         with:
