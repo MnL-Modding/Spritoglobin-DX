@@ -7,7 +7,7 @@ import numpy
 
 
 class SpriteRenderer:
-    def __init__(self, canvas_size):
+    def __init__(self, canvas_size, pretty = True, use_filtering = False, limit_resolution = False):
         self.framebuffer = None
         
         self.context = moderngl.create_context(standalone=True)
@@ -15,7 +15,92 @@ class SpriteRenderer:
         self.context.enable(moderngl.BLEND)
 
         self.resize(canvas_size)
+
+        self.set_program(
+            pretty = pretty,
+            use_filtering = use_filtering,
+            limit_resolution = limit_resolution,
+        )
         
+    def set_program(self, pretty, use_filtering, limit_resolution):
+        if use_filtering:
+            self.filtering_mode = moderngl.LINEAR
+        else:
+            self.filtering_mode = moderngl.NEAREST
+        
+        if pretty:
+            main = """
+                float blur_radius = 0.3;
+                vec2 uv_per_screen_pixel = vec2(length(dFdx(v_texcoord)), length(dFdy(v_texcoord)));
+                vec2 offset = uv_per_screen_pixel * blur_radius;
+
+                vec4 total_color = vec4(0.0, 0.0, 0.0, 0.0);
+                vec4 source_0;
+                vec4 source_1;
+                vec4 source_2;
+                vec2 current_coord;
+
+                float rgb_mix = 9.0;
+
+                for (int x = -1; x <= 1; x += 1) {
+                    for (int y = -1; y <= 1; y += 1) {
+                        current_coord = v_texcoord + vec2(x, y) * offset;
+
+                        bool invalid_pixel = false;
+
+                        if (any(lessThan(current_coord, vec2(0.0)))) invalid_pixel = true;
+                        if (any(greaterThan(current_coord, vec2(1.0)))) invalid_pixel = true;
+
+                        if (invalid_pixel) {
+                            rgb_mix -= 1.0;
+                            continue;
+                        }
+
+                        out_tex = texture(u_texture_0, current_coord);
+
+                        for (int i = 0; i < 6; i++) {
+                            if (passes[i].keep_going == 0) break;
+
+                            source_0 = getSource(passes[i].rgb_source_0, passes[i].alpha_source_0, out_tex, current_coord, passes[i].const_color_index);
+                            source_1 = getSource(passes[i].rgb_source_1, passes[i].alpha_source_1, out_tex, current_coord, passes[i].const_color_index);
+                            source_2 = getSource(passes[i].rgb_source_2, passes[i].alpha_source_2, out_tex, current_coord, passes[i].const_color_index);
+
+                            source_0 = getOperand(passes[i].rgb_operand_0, passes[i].alpha_operand_0, source_0);
+                            source_1 = getOperand(passes[i].rgb_operand_1, passes[i].alpha_operand_1, source_1);
+                            source_2 = getOperand(passes[i].rgb_operand_2, passes[i].alpha_operand_2, source_2);
+
+                            out_tex = getCombinedColor(passes[i].rgb_combine_mode, passes[i].alpha_combine_mode, source_0, source_1, source_2);
+                        }
+                        
+                        total_color += out_tex;
+                    }
+                }
+
+                f_color = total_color / rgb_mix;
+                if (f_color.a <= 0.0) discard;
+            """
+        else:
+            main = """
+                out_tex = texture(u_texture_0, v_texcoord);
+
+                for (int i = 0; i < 6; i++) {
+                    if (passes[i].keep_going == 0) break;
+
+                    vec4 source_0 = getSource(passes[i].rgb_source_0, passes[i].alpha_source_0, out_tex, v_texcoord, passes[i].const_color_index);
+                    vec4 source_1 = getSource(passes[i].rgb_source_1, passes[i].alpha_source_1, out_tex, v_texcoord, passes[i].const_color_index);
+                    vec4 source_2 = getSource(passes[i].rgb_source_2, passes[i].alpha_source_2, out_tex, v_texcoord, passes[i].const_color_index);
+
+                    source_0 = getOperand(passes[i].rgb_operand_0, passes[i].alpha_operand_0, source_0);
+                    source_1 = getOperand(passes[i].rgb_operand_1, passes[i].alpha_operand_1, source_1);
+                    source_2 = getOperand(passes[i].rgb_operand_2, passes[i].alpha_operand_2, source_2);
+
+                    out_tex = getCombinedColor(passes[i].rgb_combine_mode, passes[i].alpha_combine_mode, source_0, source_1, source_2);
+                }
+
+                f_color = out_tex;
+                if (f_color.a <= 0.0) discard;
+            """
+            
         self.program = self.context.program(
             vertex_shader="""
                 #version 330
@@ -153,57 +238,7 @@ class SpriteRenderer:
                     return combineOut;
                 }
 
-                void main() {
-                    float blur_radius = 0.3;
-                    vec2 uv_per_screen_pixel = vec2(length(dFdx(v_texcoord)), length(dFdy(v_texcoord)));
-                    vec2 offset = uv_per_screen_pixel * blur_radius;
-
-                    vec4 total_color = vec4(0.0, 0.0, 0.0, 0.0);
-                    vec4 source_0;
-                    vec4 source_1;
-                    vec4 source_2;
-                    vec2 current_coord;
-
-                    float rgb_mix = 9.0;
-
-                    for (int x = -1; x <= 1; x += 1) {
-                        for (int y = -1; y <= 1; y += 1) {
-                            current_coord = v_texcoord + vec2(x, y) * offset;
-
-                            bool invalid_pixel = false;
-
-                            if (any(lessThan(current_coord, vec2(0.0)))) invalid_pixel = true;
-                            if (any(greaterThan(current_coord, vec2(1.0)))) invalid_pixel = true;
-
-                            if (invalid_pixel) {
-                                rgb_mix -= 1.0;
-                                continue;
-                            }
-
-                            out_tex = texture(u_texture_0, current_coord);
-
-                            for (int i = 0; i < 6; i++) {
-                                if (passes[i].keep_going == 0) break;
-
-                                source_0 = getSource(passes[i].rgb_source_0, passes[i].alpha_source_0, out_tex, current_coord, passes[i].const_color_index);
-                                source_1 = getSource(passes[i].rgb_source_1, passes[i].alpha_source_1, out_tex, current_coord, passes[i].const_color_index);
-                                source_2 = getSource(passes[i].rgb_source_2, passes[i].alpha_source_2, out_tex, current_coord, passes[i].const_color_index);
-
-                                source_0 = getOperand(passes[i].rgb_operand_0, passes[i].alpha_operand_0, source_0);
-                                source_1 = getOperand(passes[i].rgb_operand_1, passes[i].alpha_operand_1, source_1);
-                                source_2 = getOperand(passes[i].rgb_operand_2, passes[i].alpha_operand_2, source_2);
-
-                                out_tex = getCombinedColor(passes[i].rgb_combine_mode, passes[i].alpha_combine_mode, source_0, source_1, source_2);
-                            }
-                            
-                            total_color += out_tex;
-                        }
-                    }
-
-                    f_color = total_color / rgb_mix;
-                    if (f_color.a <= 0.0) discard;
-                }
-            """
+                void main() {""" + main + "}"
         )
 
         vertices = numpy.array([
@@ -301,7 +336,9 @@ class SpriteRenderer:
                     full_matrix = self.projection @ global_matrix @ local_matrix @ part_matrix
 
                     tex = self.context.texture(size, 4, graphics_buffer)
-                    tex.filter = (moderngl.NEAREST, moderngl.NEAREST)
+                    tex.filter = (self.filtering_mode, self.filtering_mode)
+                    tex.repeat_x = False
+                    tex.repeat_y = False
                     tex.use(0)
 
                     if renderer_data is not None:
