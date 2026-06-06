@@ -84,10 +84,30 @@ class ObjFile:
         if self.cached_object.name != object_name:
             current_obj_data = self.cellanim_files[object_name]
 
-            self.cached_object.name          = object_name
-            self.cached_object.obj_anim_data = self.AnimData(self.data_files[current_obj_data.anim_file].blz77_decompress_data(), self.game_id)
-            self.cached_object.graph_file    = self.data_files[current_obj_data.graph_file].blz77_decompress_data()
-            self.cached_object.color_data    = self.ColorData(self.data_files[current_obj_data.color_file].blz77_decompress_data())
+            # for testing DT
+            use_force = False
+            force_root = "DT/BObjMon"
+            force = (f"{force_root}/0220.dat", f"{force_root}/0221.dat", f"{force_root}/0254.dat")
+
+            self.cached_object.name = object_name
+
+            if not use_force or not force[0]:
+                self.cached_object.obj_anim_data = self.AnimData(self.data_files[current_obj_data.anim_file].blz77_decompress_data(), self.game_id)
+            else:
+                with open(force[0], "rb") as test:
+                    self.cached_object.obj_anim_data = self.AnimData(test.read(), self.game_id)
+
+            if not use_force or not force[1]:
+                self.cached_object.graph_file = self.data_files[current_obj_data.graph_file].blz77_decompress_data()
+            else:
+                with open(force[1], "rb") as test:
+                    self.cached_object.graph_file = test.read()
+
+            if not use_force or not force[2]:
+                self.cached_object.color_data = self.ColorData(self.data_files[current_obj_data.color_file].blz77_decompress_data())
+            else:
+                with open(force[2], "rb") as test:
+                    self.cached_object.color_data = self.ColorData(test.read())
     
     def get_file_properties(self):
         return {
@@ -666,6 +686,11 @@ class ObjFile:
                 for i in range(pass_list_num):
                     channel = struct.unpack(f'b', input_data.read(1))[0]
                     self.pass_list[i].append(channel)
+                
+                input_data.seek(6 - pass_list_num, 1)
+
+                # TODO: unknown
+                unk1 = int.from_bytes(input_data.read(1), 'little', signed = True)
 
                 if unused != 0: print(f"THE 'unused' VALUE IN CLASS ObjFile.AnimData.Renderer IS USED ACTUALLY: unused = {unused}")
     

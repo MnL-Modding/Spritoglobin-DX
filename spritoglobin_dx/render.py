@@ -183,13 +183,25 @@ class SpriteRenderer:
                 vec4 getOperand(int rgb_index, int a_index, vec4 input) {
                     vec4 operand_out = vec4(1.0, 0.0, 1.0, 0.5);
 
-                    if      (rgb_index == 0) operand_out.rgb = input.rgb;
-                    else if (rgb_index == 1) operand_out.rgb = 1.0 - input.rgb;
-                    else if (rgb_index == 2) operand_out.rgb = vec3(input.a);
-                    else if (rgb_index == 3) operand_out.rgb = vec3(1.0 - input.a);
+                    if      (rgb_index == 0)  operand_out.rgb = input.rgb;
+                    else if (rgb_index == 1)  operand_out.rgb = 1.0 - input.rgb;
+                    else if (rgb_index == 2)  operand_out.rgb = vec3(input.a);
+                    else if (rgb_index == 3)  operand_out.rgb = vec3(1.0 - input.a);
+                    else if (rgb_index == 4)  operand_out.rgb = vec3(input.r);
+                    else if (rgb_index == 5)  operand_out.rgb = vec3(1.0 - input.r);
+                    else if (rgb_index == 8)  operand_out.rgb = vec3(input.g);
+                    else if (rgb_index == 9)  operand_out.rgb = vec3(1.0 - input.g);
+                    else if (rgb_index == 12) operand_out.rgb = vec3(input.b);
+                    else if (rgb_index == 13) operand_out.rgb = vec3(1.0 - input.b);
 
                     if      (a_index == 0) operand_out.a = input.a;
                     else if (a_index == 1) operand_out.a = 1.0 - input.a;
+                    else if (a_index == 2) operand_out.a = input.r;
+                    else if (a_index == 3) operand_out.a = 1.0 - input.r;
+                    else if (a_index == 4) operand_out.a = input.g;
+                    else if (a_index == 5) operand_out.a = 1.0 - input.g;
+                    else if (a_index == 6) operand_out.a = input.b;
+                    else if (a_index == 7) operand_out.a = 1.0 - input.b;
 
                     return operand_out;
                 }
