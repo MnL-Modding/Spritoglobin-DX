@@ -95,7 +95,7 @@ class ObjFile:
                 self.cached_object.obj_anim_data = self.AnimData(self.data_files[current_obj_data.anim_file].blz77_decompress_data(), self.game_id)
             else:
                 with open(f"{force_root}/{force[0]:04X}.dat", "rb") as test:
-                    self.cached_object.obj_anim_data = self.AnimData(test.read(), self.game_id)
+                    self.cached_object.obj_anim_data = self.AnimData(test.read(), "ML4")
 
             if not use_force or not force[1] is not None:
                 self.cached_object.graph_file = self.data_files[current_obj_data.graph_file].blz77_decompress_data()
@@ -573,7 +573,7 @@ class ObjFile:
                     self.normal_size = 48
                     self.normal_offset = normal_offset
 
-                case "ML5": # Paper Jam --- i haven't looked into it too hard but it looks like the format is literally exactly the same as DT lol
+                case "ML4" | "ML5": # Dream Team & Paper Jam --- complete overhaul from the previous games
                     self.anim_num, color_mode, self.renderer_num, unused, self.anim_file_length, self.graph_file_length = struct.unpack('<4B2I', self.input_data.read(0xC))
                     frame_offset, part_offset, unused_offset_0, trans_offset, renderer_offset = struct.unpack('<5I', self.input_data.read(0x14))
 
@@ -695,8 +695,8 @@ class ObjFile:
                 buffer_write_flags = int.from_bytes(input_data.read(2), 'little')
                 for i in range(4):
                     current_flag = i
-                    self.pass_list[i][0]["write_rgb_buffer"] = (buffer_write_flags >> current_flag) & 1
-                    self.pass_list[i][0]["write_a_buffer"] = (buffer_write_flags >> (current_flag + 4)) & 1 # TODO: eventually figure out if this should be i + 4 or i + 8
+                    self.pass_list[i][0]["write_rgb_buffer"] = ((buffer_write_flags >> (current_flag + 0)) & 1)
+                    self.pass_list[i][0]["write_a_buffer"]   = ((buffer_write_flags >> (current_flag + 4)) & 1)
 
                 if unused != 0: print(f"THE 'unused' VALUE IN CLASS ObjFile.AnimData.Renderer IS USED ACTUALLY: unused = {unused}")
     

@@ -35,19 +35,25 @@ class SpriteRenderer:
                 if (i >= 2) saved_buffer = buffer_save[i - 2];
                 else        saved_buffer = vec4(0.0);
 
-                source_0 = getSource(passes[i].rgb_source_0, passes[i].alpha_source_0, out_tex, saved_buffer, current_coord, passes[i].const_color_index);
-                source_1 = getSource(passes[i].rgb_source_1, passes[i].alpha_source_1, out_tex, saved_buffer, current_coord, passes[i].const_color_index);
-                source_2 = getSource(passes[i].rgb_source_2, passes[i].alpha_source_2, out_tex, saved_buffer, current_coord, passes[i].const_color_index);
+                source_0_rgb = getSource(passes[i].rgb_source_0, out_tex, saved_buffer, current_coord, passes[i].const_color_index);
+                source_1_rgb = getSource(passes[i].rgb_source_1, out_tex, saved_buffer, current_coord, passes[i].const_color_index);
+                source_2_rgb = getSource(passes[i].rgb_source_2, out_tex, saved_buffer, current_coord, passes[i].const_color_index);
+                source_0_a = getSource(passes[i].alpha_source_0, out_tex, saved_buffer, current_coord, passes[i].const_color_index);
+                source_1_a = getSource(passes[i].alpha_source_1, out_tex, saved_buffer, current_coord, passes[i].const_color_index);
+                source_2_a = getSource(passes[i].alpha_source_2, out_tex, saved_buffer, current_coord, passes[i].const_color_index);
 
-                source_0 = getOperand(passes[i].rgb_operand_0, passes[i].alpha_operand_0, source_0);
-                source_1 = getOperand(passes[i].rgb_operand_1, passes[i].alpha_operand_1, source_1);
-                source_2 = getOperand(passes[i].rgb_operand_2, passes[i].alpha_operand_2, source_2);
+                source_0_rgb = getOperandRgb(passes[i].rgb_operand_0, source_0_rgb);
+                source_1_rgb = getOperandRgb(passes[i].rgb_operand_1, source_1_rgb);
+                source_2_rgb = getOperandRgb(passes[i].rgb_operand_2, source_2_rgb);
+                source_0_a = getOperandA(passes[i].alpha_operand_0, source_0_a);
+                source_1_a = getOperandA(passes[i].alpha_operand_1, source_1_a);
+                source_2_a = getOperandA(passes[i].alpha_operand_2, source_2_a);
 
-                out_tex = getCombinedColor(passes[i].rgb_combine_mode, passes[i].alpha_combine_mode, source_0, source_1, source_2);
+                out_tex = getCombinedColor(passes[i].rgb_combine_mode, passes[i].alpha_combine_mode, source_0_rgb, source_0_a, source_1_rgb, source_1_a, source_2_rgb, source_2_a);
 
                 if (i < 4) {
-                    if (passes[i].write_rgb_buffer) temp_buffer.rgb = out_tex.rgb;
-                    if (passes[i].write_a_buffer)   temp_buffer.a   = out_tex.a;
+                    if (passes[i].write_rgb_buffer == 1) temp_buffer.rgb = out_tex.rgb;
+                    if (passes[i].write_a_buffer   == 1) temp_buffer.a   = out_tex.a;
 
                     buffer_save[i] = temp_buffer;
                 }
@@ -60,9 +66,12 @@ class SpriteRenderer:
                 vec2 offset = uv_per_screen_pixel * blur_radius;
 
                 vec4 total_color = vec4(0.0, 0.0, 0.0, 0.0);
-                vec4 source_0;
-                vec4 source_1;
-                vec4 source_2;
+                vec4 source_0_rgb;
+                vec4 source_1_rgb;
+                vec4 source_2_rgb;
+                vec4 source_0_a;
+                vec4 source_1_a;
+                vec4 source_2_a;
                 vec2 current_coord;
 
                 float rgb_mix = 9.0;
@@ -151,8 +160,8 @@ class SpriteRenderer:
                     int alpha_operand_2;
                     int rgb_combine_mode;
                     int alpha_combine_mode;
-                    bool write_rgb_buffer;
-                    bool write_a_buffer;
+                    int write_rgb_buffer;
+                    int write_a_buffer;
                     int const_color_index;
                     bool keep_going;
                     bool padding_12h;
@@ -162,100 +171,105 @@ class SpriteRenderer:
                     Pass passes[6];
                 };
 
-                vec4 getSource(int rgb_index, int a_index, vec4 out_tex, vec4 saved_buffer, vec2 uv, int global_color_index) {
+                vec4 getSource(int index, vec4 out_tex, vec4 saved_buffer, vec2 uv, int global_color_index) {
                     vec4 source_out = vec4(1.0, 0.0, 1.0, 0.5);
 
-                    if      (rgb_index == 0)  source_out.rgb = u_primary_color.rgb;
-                    else if (rgb_index == 1)  source_out.rgb = u_light_0.rgb;
-                    else if (rgb_index == 2)  source_out.rgb = u_light_1.rgb;
-                    else if (rgb_index == 3)  source_out.rgb = texture(u_texture_0, uv).rgb;
-                    else if (rgb_index == 4)  source_out.rgb = texture(u_texture_1, uv).rgb;
-                    else if (rgb_index == 5)  source_out.rgb = texture(u_texture_2, uv).rgb;
-                    else if (rgb_index == 6)  source_out.rgb = texture(u_texture_3, uv).rgb;
-                    else if (rgb_index == 13) source_out.rgb = saved_buffer.rgb;
-                    else if (rgb_index == 14) source_out.rgb = u_globalPalette[global_color_index].rgb;
-                    else if (rgb_index == 15) source_out.rgb = out_tex.rgb;
-
-                    if      (a_index == 0)  source_out.a = u_primary_color.a;
-                    else if (a_index == 1)  source_out.a = u_light_0.a;
-                    else if (a_index == 2)  source_out.a = u_light_1.a;
-                    else if (a_index == 3)  source_out.a = texture(u_texture_0, uv).a;
-                    else if (a_index == 4)  source_out.a = texture(u_texture_1, uv).a;
-                    else if (a_index == 5)  source_out.a = texture(u_texture_2, uv).a;
-                    else if (a_index == 6)  source_out.a = texture(u_texture_3, uv).a;
-                    else if (a_index == 13) source_out.a = saved_buffer.a;
-                    else if (a_index == 14) source_out.a = u_globalPalette[global_color_index].a;
-                    else if (a_index == 15) source_out.a = out_tex.a;
+                    if      (index == 0)  source_out = u_primary_color;
+                    else if (index == 1)  source_out = u_light_0;
+                    else if (index == 2)  source_out = u_light_1;
+                    else if (index == 3)  source_out = texture(u_texture_0, uv);
+                    else if (index == 4)  source_out = texture(u_texture_1, uv);
+                    else if (index == 5)  source_out = texture(u_texture_2, uv);
+                    else if (index == 6)  source_out = texture(u_texture_3, uv);
+                    else if (index == 13) source_out = saved_buffer;
+                    else if (index == 14) source_out = u_globalPalette[global_color_index];
+                    else if (index == 15) source_out = out_tex;
 
                     return source_out;
                 }
 
-                vec4 getOperand(int rgb_index, int a_index, vec4 input) {
+                vec4 getOperandRgb(int rgb_index, vec4 input) {
                     vec4 operand_out = vec4(1.0, 0.0, 1.0, 0.5);
 
-                    if      (rgb_index == 0)  operand_out.rgb = input.rgb;
-                    else if (rgb_index == 1)  operand_out.rgb = 1.0 - input.rgb;
-                    else if (rgb_index == 2)  operand_out.rgb = vec3(input.a);
-                    else if (rgb_index == 3)  operand_out.rgb = vec3(1.0 - input.a);
-                    else if (rgb_index == 4)  operand_out.rgb = vec3(input.r);
-                    else if (rgb_index == 5)  operand_out.rgb = vec3(1.0 - input.r);
-                    else if (rgb_index == 8)  operand_out.rgb = vec3(input.g);
-                    else if (rgb_index == 9)  operand_out.rgb = vec3(1.0 - input.g);
-                    else if (rgb_index == 12) operand_out.rgb = vec3(input.b);
-                    else if (rgb_index == 13) operand_out.rgb = vec3(1.0 - input.b);
-
-                    if      (a_index == 0) operand_out.a = input.a;
-                    else if (a_index == 1) operand_out.a = 1.0 - input.a;
-                    else if (a_index == 2) operand_out.a = input.r;
-                    else if (a_index == 3) operand_out.a = 1.0 - input.r;
-                    else if (a_index == 4) operand_out.a = input.g;
-                    else if (a_index == 5) operand_out.a = 1.0 - input.g;
-                    else if (a_index == 6) operand_out.a = input.b;
-                    else if (a_index == 7) operand_out.a = 1.0 - input.b;
+                    if      (rgb_index == 0)  operand_out = input;
+                    else if (rgb_index == 1)  operand_out = 1.0 - input;
+                    else if (rgb_index == 2)  operand_out = vec4(input.a);
+                    else if (rgb_index == 3)  operand_out = vec4(1.0 - input.a);
+                    else if (rgb_index == 4)  operand_out = vec4(input.r);
+                    else if (rgb_index == 5)  operand_out = vec4(1.0 - input.r);
+                    else if (rgb_index == 8)  operand_out = vec4(input.g);
+                    else if (rgb_index == 9)  operand_out = vec4(1.0 - input.g);
+                    else if (rgb_index == 12) operand_out = vec4(input.b);
+                    else if (rgb_index == 13) operand_out = vec4(1.0 - input.b);
 
                     return operand_out;
                 }
 
-                vec4 getCombinedColor(int rgb_index, int a_index, vec4 source_0, vec4 source_1, vec4 source_2) {
+                vec4 getOperandA(int a_index, vec4 input) {
+                    vec4 operand_out = vec4(1.0, 0.0, 1.0, 0.5);
+
+                    if      (a_index == 0) operand_out = vec4(input.a);
+                    else if (a_index == 1) operand_out = vec4(1.0 - input.a);
+                    else if (a_index == 2) operand_out = vec4(input.r);
+                    else if (a_index == 3) operand_out = vec4(1.0 - input.r);
+                    else if (a_index == 4) operand_out = vec4(input.g);
+                    else if (a_index == 5) operand_out = vec4(1.0 - input.g);
+                    else if (a_index == 6) operand_out = vec4(input.b);
+                    else if (a_index == 7) operand_out = vec4(1.0 - input.b);
+
+                    return operand_out;
+                }
+
+                vec4 getCombinedColor(int rgb_index, int a_index, vec4 source_0_rgb, vec4 source_0_a, vec4 source_1_rgb, vec4 source_1_a, vec4 source_2_rgb, vec4 source_2_a) {
                     vec4 combineOut = vec4(1.0, 0.0, 1.0, 0.5);
 
-                    if      (rgb_index == 0) combineOut.rgb = source_0.rgb;
-                    else if (rgb_index == 1) combineOut.rgb = source_0.rgb * source_1.rgb;
-                    else if (rgb_index == 2) combineOut.rgb = source_0.rgb + source_1.rgb;
-                    else if (rgb_index == 3) combineOut.rgb = (source_0.rgb - 0.5) + (source_1.rgb - 0.5);
-                    else if (rgb_index == 4) combineOut.rgb = mix(source_1.rgb, source_0.rgb, source_2.rgb);
-                    else if (rgb_index == 5) combineOut.rgb = source_0.rgb - source_1.rgb;
+                    if      (rgb_index == 0) combineOut.rgb = source_0_rgb.rgb;
+                    else if (rgb_index == 1) combineOut.rgb = source_0_rgb.rgb * source_1_rgb.rgb;
+                    else if (rgb_index == 2) combineOut.rgb = source_0_rgb.rgb + source_1_rgb.rgb;
+                    else if (rgb_index == 3) combineOut.rgb = (source_0_rgb.rgb - 0.5) + (source_1_rgb.rgb - 0.5);
+                    else if (rgb_index == 4) {
+                        vec3 a = source_0_rgb.rgb;
+                        vec3 b = source_1_rgb.rgb;
+                        vec3 c = 1 - source_2_rgb.rgb;
+                        combineOut.rgb = (1 - c) * a + c * b;
+                    }
+                    else if (rgb_index == 5) combineOut.rgb = source_0_rgb.rgb - source_1_rgb.rgb;
                     else if (rgb_index == 6) {
-                        vec3 source_0_n = (source_0.rgb * 2.0) - 1.0;
-                        vec3 source_1_n = (source_1.rgb * 2.0) - 1.0;
+                        vec3 source_0_n = (source_0_rgb.rgb * 2.0) - 1.0;
+                        vec3 source_1_n = (source_1_rgb.rgb * 2.0) - 1.0;
                         combineOut.rgb = vec3(dot(source_0_n, source_1_n));
                     }
                     else if (rgb_index == 7) {
-                        vec4 source_0_n = (source_0 * 2.0) - 1.0;
-                        vec4 source_1_n = (source_1 * 2.0) - 1.0;
+                        vec4 source_0_n = (source_0_rgb * 2.0) - 1.0;
+                        vec4 source_1_n = (source_1_rgb * 2.0) - 1.0;
                         combineOut.rgb = vec3(dot(source_0_n, source_1_n));
                     }
-                    else if (rgb_index == 8) combineOut.rgb = (source_0.rgb * source_1.rgb) + source_2.rgb;
-                    else if (rgb_index == 9) combineOut.rgb = (source_0.rgb + source_1.rgb) * source_2.rgb;
+                    else if (rgb_index == 8) combineOut.rgb = (source_0_rgb.rgb * source_1_rgb.rgb) + source_2_rgb.rgb;
+                    else if (rgb_index == 9) combineOut.rgb = (source_0_rgb.rgb + source_1_rgb.rgb) * source_2_rgb.rgb;
 
-                    if      (a_index == 0) combineOut.a = source_0.a;
-                    else if (a_index == 1) combineOut.a = source_0.a * source_1.a;
-                    else if (a_index == 2) combineOut.a = source_0.a + source_1.a;
-                    else if (a_index == 3) combineOut.a = (source_0.a - 0.5) + (source_1.a - 0.5);
-                    else if (a_index == 4) combineOut.a = mix(source_1.a, source_0.a, source_2.a);
-                    else if (a_index == 5) combineOut.a = source_0.a - source_1.a;
+                    if      (a_index == 0) combineOut.a = source_0_a.a;
+                    else if (a_index == 1) combineOut.a = source_0_a.a * source_1_a.a;
+                    else if (a_index == 2) combineOut.a = source_0_a.a + source_1_a.a;
+                    else if (a_index == 3) combineOut.a = (source_0_a.a - 0.5) + (source_1_a.a - 0.5);
+                    else if (a_index == 4) {
+                        float a = source_0_a.a;
+                        float b = source_1_a.a;
+                        float c = 1 - source_2_a.a;
+                        combineOut.a = (1 - c) * a + c * b;
+                    }
+                    else if (a_index == 5) combineOut.a = source_0_a.a - source_1_a.a;
                     else if (a_index == 6) {
-                        vec3 source_0_n = (source_0.rgb * 2.0) - 1.0;
-                        vec3 source_1_n = (source_1.rgb * 2.0) - 1.0;
+                        vec3 source_0_n = (source_0_a.rgb * 2.0) - 1.0;
+                        vec3 source_1_n = (source_1_a.rgb * 2.0) - 1.0;
                         combineOut.a = dot(source_0_n, source_1_n);
                     }
                     else if (a_index == 7) {
-                        vec4 source_0_n = (source_0 * 2.0) - 1.0;
-                        vec4 source_1_n = (source_1 * 2.0) - 1.0;
+                        vec4 source_0_n = (source_0_a * 2.0) - 1.0;
+                        vec4 source_1_n = (source_1_a * 2.0) - 1.0;
                         combineOut.a = dot(source_0_n, source_1_n);
                     }
-                    else if (a_index == 8) combineOut.a = (source_0.a * source_1.a) + source_2.a;
-                    else if (a_index == 9) combineOut.a = (source_0.a + source_1.a) * source_2.a;
+                    else if (a_index == 8) combineOut.a = (source_0_a.a * source_1_a.a) + source_2_a.a;
+                    else if (a_index == 9) combineOut.a = (source_0_a.a + source_1_a.a) * source_2_a.a;
 
                     return combineOut;
                 }
