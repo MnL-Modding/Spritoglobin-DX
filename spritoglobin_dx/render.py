@@ -188,34 +188,34 @@ class SpriteRenderer:
                     return source_out;
                 }
 
-                vec4 getOperandRgb(int rgb_index, vec4 input) {
+                vec4 getOperandRgb(int rgb_index, vec4 input_rgb) {
                     vec4 operand_out = vec4(1.0, 0.0, 1.0, 0.5);
 
-                    if      (rgb_index == 0)  operand_out = input;
-                    else if (rgb_index == 1)  operand_out = 1.0 - input;
-                    else if (rgb_index == 2)  operand_out = vec4(input.a);
-                    else if (rgb_index == 3)  operand_out = vec4(1.0 - input.a);
-                    else if (rgb_index == 4)  operand_out = vec4(input.r);
-                    else if (rgb_index == 5)  operand_out = vec4(1.0 - input.r);
-                    else if (rgb_index == 8)  operand_out = vec4(input.g);
-                    else if (rgb_index == 9)  operand_out = vec4(1.0 - input.g);
-                    else if (rgb_index == 12) operand_out = vec4(input.b);
-                    else if (rgb_index == 13) operand_out = vec4(1.0 - input.b);
+                    if      (rgb_index == 0)  operand_out = input_rgb;
+                    else if (rgb_index == 1)  operand_out = 1.0 - input_rgb;
+                    else if (rgb_index == 2)  operand_out = vec4(input_rgb.a);
+                    else if (rgb_index == 3)  operand_out = vec4(1.0 - input_rgb.a);
+                    else if (rgb_index == 4)  operand_out = vec4(input_rgb.r);
+                    else if (rgb_index == 5)  operand_out = vec4(1.0 - input_rgb.r);
+                    else if (rgb_index == 8)  operand_out = vec4(input_rgb.g);
+                    else if (rgb_index == 9)  operand_out = vec4(1.0 - input_rgb.g);
+                    else if (rgb_index == 12) operand_out = vec4(input_rgb.b);
+                    else if (rgb_index == 13) operand_out = vec4(1.0 - input_rgb.b);
 
                     return operand_out;
                 }
 
-                vec4 getOperandA(int a_index, vec4 input) {
+                vec4 getOperandA(int a_index, vec4 input_a) {
                     vec4 operand_out = vec4(1.0, 0.0, 1.0, 0.5);
 
-                    if      (a_index == 0) operand_out = vec4(input.a);
-                    else if (a_index == 1) operand_out = vec4(1.0 - input.a);
-                    else if (a_index == 2) operand_out = vec4(input.r);
-                    else if (a_index == 3) operand_out = vec4(1.0 - input.r);
-                    else if (a_index == 4) operand_out = vec4(input.g);
-                    else if (a_index == 5) operand_out = vec4(1.0 - input.g);
-                    else if (a_index == 6) operand_out = vec4(input.b);
-                    else if (a_index == 7) operand_out = vec4(1.0 - input.b);
+                    if      (a_index == 0) operand_out = vec4(input_a.a);
+                    else if (a_index == 1) operand_out = vec4(1.0 - input_a.a);
+                    else if (a_index == 2) operand_out = vec4(input_a.r);
+                    else if (a_index == 3) operand_out = vec4(1.0 - input_a.r);
+                    else if (a_index == 4) operand_out = vec4(input_a.g);
+                    else if (a_index == 5) operand_out = vec4(1.0 - input_a.g);
+                    else if (a_index == 6) operand_out = vec4(input_a.b);
+                    else if (a_index == 7) operand_out = vec4(1.0 - input_a.b);
 
                     return operand_out;
                 }
