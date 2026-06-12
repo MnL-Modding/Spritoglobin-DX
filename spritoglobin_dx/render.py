@@ -66,13 +66,6 @@ class SpriteRenderer:
                 vec2 offset = uv_per_screen_pixel * blur_radius;
 
                 vec4 total_color = vec4(0.0, 0.0, 0.0, 0.0);
-                vec4 source_0_rgb;
-                vec4 source_1_rgb;
-                vec4 source_2_rgb;
-                vec4 source_0_a;
-                vec4 source_1_a;
-                vec4 source_2_a;
-                vec2 current_coord;
 
                 float rgb_mix = 9.0;
 
@@ -94,6 +87,8 @@ class SpriteRenderer:
                         vec4 temp_buffer = vec4(0.0);
                         vec4 saved_buffer;
 
+                        if (previous_buffer_start > -1) temp_buffer = u_globalPalette[previous_buffer_start];
+
                         """ + main_passes + """
                         
                         total_color += out_tex;
@@ -108,6 +103,10 @@ class SpriteRenderer:
                 out_tex = texture(u_texture_0, current_coord);
                 vec4 temp_buffer = vec4(0.0);
                 vec4 saved_buffer;
+
+                if (previous_buffer_start > -1) temp_buffer = u_globalPalette[previous_buffer_start];
+
+                current_coord = v_texcoord;
 
                 """ + main_passes + """
 
@@ -138,6 +137,7 @@ class SpriteRenderer:
                 uniform sampler2D u_texture_3;
 
                 uniform vec4[16] u_globalPalette;
+                uniform int previous_buffer_start;
 
                 vec4 out_tex;
                 vec4[4] buffer_save = vec4[4](vec4(0.0), vec4(0.0), vec4(0.0), vec4(0.0));
@@ -274,7 +274,15 @@ class SpriteRenderer:
                     return combineOut;
                 }
 
-                void main() {""" + main + "}"
+                void main() {
+                    vec4 source_0_rgb;
+                    vec4 source_1_rgb;
+                    vec4 source_2_rgb;
+                    vec4 source_0_a;
+                    vec4 source_1_a;
+                    vec4 source_2_a;
+                    vec2 current_coord;
+                    """ + main + "}"
         )
 
         vertices = numpy.array([
@@ -376,6 +384,8 @@ class SpriteRenderer:
                     tex.repeat_x = False
                     tex.repeat_y = False
                     tex.use(0)
+
+                    self.program['previous_buffer_start'] = renderer_data.previous_buffer_init
 
                     buffer_length = 20
                     passes = 6
