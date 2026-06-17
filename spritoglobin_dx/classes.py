@@ -207,7 +207,7 @@ class ObjFile:
         else:
             frame_data = self.cached_object.obj_anim_data.get_frame_data(anim_data.first_frame + frame_index)
 
-        if frame_data.transform != 0: transform_matrix = self.cached_object.obj_anim_data.get_transform_data(frame_data.transform - 1).matrix
+        if frame_data.transform != 0: transform_matrix = self.cached_object.obj_anim_data.get_full_transform_data(frame_data.transform - 1).matrix
         else: transform_matrix = []
 
         if transform_matrix != []:
@@ -547,27 +547,29 @@ class ObjFile:
                 case "ML3R": # Bowser's Inside Story DX --- added bounding boxes, added a new unused offset in the header (might be padding)
                     self.anim_num, color_mode, self.renderer_num, unused, self.anim_file_length, self.graph_file_length = struct.unpack('<4B2I', self.input_data.read(0xC))
                     self.bounding_box = struct.unpack('<4h', self.input_data.read(0x8))
-                    frame_offset, part_offset, unused_offset_0, trans_offset, renderer_offset, normal_offset, unused_offset_1 = struct.unpack('<7I', self.input_data.read(0x1C))
+                    frame_offset, part_offset, part_trans_offset, full_trans_offset, renderer_offset, normal_offset, unused_offset = struct.unpack('<7I', self.input_data.read(0x1C))
 
                     self.anim_size = 16
                     self.frame_size = 8
                     self.part_size = 16
-                    self.trans_size = 20
+                    self.part_trans_size = 16
+                    self.full_trans_size = 20
                     self.renderer_size = 84
 
                     self.normal_size = 48
                     self.normal_offset = normal_offset
 
-                    if unused_offset_1 != 0 and not test: print(f"THE 'unused_offset_1' VALUE IN CLASS ObjFile.AnimData IS USED ACTUALLY: unused_offset_1 = {unused_offset_1}")
+                    if unused_offset != 0 and not test: print(f"THE 'unused_offset_1' VALUE IN CLASS ObjFile.AnimData IS USED ACTUALLY: unused_offset_1 = {unused_offset}")
 
                 case "ML1R": # Superstar Saga DX --- added normal maps (or something lighting related)
                     self.anim_num, color_mode, self.renderer_num, unused, self.anim_file_length, self.graph_file_length = struct.unpack('<4B2I', self.input_data.read(0xC))
-                    frame_offset, part_offset, unused_offset_0, trans_offset, renderer_offset, normal_offset = struct.unpack('<6I', self.input_data.read(0x18))
+                    frame_offset, part_offset, part_trans_offset, full_trans_offset, renderer_offset, normal_offset = struct.unpack('<6I', self.input_data.read(0x18))
 
                     self.anim_size = 8
                     self.frame_size = 8
                     self.part_size = 16
-                    self.trans_size = 20
+                    self.part_trans_size = 16
+                    self.full_trans_size = 20
                     self.renderer_size = 84
 
                     self.normal_size = 48
@@ -575,16 +577,17 @@ class ObjFile:
 
                 case "ML4" | "ML5": # Dream Team & Paper Jam --- complete overhaul from the previous games
                     self.anim_num, color_mode, self.renderer_num, unused, self.anim_file_length, self.graph_file_length = struct.unpack('<4B2I', self.input_data.read(0xC))
-                    frame_offset, part_offset, unused_offset_0, trans_offset, renderer_offset = struct.unpack('<5I', self.input_data.read(0x14))
+                    frame_offset, part_offset, part_trans_offset, full_trans_offset, renderer_offset = struct.unpack('<5I', self.input_data.read(0x14))
 
                     self.anim_size = 8
                     self.frame_size = 8
                     self.part_size = 12
-                    self.trans_size = 20
+                    self.part_trans_size = 16
+                    self.full_trans_size = 20
                     self.renderer_size = 84
 
             if unused != 0 and not test: print(f"THE 'unused' VALUE IN CLASS ObjFile.AnimData IS USED ACTUALLY: unused = {unused}")
-            if trans_offset - unused_offset_0 != 0 and not test: print(f"THE 'unused_offset_0' VALUE IN CLASS ObjFile.AnimData IS USED ACTUALLY: unused_offset_0 size = {trans_offset - unused_offset_0}")
+            if full_trans_offset - part_trans_offset != 0 and not test: print(f"THE 'part_trans_offset' VALUE IN CLASS ObjFile.AnimData IS USED IN THIS FILE")
     
             self.default_renderer_colors = {}
             for i in range(16):
@@ -613,8 +616,8 @@ class ObjFile:
             self.anim_offset = anim_offset
             self.frame_offset = frame_offset
             self.part_offset = part_offset # TODO: implement Sprite Sheet Mode when this value is 0
-            # ???
-            self.trans_offset = trans_offset
+            self.part_trans_offset = part_trans_offset
+            self.full_trans_offset = full_trans_offset
             self.renderer_offset = renderer_offset
     
         class Animation:
@@ -638,13 +641,20 @@ class ObjFile:
         class SpritePart: # TODO: figure out what "horizontal_flip" actually does
             def __init__(self, input_data, game_id):
                 self.oam_data, self.renderer, self.horizontal_flip, self.graphics_buffer_offset, self.x_offset, self.y_offset = struct.unpack('<HHhHhh', input_data[:12])
+
+                if self.horizontal_flip != 0 and self.horizontal_flip != -1:
+                    print(f"'self.horizontal_flip' IS WEIRD IN ONE OF THE SPRITE PARTS: {self.horizontal_flip}")
                 
                 if game_id in GAME_IDS_THAT_USE_NORMAL_MAPS:
                     self.normal_map, = struct.unpack('<I', input_data[12:])
     
         class Transform:
-            def __init__(self, input_data, game_id):
-                matrix = struct.unpack('<4f2h', input_data)
+            def __init__(self, input_data, game_id, has_offset = True):
+                if has_offset:
+                    matrix = struct.unpack('<4f2h', input_data)
+                else:
+                    matrix = struct.unpack('<4f', input_data) + (0, 0)
+
                 self.matrix = [
                     matrix[0], matrix[2],  matrix[4],
                     matrix[1], matrix[3], -matrix[5],
@@ -728,11 +738,17 @@ class ObjFile:
     
             return self.SpritePart(self.get_data_at_offset(data_size, data_offset, index_num), self.game_id)
     
-        def get_transform_data(self, index_num):
-            data_size = self.trans_size
-            data_offset = self.trans_offset
+        def get_part_transform_data(self, index_num):
+            data_size = self.part_trans_size
+            data_offset = self.part_trans_offset
     
-            return self.Transform(self.get_data_at_offset(data_size, data_offset, index_num), self.game_id)
+            return self.Transform(self.get_data_at_offset(data_size, data_offset, index_num), self.game_id, has_offset = False)
+    
+        def get_full_transform_data(self, index_num):
+            data_size = self.full_trans_size
+            data_offset = self.full_trans_offset
+    
+            return self.Transform(self.get_data_at_offset(data_size, data_offset, index_num), self.game_id, has_offset = True)
     
         def get_renderer_data(self, index_num):
             data_size = self.renderer_size

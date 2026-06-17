@@ -46,22 +46,22 @@ THEME_COLOR_ICON_MASKS = {
 }
 
 
-LANGUAGES = { # display name, NDS value, 3DS key, github documentation language key, unfinished
+LANGUAGES = { # display name, NDS value, DT value, PJ+ value, github documentation language key, unfinished
     "None":  [None],
-    "ja_JP": ["日本語",        0, "JP_ja", "ja",  True],
-    "ko_KR": ["한국어",        0, "KR_ko", "ko",  True],
-    "en_US": ["English (US)",  1, "US_en", "en", False],
-    "fr_CA": ["Français (CA)", 2, "US_fr", "fr",  True],
-    "es_MX": ["Español (MX)",  5, "US_sp", "es",  True],
-    "nl_NL": ["Nederlands",   -1, "EU_du", "en",  True], # no github language
-    "en_GB": ["English (UK)",  1, "EU_en", "en", False],
-    "fr_FR": ["Français (FR)", 2, "EU_fr", "fr", False],
-    "de_DE": ["Deutsch",       3, "EU_ge", "de",  True],
-    "it_IT": ["Italiano",      4, "EU_it", "en",  True], # no github language
-    "pt_PT": ["Português",    -1, "EU_pt", "pt",  True],
-    "ru_RU": ["Русский",      -1, "EU_ru", "ru",  True],
-    "es_ES": ["Español (ES)",  5, "EU_sp", "es", False],
-    "pl_PL": ["Polski",       -1,  None  , "en", False], # no github language
+    "ja_JP": ["日本語",        0, 0x00, "JP_ja", "ja",  True],
+    "en_US": ["English (US)",  1, 0x11, "US_en", "en", False],
+    "fr_CA": ["Français (CA)", 2, 0x12, "US_fr", "fr",  True],
+    "es_MX": ["Español (MX)",  5, 0x15, "US_sp", "es",  True],
+    "en_GB": ["English (UK)",  1, 0x21, "EU_en", "en", False],
+    "fr_FR": ["Français (FR)", 2, 0x22, "EU_fr", "fr", False],
+    "de_DE": ["Deutsch",       3, 0x23, "EU_ge", "de",  True],
+    "it_IT": ["Italiano",      4, 0x24, "EU_it", "en",  True], # no github language
+    "es_ES": ["Español (ES)",  5, 0x25, "EU_sp", "es", False],
+    "nl_NL": ["Nederlands",   -1, 0x28, "EU_du", "en",  True], # no github language
+    "pt_PT": ["Português",    -1, 0x29, "EU_pt", "pt",  True],
+    "ru_RU": ["Русский",      -1, 0x2A, "EU_ru", "ru",  True],
+    "ko_KR": ["한국어",        0, 0x57, "KR_ko", "ko",  True],
+    "pl_PL": ["Polski",       -1,   -1,  None  , "en", False], # no github language
 }
 
 

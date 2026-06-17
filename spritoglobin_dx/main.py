@@ -984,7 +984,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
 
         for i in range(object_properties["animation_number"]):
-            item = QtWidgets.QListWidgetItem(str(i))
+            item = QtWidgets.QListWidgetItem(f"0x{i:02X}  ---  {i}")
             # if self.obj_data.get_animation_properties(
             #     object_name     = self.obj_list_box.currentText(), 
             #     animation_index = i,

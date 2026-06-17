@@ -24,7 +24,7 @@ def get_sprite_graphic(obj_anim_data, graph_file, current_anim_index, color_anim
 
     matrix = None
     if frame_data.transform != 0:
-        transform_data = obj_anim_data.get_transform_data(frame_data.transform - 1)
+        transform_data = obj_anim_data.get_full_transform_data(frame_data.transform - 1)
         matrix = list(transform_data.matrix)
         if frame_data.invert_matrix_rotation is None:
             invert_matrix = (matrix[0] < 0) != (matrix[4] < 0)
