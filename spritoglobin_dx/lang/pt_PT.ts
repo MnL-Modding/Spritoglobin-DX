@@ -38,64 +38,66 @@
     <name>FileImportWindow</name>
     <message>
         <location filename="../popups.py" line="86"/>
-        <source>ImportWindowTitle</source>
+        <source>Import Object File</source>
         <translation>Importar um ficheiro objeto</translation>
     </message>
     <message>
         <location filename="../popups.py" line="91"/>
-        <source>ImportChooseFileButton</source>
+        <source>Choose File</source>
         <translation>Escolher um ficheiro</translation>
     </message>
     <message>
         <location filename="../popups.py" line="96"/>
         <location filename="../popups.py" line="186"/>
-        <source>FileInfoNone</source>
+        <source>No File Selected</source>
         <translation>Nenhum ficheiro selecionado</translation>
     </message>
     <message>
         <location filename="../popups.py" line="99"/>
-        <source>ImportAlphabetizeToggle</source>
+        <source>Alphabetize File Contents After Import</source>
         <translation>Alfabetizar o contente do ficheiro depois importação</translation>
     </message>
     <message>
         <location filename="../popups.py" line="102"/>
-        <source>ImportAcceptButton</source>
+        <source>Import File!</source>
         <translation>Importar o ficheiro !</translation>
     </message>
     <message>
         <location filename="../popups.py" line="134"/>
         <location filename="../popups.py" line="140"/>
-        <source>ImportChooseFileTitle</source>
+        <source>Choose Object Archive</source>
         <translation>Escolher um ficheiro compactado objeto</translation>
     </message>
     <message>
         <location filename="../popups.py" line="135"/>
-        <source>ImportChooseFileBlurb</source>
+        <source>Please choose an Object archive from {0}, or {1}.</source>
         <translation>Por favor escolhe um ficheiro compactado objeto de {0}, ou {1}.</translation>
     </message>
     <message>
         <location filename="../popups.py" line="173"/>
-        <source>ImportFileError100</source>
+        <source>The file appears to be a valid Object archive, but the data appears to be corrupted or in an unrecognized format.</source>
         <translation>O ficheiro parece ser um ficheiro compactado objeto válido, mas os dados parecem ser corrompidos o num formato não reconhecido.</translation>
     </message>
     <message>
         <location filename="../popups.py" line="174"/>
-        <source>ImportFileError101</source>
+        <source>The file does not appear to be a valid Object archive.</source>
         <translation>O ficheiro não parece ser um ficheiro compactado objeto válido.</translation>
     </message>
     <message>
         <location filename="../popups.py" line="175"/>
-        <source>ImportFileError102</source>
+        <source>The file does not appear to be a valid Object archive. Only Object archives from {0}, and {1} are currently supported.</source>
         <translation>O ficheiro não parece ser um ficheiro compactado objeto válido. Só os ficheiros objetos de {0}, e {1} são atualmente suportados.</translation>
     </message>
     <message>
         <location filename="../popups.py" line="178"/>
-        <source>ImportFileFailureTitle</source>
+        <source>Failed to Import File</source>
         <translation>A importação do ficheiro falhou</translation>
     </message>
     <message>
         <location filename="../popups.py" line="180"/>
-        <source>ImportFileFailureBlurb</source>
+        <source>The chosen file raised an error: &quot;{0}&quot;
+
+{1}</source>
         <translation>Ocorreu um erro no ficheiro : &quot;{0}&quot;
 
 {1}</translation>
@@ -103,18 +105,18 @@
     <message>
         <location filename="../popups.py" line="194"/>
         <location filename="../popups.py" line="196"/>
-        <source>FileInfoBG4TitleAndVersion</source>
+        <source>BG4 Archive (Version {0}.{1})</source>
         <translation>Ficheiro compactado BG4 (Version {0}.{1})</translation>
     </message>
     <message>
         <location filename="../popups.py" line="203"/>
-        <source>FileInfoCellAnimeTitle</source>
+        <source>CellAnime Info</source>
         <translation>Informação CellAnime</translation>
     </message>
     <message>
         <location filename="../popups.py" line="208"/>
         <location filename="../popups.py" line="215"/>
-        <source>FileInfoValidEntryCount</source>
+        <source>{0} Valid Entries, {1} Invalid Entries</source>
         <translation>{0} entradas válidas, {1} entradas inválidas</translation>
     </message>
 </context>
@@ -122,73 +124,73 @@
     <name>GifExportWindow</name>
     <message>
         <location filename="../popups.py" line="238"/>
-        <source>ExportWindowTitle</source>
+        <source>Export File</source>
         <translation>Exportar um ficheiro</translation>
     </message>
     <message>
         <location filename="../popups.py" line="245"/>
         <location filename="../popups.py" line="246"/>
-        <source>AnimationOptionFramerate</source>
+        <source>{0} fps</source>
         <translation>{0} FPS</translation>
     </message>
     <message>
         <location filename="../popups.py" line="282"/>
-        <source>ExportAcceptButton</source>
+        <source>Export File!</source>
         <translation>Exportar um ficheiro !</translation>
     </message>
     <message>
         <location filename="../popups.py" line="320"/>
-        <source>AnimationOptionFramerateTitle</source>
+        <source>Framerate:</source>
         <translation>Taxa de quadros :</translation>
     </message>
     <message>
         <location filename="../popups.py" line="325"/>
-        <source>AnimationOptionColorAnimTitle</source>
+        <source>Color Animation:</source>
         <translation>Animação de cor :</translation>
     </message>
     <message>
         <location filename="../popups.py" line="330"/>
-        <source>ExportAnimationListTitle</source>
+        <source>Animation Sequence:</source>
         <translation>Sequência de animação :</translation>
     </message>
     <message>
         <location filename="../popups.py" line="335"/>
-        <source>AnimationListDataCurrentAnim</source>
+        <source>Animation:</source>
         <translation>Animação :</translation>
     </message>
     <message>
         <location filename="../popups.py" line="340"/>
-        <source>AnimationListDataCurrentLoops</source>
+        <source>Loops:</source>
         <translation>Repeticões :</translation>
     </message>
     <message>
         <location filename="../popups.py" line="475"/>
-        <source>AnimationOptionColorAnimNone</source>
+        <source>None</source>
         <translation>Nenhum</translation>
     </message>
     <message>
         <location filename="../popups.py" line="500"/>
-        <source>ExportAnimationListData</source>
+        <source>Animation {0}</source>
         <translation>Animação {0}</translation>
     </message>
     <message>
         <location filename="../popups.py" line="502"/>
-        <source>ExportAnimationListDataWithLoop</source>
+        <source>Animation {0} ({1} Loops)</source>
         <translation>Animação {0} ({1} repetições)</translation>
     </message>
     <message>
         <location filename="../popups.py" line="541"/>
-        <source>ExportChooseFileTitle</source>
+        <source>Export File</source>
         <translation>Exportar um ficheiro</translation>
     </message>
     <message>
         <location filename="../popups.py" line="668"/>
-        <source>ExportFileSuccessTitle</source>
+        <source>Export Successful</source>
         <translation>Exportação concluída</translation>
     </message>
     <message>
         <location filename="../popups.py" line="669"/>
-        <source>ExportFileSuccessBlurb</source>
+        <source>File {0} has been successfully exported!</source>
         <translation>O ficheiro {0} foi exportado com sucesso !</translation>
     </message>
 </context>
@@ -196,65 +198,65 @@
     <name>GraphicsAnimationTimeline</name>
     <message>
         <location filename="../gui.py" line="571"/>
-        <source>ShowBoundingBoxToggle</source>
+        <source>Show Animation Bounding Box</source>
         <translation>Mostrar as animações da bouding box</translation>
     </message>
     <message>
         <location filename="../gui.py" line="670"/>
         <location filename="../gui.py" line="672"/>
         <location filename="../gui.py" line="676"/>
-        <source>FrameDataSpritePartsUsed</source>
+        <source>Sprite Part(s) Used: {0}</source>
         <translation>Parte(s) do sprite usada(s) : {0}</translation>
     </message>
     <message>
         <location filename="../gui.py" line="675"/>
-        <source>FrameDataSpritePartsUsedNone</source>
+        <source>No Sprite Parts Used!</source>
         <translation>Nenhum parte do sprite usada !</translation>
     </message>
     <message>
         <location filename="../gui.py" line="681"/>
         <location filename="../gui.py" line="685"/>
-        <source>FrameDataTransformMatrixUsed</source>
+        <source>Transformation Matrix Used: {0}</source>
         <translation>Molde(s) de transformação usada(s) : {0}</translation>
     </message>
     <message>
         <location filename="../gui.py" line="684"/>
-        <source>FrameDataTransformMatrixUsedNone</source>
+        <source>No Transformation Matrix Used!</source>
         <translation>Nemhum molde de transformação usada !</translation>
     </message>
     <message>
         <location filename="../gui.py" line="690"/>
-        <source>FrameDataTransformMatrixInverted</source>
+        <source>(Rotation is Inverted)</source>
         <translation>(A rotação esta inversada)</translation>
     </message>
     <message>
         <location filename="../gui.py" line="704"/>
-        <source>FrameDataTransformMatrixXScale</source>
+        <source>X Scale: {0}</source>
         <translation>Tamanho X : {0}</translation>
     </message>
     <message>
         <location filename="../gui.py" line="705"/>
-        <source>FrameDataTransformMatrixXShear</source>
+        <source>X Shear: {0}</source>
         <translation>Corte X : {0}</translation>
     </message>
     <message>
         <location filename="../gui.py" line="706"/>
-        <source>FrameDataTransformMatrixXPos</source>
+        <source>X Position: {1}</source>
         <translation>Posição X : {1}</translation>
     </message>
     <message>
         <location filename="../gui.py" line="707"/>
-        <source>FrameDataTransformMatrixYShear</source>
+        <source>Y Shear: {0}</source>
         <translation>Corte Y : {0}</translation>
     </message>
     <message>
         <location filename="../gui.py" line="708"/>
-        <source>FrameDataTransformMatrixYScale</source>
+        <source>Y Scale: {0}</source>
         <translation>Tamanho Y : {0}</translation>
     </message>
     <message>
         <location filename="../gui.py" line="709"/>
-        <source>FrameDataTransformMatrixYPos</source>
+        <source>Y Position: {1}</source>
         <translation>Posição Y : {1}</translation>
     </message>
 </context>

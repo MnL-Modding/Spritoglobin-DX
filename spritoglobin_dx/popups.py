@@ -27,23 +27,24 @@ class FileImportWindow(QtWidgets.QDialog):
 
         self.supported_games_list_string_format = ", ".join(supported_games[:-1]), supported_games[-1]
 
-        self.setWindowTitle(self.tr("ImportWindowTitle"))
+        #: Window title.
+        self.setWindowTitle(self.tr("Import Object File"))
         self.setWindowIcon(self.current_window_icon)
 
         layout = QtWidgets.QGridLayout()
 
-        self.choose_file_button = QtWidgets.QPushButton(self.tr("ImportChooseFileButton"))
+        self.choose_file_button = QtWidgets.QPushButton(self.tr("Choose File"))
         self.choose_file_button.setIcon(self.parent.theme_icons['open'])
         self.choose_file_button.clicked.connect(self.import_obj_file)
 
-        file_info_none_string = self.tr("FileInfoNone")
+        file_info_none_string = self.tr("No File Selected")
         self.file_info_text = QtWidgets.QLabel(f"\n{file_info_none_string}\n")
         self.file_info_text.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
 
-        self.sort_contents_toggle = QtWidgets.QCheckBox(self.tr("ImportAlphabetizeToggle"))
+        self.sort_contents_toggle = QtWidgets.QCheckBox(self.tr("Alphabetize File Contents After Import"))
         self.sort_contents_toggle.setVisible(False)
 
-        self.import_button = QtWidgets.QPushButton(self.tr("ImportAcceptButton"))
+        self.import_button = QtWidgets.QPushButton(self.tr("Import File!"))
         self.import_button.setIcon(self.parent.theme_icons['sprito'])
         self.import_button.clicked.connect(self.finalize)
         self.import_button.setEnabled(False)
@@ -77,13 +78,15 @@ class FileImportWindow(QtWidgets.QDialog):
 
         QtWidgets.QMessageBox.information(
             self,
-            self.tr("ImportChooseFileTitle"),
-            self.tr("ImportChooseFileBlurb").format(*self.supported_games_list_string_format),
+            #: Window title.
+            self.tr("Choose Object Archive"),
+            #: "{0}, or {1}" appears as "Paper Jam, Superstar Saga DX, or Bowser's Inside Story DX" in-program (not exact titles but you get the idea)
+            self.tr("Please choose an Object archive from {0}, or {1}.").format(*self.supported_games_list_string_format),
         )
 
         path, _ = QtWidgets.QFileDialog.getOpenFileName(
             self,
-            self.tr("ImportChooseFileTitle"),
+            self.tr("Choose Object Archive"),
             path,
             "Data Archives (*.dat);;All Files (*)",
         )
@@ -116,19 +119,23 @@ class FileImportWindow(QtWidgets.QDialog):
 
             err = QtWidgets.QMessageBox(self.parent)
             error_strings = {
-                100: self.tr("ImportFileError100"),
-                101: self.tr("ImportFileError101"),
-                102: self.tr("ImportFileError102"),
+                #: For uploading unsupported Obj files. The file had valid CA info, but all tests to check which game it's from have failed.
+                100: self.tr("The file appears to be a valid Object archive, but the data appears to be corrupted or in an unrecognized format."),
+                #: For uploading files with a valid BG4 magic number, but no CA info. It's not an Obj archive.
+                101: self.tr("The file does not appear to be a valid Object archive."),
+                #: For uploading any old data file that's not recognized by any of the program's tests. Clarifies which games are supported due to the fact that the uploader might be trying to import data from a game that's planned for future support, like Dream Team (as of writing this note).
+                102: self.tr("The file does not appear to be a valid Object archive. Only Object archives from {0}, and {1} are currently supported."),
             }
 
-            err.setWindowTitle(self.tr("ImportFileFailureTitle"))
+            #: Window title.
+            err.setWindowTitle(self.tr("Failed to Import File"))
             err.setWindowIcon(self.current_window_icon)
-            err.setText(self.tr("ImportFileFailureBlurb").format(e, error_strings[e.error_code].format(*self.supported_games_list_string_format)))
+            err.setText(self.tr('The chosen file raised an error: "{0}"\n\n{1}').format(e, error_strings[e.error_code].format(*self.supported_games_list_string_format)))
             err.setIcon(QtWidgets.QMessageBox.Icon.Critical)
 
             err.exec()
 
-            file_info_none_string = self.tr("FileInfoNone")
+            file_info_none_string = self.tr("No File Selected")
             self.file_info_text.setText(f"\n{file_info_none_string}\n")
             self.sort_contents_toggle.setVisible(False)
         else:
@@ -137,28 +144,30 @@ class FileImportWindow(QtWidgets.QDialog):
             self.import_button.setEnabled(True)
             self.sort_contents_toggle.setVisible(True)
 
-            info = self.tr("FileInfoBG4TitleAndVersion").format(*obj_data.bg4_version)
+            info = self.tr("BG4 Archive (Version {0}.{1})").format(*obj_data.bg4_version)
             valid = (obj_data.valid_entries, obj_data.invalid_entries)
-            ca_info = self.tr("FileInfoBG4TitleAndVersion").format(*obj_data.bg4_ca_version)
+            ca_info = self.tr("BG4 Archive (Version {0}.{1})").format(*obj_data.bg4_ca_version)
             ca_valid = (obj_data.valid_ca_entries, obj_data.invalid_ca_entries)
 
             game_title = self.game_title_strings[f"GameTitle{self.current_game_id}"]
         finally:
-            cellanime_title_string = self.tr("FileInfoCellAnimeTitle")
+            #: DO NOT TRANSLATE "CellAnime" AS IT IS AN INTERNAL NAME
+            cellanime_title_string = self.tr("CellAnime Info")
 
             string = ""
 
             string += "\n"
             string += f"{os.path.basename(path)} - {info}"
             string += "\n"
-            string += self.tr("FileInfoValidEntryCount").format(*valid)
+            #: Displays the amount of files that are full of CellAnime data, versus how many files are either unused or full of improper data.
+            string += self.tr("{0} Valid Entries, {1} Invalid Entries").format(*valid)
             string += "\n"
             string += f"({game_title})"
             string += "\n"
             string += "\n"
             string += f"{cellanime_title_string} - {ca_info}"
             string += "\n"
-            string += self.tr("FileInfoValidEntryCount").format(*ca_valid)
+            string += self.tr("{0} Valid Entries, {1} Invalid Entries").format(*ca_valid)
             string += "\n"
 
             self.file_info_text.setText(string)
@@ -181,7 +190,8 @@ class GifExportWindow(QtWidgets.QDialog):
         self.current_window_icon = current_window_icon
         self.success_jingle = success_jingle
 
-        self.setWindowTitle(self.tr("ExportWindowTitle"))
+        #: Window title.
+        self.setWindowTitle(self.tr("Export File"))
         self.setWindowIcon(self.current_window_icon)
 
         self.renderer = renderer
@@ -190,8 +200,9 @@ class GifExportWindow(QtWidgets.QDialog):
 
         self.framerate_choose_box = QtWidgets.QComboBox()
         self.framerate_choose_box.addItems([
-            self.tr("AnimationOptionFramerate").format("60 / 50"),
-            self.tr("AnimationOptionFramerate").format("30 / 25"),
+            #: Framerate indicator, displays as "60 / 50 fps" and "30 / 25 fps" in English. Uses two numbers because GIFs have really weird speed limitations, unlike animated PNGs.
+            self.tr("{0} fps").format("60 / 50"),
+            self.tr("{0} fps").format("30 / 25"),
         ])
         if use_low_framerate:
             self.framerate_choose_box.setCurrentIndex(1)
@@ -239,7 +250,7 @@ class GifExportWindow(QtWidgets.QDialog):
         self.loop_choose_spin_box.setMaximum(1000)
         self.loop_choose_spin_box.valueChanged.connect(self.change_current_anim_data)
 
-        self.export_button = QtWidgets.QPushButton(self.tr("ExportAcceptButton"))
+        self.export_button = QtWidgets.QPushButton(self.tr("Export File!"))
         self.export_button.setIcon(self.parent.theme_icons['export'])
         self.export_button.clicked.connect(self.export_gif)
 
@@ -283,37 +294,38 @@ class GifExportWindow(QtWidgets.QDialog):
         settings_layout.addWidget(self.anim_choose_list_box, 13, 0, 1, 2)
         settings_layout.addWidget(self.loop_choose_spin_box, 13, 2, 1, 2)
 
-        string = QtWidgets.QLabel(self.tr("AnimationOptionFramerateTitle"))
+        string = QtWidgets.QLabel(self.tr("Framerate:"))
         string.setBuddy(self.framerate_choose_box)
         string.setEnabled(False)
         settings_layout.addWidget(string, 1, 0, 1, 2)
 
-        string = QtWidgets.QLabel(self.tr("AnimationOptionColorAnimTitle"))
+        string = QtWidgets.QLabel(self.tr("Color Animation:"))
         string.setBuddy(self.color_anim_list_box)
         string.setEnabled(False)
         settings_layout.addWidget(string, 3, 0, 1, 4)
 
-        string = QtWidgets.QLabel(self.tr("AnimationOptionSpeedTitle"))
+        string = QtWidgets.QLabel(self.tr("Playback Speed:"))
         string.setBuddy(self.speed_controller)
         string.setEnabled(False)
         settings_layout.addWidget(string, 5, 0, 1, 2)
 
-        string = QtWidgets.QLabel(self.tr("AnimationOptionScaleTitle"))
+        string = QtWidgets.QLabel(self.tr("Sprite Scale:"))
         string.setBuddy(self.scale_controller)
         string.setEnabled(False)
         settings_layout.addWidget(string, 5, 2, 1, 2)
 
-        string = QtWidgets.QLabel(self.tr("ExportAnimationListTitle"))
+        #: Refers to a sequence of animations to play in order.
+        string = QtWidgets.QLabel(self.tr("Animation Sequence:"))
         string.setBuddy(self.anim_list_box)
         string.setEnabled(False)
         settings_layout.addWidget(string, 7, 0, 1, 4)
 
-        string = QtWidgets.QLabel(self.tr("AnimationListDataCurrentAnim"))
+        string = QtWidgets.QLabel(self.tr("Animation:"))
         string.setBuddy(self.anim_choose_list_box)
         string.setEnabled(False)
         settings_layout.addWidget(string, 12, 0, 1, 2)
 
-        string = QtWidgets.QLabel(self.tr("AnimationListDataCurrentLoops"))
+        string = QtWidgets.QLabel(self.tr("Loops:"))
         string.setBuddy(self.loop_choose_spin_box)
         string.setEnabled(False)
         settings_layout.addWidget(string, 12, 2, 1, 2)
@@ -472,7 +484,8 @@ class GifExportWindow(QtWidgets.QDialog):
 
         self.color_anim_list_box.setEnabled(object_properties["has_color_data"])
 
-        self.color_anim_list_box.addItem(self.tr("AnimationOptionColorAnimNone"))
+        #: Used when a file has no color animations.
+        self.color_anim_list_box.addItem(self.tr("None"))
         if object_properties["has_color_data"]:
             for anim in object_properties["color_data"].keys():
                 self.color_anim_list_box.addItem(str(anim))
@@ -497,9 +510,9 @@ class GifExportWindow(QtWidgets.QDialog):
         
         for i, (anim, count) in enumerate(self.current_anim_list):
             if count == 1:
-                string = self.tr("ExportAnimationListData").format(anim)
+                string = self.tr("Animation {0}").format(anim)
             else:
-                string = self.tr("ExportAnimationListDataWithLoop").format(anim, count)
+                string = self.tr("Animation {0} ({1} Loops)").format(anim, count)
             item = self.anim_list_box.item(i)
             item.setText(string)
 
@@ -538,7 +551,7 @@ class GifExportWindow(QtWidgets.QDialog):
 
         path, file_filter = QtWidgets.QFileDialog.getSaveFileName(
             self,
-            self.tr("ExportChooseFileTitle"),
+            self.tr("Export File"),
             f"{path}/{filename}",
             "GIF files (*.gif);;Animated PNGs (*.png);;All Files (*)",
         )
@@ -717,8 +730,9 @@ class GifExportWindow(QtWidgets.QDialog):
 
         QtWidgets.QMessageBox.about(
             self,
-            self.tr("ExportFileSuccessTitle"),
-            self.tr("ExportFileSuccessBlurb").format(filename),
+            #: Window title.
+            self.tr("Export Successful"),
+            self.tr("File {0} has been successfully exported!").format(filename),
         )
 
         self.gif_preview.resizeEvent()
@@ -740,7 +754,8 @@ class ProgramThemeEditor(QtWidgets.QWidget):
 
         self.current_window_icon = current_window_icon
 
-        self.setWindowTitle(self.tr("ThemeWindowTitle"))
+        #: Window title.
+        self.setWindowTitle(self.tr("Edit Theme"))
         self.setWindowIcon(self.current_window_icon)
         self.setWindowFlag(QtCore.Qt.CustomizeWindowHint, True)
         self.setWindowFlag(QtCore.Qt.WindowMaximizeButtonHint, False)
@@ -765,7 +780,8 @@ class ProgramThemeEditor(QtWidgets.QWidget):
         preset_buttons_layout = QtWidgets.QGridLayout(preset_buttons)
         preset_buttons_layout.setContentsMargins(0, 0, 0, 0)
 
-        self.map_colors_toggle = QtWidgets.QCheckBox(self.tr("ThemeMapColorsToggle"))
+        #: Refers to whether or not the icons will be automatically recolored based on the four main theme colors the user has chosen.
+        self.map_colors_toggle = QtWidgets.QCheckBox(self.tr("Recolor Icons According to Theme"))
         self.map_colors_toggle.setChecked(default_map)
         self.map_colors_toggle.checkStateChanged.connect(self.set_colors)
 
@@ -860,7 +876,7 @@ class ProgramThemeEditor(QtWidgets.QWidget):
         self.graphics_timeline_preview.bounding_box_toggle_string.setEnabled(False)
         self.graphics_timeline_preview.bounding_box_toggle.setChecked(True)
 
-        self.accept_button = QtWidgets.QPushButton(self.tr("ThemeAcceptButton"))
+        self.accept_button = QtWidgets.QPushButton(self.tr("Apply Theme!"))
         self.accept_button.clicked.connect(self.accept_theme)
 
         layout.addWidget(color_buttons, 1, 0, 1, 2)
@@ -872,15 +888,16 @@ class ProgramThemeEditor(QtWidgets.QWidget):
         layout.addWidget(global_palette, 10, 0, 1, 2)
         layout.addWidget(self.accept_button, 11, 0, 1, 2, alignment = QtCore.Qt.AlignmentFlag.AlignCenter)
         
-        string = QtWidgets.QLabel(self.tr("ThemeSettingsTitle"))
+        string = QtWidgets.QLabel(self.tr("Theme Settings:"))
         string.setEnabled(False)
         layout.addWidget(string, 0, 0, 1, 2)
         
-        string = QtWidgets.QLabel(self.tr("ThemePresetsTitle"))
+        #: Referring to buttons you can click to automatically set your theme to a few pre-determined colors.
+        string = QtWidgets.QLabel(self.tr("Theme Presets:"))
         string.setEnabled(False)
         layout.addWidget(string, 4, 0, 1, 2)
 
-        string = QtWidgets.QLabel(self.tr("ThemePreviewTitle"))
+        string = QtWidgets.QLabel(self.tr("Preview:"))
         string.setEnabled(False)
         layout.addWidget(string, 7, 0, 1, 2)
 

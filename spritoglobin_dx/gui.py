@@ -562,7 +562,7 @@ class GraphicsAnimationTimeline(AnimationTimeline):
         self.minimal = minimal
 
         self.bounding_box_toggle = QtWidgets.QCheckBox()
-        self.bounding_box_toggle_string = QtWidgets.QLabel(self.tr("ShowBoundingBoxToggle"))
+        self.bounding_box_toggle_string = QtWidgets.QLabel(self.tr("Show Animation Bounding Box"))
         self.bounding_box_toggle_string.setBuddy(self.bounding_box_toggle)
         self.bounding_box_toggle.setSizePolicy(QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Minimum)
         self.bounding_box_toggle.checkStateChanged.connect(self.toggle_bounding_box)
@@ -665,26 +665,27 @@ class GraphicsAnimationTimeline(AnimationTimeline):
         string = ""
 
         if self.current_parts is None:
-            string += self.tr("FrameDataSpritePartsUsed").format("?")
+            string += self.tr("Sprite Part(s) Used: {0}").format("?")
         elif self.current_parts[1] == 1:
-            string += self.tr("FrameDataSpritePartsUsed").format(self.current_parts[0])
+            string += self.tr("Sprite Part(s) Used: {0}").format(self.current_parts[0])
         elif self.current_parts[1] == 0:
-            string += self.tr("FrameDataSpritePartsUsedNone")
+            string += self.tr("No Sprite Parts Used!")
         else:
-            string += self.tr("FrameDataSpritePartsUsed").format(f"{self.current_parts[0]} - {self.current_parts[0] + self.current_parts[1] - 1}")
+            string += self.tr("Sprite Part(s) Used: {0}").format(f"{self.current_parts[0]} - {self.current_parts[0] + self.current_parts[1] - 1}")
         
         string += "\n"
 
         if self.current_parts is None:
-            string += self.tr("FrameDataTransformMatrixUsed").format("?")
+            string += self.tr("Transformation Matrix Used: {0}").format("?")
         elif not self.current_matrix_index > -1:
-            string += self.tr("FrameDataTransformMatrixUsedNone")
+            string += self.tr("No Transformation Matrix Used!")
         else:
-            string += self.tr("FrameDataTransformMatrixUsed").format(self.current_matrix_index)
+            string += self.tr("Transformation Matrix Used: {0}").format(self.current_matrix_index)
         
         string += "\n"
         if self.current_matrix_inv:
-            string += self.tr("FrameDataTransformMatrixInverted")
+            #: Under some circumstances, the affine matrix data for an image can be automatically modified so that its rotation appears inverted from the actual numbers. This appears in those circumstances, for clarity.
+            string += self.tr("(Rotation is Inverted)")
         else:
             string += "---"
             
@@ -699,12 +700,18 @@ class GraphicsAnimationTimeline(AnimationTimeline):
 
         for i, label in enumerate(self.frame_data_matrix):
             string = [
-                self.tr("FrameDataTransformMatrixXScale"),
-                self.tr("FrameDataTransformMatrixXShear"),
-                self.tr("FrameDataTransformMatrixXPos"),
-                self.tr("FrameDataTransformMatrixYShear"),
-                self.tr("FrameDataTransformMatrixYScale"),
-                self.tr("FrameDataTransformMatrixYPos"),
+                #: Part of affine matrix data.
+                self.tr("X Scale: {0}"),
+                #: Part of affine matrix data.
+                self.tr("X Shear: {0}"),
+                #: Part of affine matrix data.
+                self.tr("X Position: {1}"),
+                #: Part of affine matrix data.
+                self.tr("Y Shear: {0}"),
+                #: Part of affine matrix data.
+                self.tr("Y Scale: {0}"),
+                #: Part of affine matrix data.
+                self.tr("Y Position: {1}"),
             ][i]
 
             label.setText(string.format(f"{matrix[i]:7.4f}", matrix[i]))
@@ -785,9 +792,9 @@ class ColorAnimationTimeline(AnimationTimeline):
         self.layer_info_color = QtWidgets.QLabel()
         self.layer_info_alpha = QtWidgets.QLabel()
 
-        string_color = QtWidgets.QLabel(self.tr("LayerInfoColorRGB"))
+        string_color = QtWidgets.QLabel(self.tr("Color:"))
         string_color.setBuddy(self.layer_info_color)
-        string_alpha = QtWidgets.QLabel(self.tr("LayerInfoColorA"))
+        string_alpha = QtWidgets.QLabel(self.tr("Alpha:"))
         string_alpha.setBuddy(self.layer_info_alpha)
 
         layer_info_layout.addWidget(self.layer_info_text_1, 0, 0, 1, -1, alignment = QtCore.Qt.AlignmentFlag.AlignCenter)
@@ -920,9 +927,11 @@ class ColorAnimationTimeline(AnimationTimeline):
             channel = "?"
             persistant = "?"
 
-        string += self.tr("LayerInfoPaletteColor").format(channel)
+        #: This is referring to which color in the global palette (not an official name) is affected by the current color animation.
+        string += self.tr("Global Palette Color: {0}").format(channel)
         string += "\n"
-        string += self.tr("LayerInfoPersistant").format(persistant)
+        #: Refers to whether a color animation continues to loop independently of the current sprite animation or not.
+        string += self.tr("Persistent: {0}").format(persistant)
 
         self.layer_info_text_1.setText(string)
 
@@ -962,7 +971,8 @@ class ColorAnimationTimeline(AnimationTimeline):
             r1, g1, b1, a1 = "?", "?", "?", "?"
             r2, g2, b2, a2 = "?", "?", "?", "?"
 
-        string += self.tr("LayerInfoStartEndColor")
+        #: Refers to the starting color and the ending color of the current keyframe.
+        string += self.tr("Start/End Colors:")
         string += "\n"
         string += f"({r1}, {g1}, {b1}, {a1})"
         string += "\n"
@@ -1017,7 +1027,7 @@ class ColorAnimationTimeline(AnimationTimeline):
                 layers = len(self.animation_data)
                 layer_amt = layers
 
-            self.layer_toggle_list_string.setText(self.tr("LayerToggleTitle").format(layer_amt))
+            self.layer_toggle_list_string.setText(self.tr("Current Animation Layer ({0} Total)").format(layer_amt))
 
             self.layer_toggle_list.blockSignals(True)
             self.layer_toggle_list.clear()
