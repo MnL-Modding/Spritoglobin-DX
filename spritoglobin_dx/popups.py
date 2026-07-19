@@ -416,7 +416,7 @@ class GifExportWindow(QtWidgets.QDialog):
             (scale, scale, 1), # scale
         ]
 
-        palette = self.obj_data.get_object_pic200_palette(
+        palette = self.obj_data.get_object_pica200_palette(
             object_name      = cached_object.name, 
             animation_index  = anim,
             color_anim_index = color_animation,
@@ -654,7 +654,7 @@ class GifExportWindow(QtWidgets.QDialog):
                     (1, 1, 1), # scale
                 ]
 
-                palette = self.obj_data.get_object_pic200_palette(
+                palette = self.obj_data.get_object_pica200_palette(
                     object_name      = object_name, 
                     animation_index  = anim,
                     color_anim_index = color_animation,

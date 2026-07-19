@@ -7,6 +7,7 @@ import numpy
 
 from spritoglobin_dx.constants import *
 from spritoglobin_dx.graphics import SIZING_TABLE, SWIZZLE_TABLE, get_sprite_graphic, get_sprite_part_set_graphic, draw_part
+from spritoglobin_dx import palette_anim
 
 
 class InvalidObjectFileError(Exception):
@@ -1202,6 +1203,11 @@ class ObjFile:
                     self.part_offset = self.part_set_offset + (part_set_num * self.part_set_size)
                     self.part_trans_offset = self.part_offset + (part_num * self.part_size)
 
+                    # whole-cell frame transforms index the same 0xC-byte transform
+                    # pool as the per-part transforms (see AnimFrame's duration bits)
+                    self.full_trans_offset = self.part_trans_offset
+                    self.full_trans_size = self.part_trans_size
+
             if self.game_id in GAME_IDS_THAT_USE_PICA200_RENDERING:
                 self.color_mode = [ # key, bits-per-pixel
                     ["RGBA8888", 32],
@@ -1259,7 +1265,10 @@ class ObjFile:
                     part_set_index, self.anim_duration, unk = struct.unpack('<H2B', input_data)
                     self.first_part, last_part = struct.unpack('<2H', parent.get_data_at_offset(parent.part_set_size, parent.part_set_offset, part_set_index))
                     self.total_parts = last_part - self.first_part
-                    self.transform = 0 # TODO: find a way to make it obvious whether transform is unused or straight up not supported
+                    # anim_duration/unk are the low/high bytes of a u16 duration word.
+                    # the game masks timing to bits 0-8; bit 9 (unk & 0x02) flags a
+                    # whole-cell transform and bits 10-15 ((unk >> 2) & 0x3F) index it.
+                    self.transform = ((unk >> 2) & 0x3F) + 1 if unk & 0x02 else 0
                     self.anim_timer = None
                 else:
                     self.first_part, self.total_parts, self.invert_matrix_rotation, self.anim_timer, self.transform = struct.unpack('<HBBHH', input_data)
@@ -1340,13 +1349,16 @@ class ObjFile:
                     ]
                 else:
                     # TODO: unknowns? maybe?
-                    angle, scale_x, scale_y = struct.unpack('<Hhh6x', input_data) # TODO: make the matrix be better
+                    angle, scale_x, scale_y, translate_x, translate_y = struct.unpack('<Hhhhh2x', input_data) # TODO: make the matrix be better
                     theta = (angle / 0x10000) * 2 * numpy.pi
                     scale_x /= 0x100
                     scale_y /= 0x100
+                    # per-part transforms carry their position separately, so only the
+                    # whole-cell transform (has_offset) consumes translate_x/translate_y
+                    tx, ty = (translate_x, -translate_y) if has_offset else (0, 0)
                     self.matrix = [
-                        scale_x * numpy.cos(theta), -numpy.sin(theta), 0,
-                        numpy.sin(theta),  scale_y * numpy.cos(theta), 0,
+                        scale_x * numpy.cos(theta), -numpy.sin(theta), tx,
+                        numpy.sin(theta),  scale_y * numpy.cos(theta), ty,
                     ]
     
         class Renderer:
@@ -1603,9 +1615,15 @@ class ObjFile:
             palette_colors = struct.unpack(f'<{len(input_data) // 2}H', self.input_data.read())
             self.palette_size = len(palette_colors)
             self.palette[:len(palette_colors)] = palette_colors
-        
+
+            self.anim_data = palette_anim.parse(input_anim_data)
+
         def get_palette(self, timer, strict = False):
-            # palette animation stuff goes here in the future
+            frame_palette = self.palette
+            slot = palette_anim.resolve(self.anim_data)
+            if slot is not None:
+                frame_palette = palette_anim.apply(frame_palette, self.anim_data['slots'][slot], timer, self.palette_size)
+
             palette = []
             if strict:
                 palette_size = self.palette_size
@@ -1613,7 +1631,7 @@ class ObjFile:
                 palette_size = 256
 
             for i in range(palette_size):
-                color = self.palette[i]
+                color = frame_palette[i]
                 out_color = []
                 for x in range(3):
                     x = color >> (x * 5) & 0x1F       # 5 bit color
