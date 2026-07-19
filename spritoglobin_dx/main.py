@@ -438,7 +438,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.sprite_color_anim_timeline.timelineScrubbed.connect(self.set_animation_timer)
         self.sprite_color_anim_timeline.setEnabled(False)
 
-        # TODO: actually display nds palette animations in the program's GUI
+        # TODO: actually display nds palette animations in the program's GUI, with default palette animation being the one that's set to play by default in-game
         self.global_color_anim_timeline = ColorAnimationTimeline(
             parent           = self,
             font             = mono_font,

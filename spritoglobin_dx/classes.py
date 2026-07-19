@@ -211,12 +211,12 @@ class ObjFile:
         palette_data = cached_object.palette_data
 
         try:
-            animation_timer = self.animation_timer
+            color_timer = self.color_timer
         except AttributeError:
-            animation_timer = 0
+            color_timer = 0
 
         palette = palette_data.get_palette(
-            timer  = animation_timer,
+            timer  = color_timer,
             strict = strict,
         )
 
@@ -529,13 +529,12 @@ class ObjFile:
         palette_data  = cached_object.palette_data
 
         try:
-            animation_timer = self.animation_timer
+            color_timer = self.color_timer
         except AttributeError:
-            animation_timer = 0
+            color_timer = 0
 
         palette = palette_data.get_palette(
-            timer  = animation_timer,
-            strict = strict,
+            timer = color_timer,
         )
         
         return draw_part(
@@ -1182,7 +1181,7 @@ class ObjFile:
                     self.tiled_mode  =     flags & 0b0010000000000000 == 0 # TODO: expose this to the user
                     bpp_flag         =     flags & 0b0100000000000000 != 0 # TODO: expose this to the user
 
-                    self.color_mode = [{ # key, bits-per-pixel # TODO: make bpp's function more accurate to the DS hardware
+                    self.color_mode = [{ # key, bits-per-pixel
                         1: "A3I5",
                         3: "I4",
                         4: "I8",
@@ -1203,8 +1202,6 @@ class ObjFile:
                     self.part_offset = self.part_set_offset + (part_set_num * self.part_set_size)
                     self.part_trans_offset = self.part_offset + (part_num * self.part_size)
 
-                    # whole-cell frame transforms index the same 0xC-byte transform
-                    # pool as the per-part transforms (see AnimFrame's duration bits)
                     self.full_trans_offset = self.part_trans_offset
                     self.full_trans_size = self.part_trans_size
 
@@ -1262,13 +1259,11 @@ class ObjFile:
             def __init__(self, parent, input_data, game_id):
                 if game_id in GAME_IDS_THAT_USE_SPLIT_PATTERN_DATA:
                     # TODO: unknown
-                    part_set_index, self.anim_duration, unk = struct.unpack('<H2B', input_data)
+                    part_set_index, self.anim_duration, transform = struct.unpack('<H2B', input_data)
                     self.first_part, last_part = struct.unpack('<2H', parent.get_data_at_offset(parent.part_set_size, parent.part_set_offset, part_set_index))
                     self.total_parts = last_part - self.first_part
-                    # anim_duration/unk are the low/high bytes of a u16 duration word.
-                    # the game masks timing to bits 0-8; bit 9 (unk & 0x02) flags a
-                    # whole-cell transform and bits 10-15 ((unk >> 2) & 0x3F) index it.
-                    self.transform = ((unk >> 2) & 0x3F) + 1 if unk & 0x02 else 0
+
+                    self.transform = ((transform >> 2) & 0x3F) + 1 if transform & 0x02 else 0
                     self.anim_timer = None
                 else:
                     self.first_part, self.total_parts, self.invert_matrix_rotation, self.anim_timer, self.transform = struct.unpack('<HBBHH', input_data)
@@ -1299,9 +1294,9 @@ class ObjFile:
                         self.graphics_buffer_offset =  (attr2 & 0b1111111111111111) << parent.graph_shift
 
                         self.transform              =  (attr4 & 0b0000001111111111) + 1 if trans_flag else 0
-                        self.palette_shift          =  (attr4 & 0b0011110000000000) >> 10 # TODO: expose to user and also fix
+                        self.palette_shift          =  (attr4 & 0b0011110000000000) >> 10 # TODO: expose to user
 
-                        # TODO: make transform shit available to all the thingies that get bounding boxes based on sprite
+                        # TODO: make transform shit available to all the thingies that get bounding boxes based on sprite parts
 
                         self.renderer = None
                     case _:

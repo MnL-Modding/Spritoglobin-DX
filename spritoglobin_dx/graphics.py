@@ -196,10 +196,10 @@ def get_sprite_part_set_graphic(obj_anim_data, graph_file, palette_data, first_p
                 renderer_data = None
                 # renderer_data = obj_anim_data.get_renderer_data(part_data.renderer)
             
-            if current_time_anim is None:
+            if current_time_color is None:
                 palette = palette_data.get_palette(timer = 0)
             else:
-                palette = palette_data.get_palette(timer = current_time_anim)
+                palette = palette_data.get_palette(timer = current_time_color)
 
             alpha_divisor = None
             if highlighted_part is not None and highlighted_part != i:
