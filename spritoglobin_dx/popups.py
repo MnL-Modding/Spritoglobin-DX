@@ -401,7 +401,10 @@ class GifExportWindow(QtWidgets.QDialog):
 
         color_animation = -1
         if self.color_anim_list_box.currentIndex() != 0:
-            color_animation = int(self.color_anim_list_box.currentText())
+            try:
+                color_anim_index = int(self.color_anim_list_box.currentText())
+            except ValueError:
+                color_anim_index = -1
         
         img_data = self.obj_data.get_sprite_part_entities(
             object_name      = cached_object.name, 
@@ -502,8 +505,18 @@ class GifExportWindow(QtWidgets.QDialog):
         #: Used when a file has no color animations.
         self.color_anim_list_box.addItem(self.tr("None"))
         if object_properties["has_color_data"]:
-            for anim in object_properties["color_data"].keys():
-                self.color_anim_list_box.addItem(str(anim))
+            if self.obj_data.game_id in GAME_IDS_THAT_USE_PICA200_RENDERING:
+                for anim in object_properties["color_data"].keys():
+                    self.color_anim_list_box.addItem(str(anim))
+
+            if self.obj_data.game_id in GAME_IDS_THAT_USE_PALETTES:
+                for i in object_properties["palette_data"].keys():
+                    if i == -1:
+                        #: Used when a file has a default color animation.
+                        string = self.tr("Default")
+                    else:
+                        string = str(i)
+                    self.color_anim_list_box.addItem(string)
         
             if initial_color_anim is not None:
                 self.color_anim_list_box.setCurrentIndex(initial_color_anim)
@@ -592,7 +605,10 @@ class GifExportWindow(QtWidgets.QDialog):
 
         color_animation = -1
         if self.color_anim_list_box.currentIndex() != 0:
-            color_animation = int(self.color_anim_list_box.currentText())
+            try:
+                color_anim_index = int(self.color_anim_list_box.currentText())
+            except ValueError:
+                color_anim_index = -1
 
         framerate = self.framerate_choose_box.currentIndex()
         # 60 / 50 fps, 30 / 25 fps

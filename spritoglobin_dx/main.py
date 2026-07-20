@@ -1036,8 +1036,18 @@ class MainWindow(QtWidgets.QMainWindow):
 
         self.color_anim_list_box.addItem(self.generic_strings[None])
 
-        for i in object_properties["color_data"].keys():
-            self.color_anim_list_box.addItem(str(i))
+        if self.current_game_id in GAME_IDS_THAT_USE_PICA200_RENDERING:
+            for i in object_properties["color_data"].keys():
+                self.color_anim_list_box.addItem(str(i))
+
+        if self.current_game_id in GAME_IDS_THAT_USE_PALETTES:
+            for i in object_properties["palette_data"].keys():
+                if i == -1:
+                    #: Used when a file has a default color animation.
+                    string = self.tr("Default")
+                else:
+                    string = str(i)
+                self.color_anim_list_box.addItem(string)
         
         if self.color_timer_going:
             self.color_anim_list_box.setCurrentRow(1)
@@ -1158,18 +1168,34 @@ class MainWindow(QtWidgets.QMainWindow):
             keyframes = animation_properties["keyframes"],
         )
 
-        color_data = animation_properties["color_data"].get(self.anim_list_box.currentRow(), None)
-        if color_data is not None:
-            self.sprite_color_anim_timeline.send_color_data(
-                layer_amt      = len(color_data),
-                keyframes      = [layer_data[0] for layer_data in color_data],
-                render_channel = [layer_data[1] for layer_data in color_data],
-                is_persistant  = [layer_data[2] for layer_data in color_data],
-                length         = [layer_data[3] for layer_data in color_data],
-                parent_length  = animation_properties["length"],
-            )
-        else:
-            self.sprite_color_anim_timeline.send_color_data()
+        if self.current_game_id in GAME_IDS_THAT_USE_PICA200_RENDERING:
+            color_data = animation_properties["color_data"].get(self.anim_list_box.currentRow(), None)
+            if color_data is not None:
+                self.sprite_color_anim_timeline.send_color_data(
+                    layer_amt      = len(color_data),
+                    keyframes      = [layer_data[0] for layer_data in color_data],
+                    render_channel = [layer_data[1] for layer_data in color_data],
+                    is_persistant  = [layer_data[2] for layer_data in color_data],
+                    length         = [layer_data[3] for layer_data in color_data],
+                    parent_length  = animation_properties["length"],
+                )
+            else:
+                self.sprite_color_anim_timeline.send_color_data()
+
+        if self.current_game_id in GAME_IDS_THAT_USE_PALETTES:
+            if animation_properties["palette_data"] is None:
+                self.sprite_color_anim_timeline.send_palette_data()
+            
+            else:
+                color_data = animation_properties["palette_data"].get(self.anim_list_box.currentRow(), None)
+                if color_data is not None:
+                    self.sprite_color_anim_timeline.send_palette_data( # TODO: do this shit
+                        layer_amt      = 1,
+                        keyframes      = None,
+                        length         = None,
+                    )
+                else:
+                    self.sprite_color_anim_timeline.send_palette_data()
 
         if animation_properties["has_color_data"]:
             self.theme_icons_current_single_color_anim_timeline_icon = 'palette'
@@ -1196,22 +1222,41 @@ class MainWindow(QtWidgets.QMainWindow):
             animation_index = self.anim_list_box.currentRow(),
         )
 
-        color_anim_index = -1
+        color_anim_index = None
         if self.color_anim_list_box.currentRow() != 0 and object_properties["has_color_data"] and self.color_anim_list_box.currentItem() is not None:
-            color_anim_index = int(self.color_anim_list_box.currentItem().text())
-        
-        color_data = object_properties["color_data"].get(color_anim_index, None)
-        if color_data is not None:
-            self.global_color_anim_timeline.send_color_data(
-                layer_amt      = len(color_data),
-                keyframes      = [layer_data[0] for layer_data in color_data],
-                render_channel = [layer_data[1] for layer_data in color_data],
-                is_persistant  = [layer_data[2] for layer_data in color_data],
-                length         = [layer_data[3] for layer_data in color_data],
-                parent_length  = animation_properties["length"],
-            )
-        else:
-            self.global_color_anim_timeline.send_color_data()
+            try:
+                color_anim_index = int(self.color_anim_list_box.currentItem().text())
+            except ValueError:
+                color_anim_index = -1
+
+        if self.current_game_id in GAME_IDS_THAT_USE_PICA200_RENDERING:
+            color_data = object_properties["color_data"].get(color_anim_index, None)
+            if color_data is not None:
+                self.global_color_anim_timeline.send_color_data(
+                    layer_amt      = len(color_data),
+                    keyframes      = [layer_data[0] for layer_data in color_data],
+                    render_channel = [layer_data[1] for layer_data in color_data],
+                    is_persistant  = [layer_data[2] for layer_data in color_data],
+                    length         = [layer_data[3] for layer_data in color_data],
+                    parent_length  = animation_properties["length"],
+                )
+            else:
+                self.global_color_anim_timeline.send_color_data()
+
+        if self.current_game_id in GAME_IDS_THAT_USE_PALETTES:
+            if object_properties["palette_data"] is None:
+                self.global_color_anim_timeline.send_palette_data()
+            
+            else:
+                color_data = object_properties["palette_data"].get(color_anim_index, None)
+                if color_data is not None:
+                    self.global_color_anim_timeline.send_palette_data( # TODO: do this shit
+                        layer_amt      = 1,
+                        keyframes      = None,
+                        length         = None,
+                    )
+                else:
+                    self.global_color_anim_timeline.send_palette_data()
         
         if reset_timer:
             self.obj_data.set_timers(0, color_timer = True)
@@ -1238,9 +1283,12 @@ class MainWindow(QtWidgets.QMainWindow):
         
         object_properties = self.obj_data.get_object_properties(object_name = self.obj_list_box.currentText())
 
-        color_anim_index = -1
+        color_anim_index = None
         if self.color_anim_list_box.currentRow() != 0 and object_properties["has_color_data"] and self.color_anim_list_box.currentItem() is not None:
-            color_anim_index = int(self.color_anim_list_box.currentItem().text())
+            try:
+                color_anim_index = int(self.color_anim_list_box.currentItem().text())
+            except ValueError:
+                color_anim_index = -1
 
         bounding_boxes = []
         if self.sprite_anim_timeline.bounding_box_toggle.isChecked():
@@ -1525,9 +1573,12 @@ class MainWindow(QtWidgets.QMainWindow):
 
             object_properties = self.obj_data.get_object_properties(object_name = object_name)
 
-            color_anim_index = -1
+            color_anim_index = None
             if self.color_anim_list_box.currentRow() != 0 and object_properties["has_color_data"] and self.color_anim_list_box.currentItem() is not None:
-                color_anim_index = int(self.color_anim_list_box.currentItem().text())
+                try:
+                    color_anim_index = int(self.color_anim_list_box.currentItem().text())
+                except ValueError:
+                    color_anim_index = -1
 
             palette = self.obj_data.get_object_pica200_palette(
                 object_name      = object_name,
@@ -1592,9 +1643,20 @@ class MainWindow(QtWidgets.QMainWindow):
         if self.current_game_id in GAME_IDS_THAT_USE_PALETTES:
             self.palette_rendering_info.setHidden(False)
 
+            object_properties = self.obj_data.get_object_properties(object_name = self.obj_list_box.currentText())
+
+            color_anim_index = None
+            if self.color_anim_list_box.currentRow() != 0 and object_properties["has_color_data"] and self.color_anim_list_box.currentItem() is not None:
+                try:
+                    color_anim_index = int(self.color_anim_list_box.currentItem().text())
+                except ValueError:
+                    color_anim_index = -1
+
             palette = self.obj_data.get_object_palette(
-                object_name = self.obj_list_box.currentText(),
-                strict      = True,
+                object_name        = self.obj_list_box.currentText(),
+                color_anim_index   = color_anim_index,
+                current_anim_index = self.anim_list_box.currentRow(),
+                strict             = True,
             )
 
             self.palette_viewer.draw_palette(palette)

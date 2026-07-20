@@ -196,10 +196,12 @@ def get_sprite_part_set_graphic(obj_anim_data, graph_file, palette_data, first_p
                 renderer_data = None
                 # renderer_data = obj_anim_data.get_renderer_data(part_data.renderer)
             
-            if current_time_color is None:
-                palette = palette_data.get_palette(timer = 0)
-            else:
-                palette = palette_data.get_palette(timer = current_time_color)
+            palette = palette_data.get_palette(
+                global_timer = current_time_color,
+                anim_timer   = current_time_anim,
+                global_slot  = color_anim_index,
+                anim_slot    = current_anim_index,
+            )
 
             alpha_divisor = None
             if highlighted_part is not None and highlighted_part != i:
@@ -484,7 +486,7 @@ def get_pixels_from_buffer(raw, palette, palette_shift, color_mode, swizzle):
             color_block = (raw.view(numpy.uint64)[1::2]).reshape(-1, 4)
 
             pixels = etc1_decompress(color_block, alpha_block)
-        case "I4" | "I8":
+        case "PLTT16" | "PLTT256":
             raw_pixel = raw.view(numpy.uint8)
             palette = numpy.array(palette, dtype=numpy.uint8)
             match color_mode[1]:
@@ -525,7 +527,7 @@ def get_pixels_from_buffer(raw, palette, palette_shift, color_mode, swizzle):
             a = (a << 1) + numpy.where(a == 0, 0, 1).astype(numpy.uint8)
             # 6bit -> 8bit
             a = (a << 2) | (a >> 4)
-        case "I4":
+        case "PLTT16":
             raw = raw.view(numpy.uint8)
             pixels = numpy.empty(raw.size * 2, dtype = numpy.uint8)
             pixels[0::2] = raw & 0x0F

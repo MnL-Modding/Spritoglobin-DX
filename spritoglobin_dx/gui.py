@@ -349,7 +349,7 @@ class PaletteDisplay(QtWidgets.QLabel):
         y_values = [round((self.size[1] - (self.padding_amount * 2)) * (i / 16)) for i in range(17)]
 
         match self.color_mode: # TODO: replace this with the actual pixels used in a sprite part, and make the highlighted area be a box
-            case "I4":
+            case "PLTT16":
                 highlighted_colors = set(range(self.palette_shift * 16, (self.palette_shift + 1) * 16))
             case "A5I3":
                 highlighted_colors = set(range(0, 8))
@@ -868,8 +868,8 @@ class ColorAnimationTimeline(AnimationTimeline):
         self.layer_toggle_list = QtWidgets.QComboBox()
         self.layer_toggle_list.currentIndexChanged.connect(self.update_layer)
 
-        layer_info = QtWidgets.QWidget()
-        layer_info_layout = QtWidgets.QGridLayout(layer_info)
+        self.layer_info = QtWidgets.QWidget()
+        layer_info_layout = QtWidgets.QGridLayout(self.layer_info)
         layer_info_layout.setContentsMargins(0, 0, 0, 0)
 
         self.layer_info_text_1 = QtWidgets.QLabel()
@@ -898,7 +898,7 @@ class ColorAnimationTimeline(AnimationTimeline):
 
         self.layout.addWidget(self.layer_toggle_list_string, 0, 4, 1, 2)
         self.layout.addWidget(self.layer_toggle_list, 0, 6)
-        self.layout.addWidget(layer_info, 1, 5, -1, 2, alignment = QtCore.Qt.AlignmentFlag.AlignCenter)
+        self.layout.addWidget(self.layer_info, 1, 5, -1, 2, alignment = QtCore.Qt.AlignmentFlag.AlignCenter)
 
         self.animation_data = None
         self.use_alt_timer = False
@@ -908,11 +908,14 @@ class ColorAnimationTimeline(AnimationTimeline):
     def set_time(self, time):
         if self.animation_data is not None:
             if not self.animation_data[self.current_layer]["is_persistant"]:
-                time = min(
-                    time % self.animation_data[self.current_layer]["parent_length"],
-                    self.animation_data[self.current_layer]["length"] - 1,
-                )
-                
+                if self.animation_data[self.current_layer].get("parent_length", None) is not None:
+                    time = min(
+                        time % self.animation_data[self.current_layer]["parent_length"],
+                        self.animation_data[self.current_layer]["length"] - 1,
+                    )
+                else:
+                    time = time % self.animation_data[self.current_layer]["length"]
+
         self.current_time = time
 
         self.draw_full()
@@ -1139,6 +1142,7 @@ class ColorAnimationTimeline(AnimationTimeline):
             self.sendLayerPersistance.emit(self.animation_data[self.current_layer]["is_persistant"])
 
     def send_color_data(self, layer_amt = 0, keyframes = None, render_channel = None, is_persistant = None, length = None, parent_length = None):
+        self.set_pica_data_enabled(True)
         if layer_amt != 0:
             self.animation_data = [{
                 "keyframes":      keyframes[i],
@@ -1159,3 +1163,27 @@ class ColorAnimationTimeline(AnimationTimeline):
         else:
             self.play_button.setEnabled(True)
             self.stop_button.setEnabled(True)
+
+    def send_palette_data(self, layer_amt = 0, keyframes = None, length = None):
+        self.set_pica_data_enabled(False)
+        if layer_amt != 0:
+            self.animation_data = [{
+                "keyframes":      0,
+                "is_persistant":  True,
+                "length":         0,
+            } for i in range(layer_amt)]
+        else:
+            self.animation_data = None
+            self.update_timeline()
+        
+        self.update_layer(0, update_list = True)
+        
+        if self.animation_data is None or self.use_alt_timer:
+            self.play_button.setEnabled(False)
+            self.stop_button.setEnabled(False)
+        else:
+            self.play_button.setEnabled(True)
+            self.stop_button.setEnabled(True)
+
+    def set_pica_data_enabled(self, enabled):
+        self.layer_info.setVisible(enabled)

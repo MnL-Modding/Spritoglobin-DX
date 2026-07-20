@@ -200,7 +200,7 @@ class ObjFile:
             "game_id": self.game_id,
         }
     
-    def get_object_palette(self, object_name, strict = False, cache_id = None):
+    def get_object_palette(self, object_name, color_anim_index = None, current_anim_index = None, strict = False, cache_id = None):
         self.cache_object(object_name, cache_id)
         cached_object = self.get_cached_object(cache_id)
 
@@ -211,13 +211,21 @@ class ObjFile:
         palette_data = cached_object.palette_data
 
         try:
+            anim_timer = self.animation_timer
+        except AttributeError:
+            anim_timer = 0
+
+        try:
             color_timer = self.color_timer
         except AttributeError:
             color_timer = 0
 
         palette = palette_data.get_palette(
-            timer  = color_timer,
-            strict = strict,
+            global_timer = color_timer,
+            anim_timer   = anim_timer,
+            global_slot  = color_anim_index,
+            anim_slot    = current_anim_index,
+            strict       = strict,
         )
 
         return palette
@@ -272,7 +280,7 @@ class ObjFile:
         color_data = cached_object.color_data
         palette_data = cached_object.palette_data
 
-        has_color_data = color_data.global_animations != {} or palette_data.input_anim_data.getbuffer().nbytes != 0
+        has_color_data = color_data.global_animations != {} or palette_data.global_animations != {}
 
         return {
             "animation_number":  obj_data.anim_num,
@@ -281,6 +289,7 @@ class ObjFile:
             "bounding_box":      obj_data.bounding_box,
             "has_color_data":    has_color_data,
             "color_data":        color_data.global_animations,
+            "palette_data":      palette_data.global_animations,
             "sprite_sheet_mode": obj_data.sprite_sheet_mode,
         }
     
@@ -290,6 +299,7 @@ class ObjFile:
 
         anim_data = cached_object.obj_anim_data.get_anim_data(animation_index)
         color_data = cached_object.color_data
+        palette_data = cached_object.palette_data
 
         keyframe_list = [0]
         timer_accumulate = 0
@@ -301,7 +311,7 @@ class ObjFile:
             else:
                 keyframe_list.append(frame_data.anim_timer)
         
-        has_color_data = animation_index in color_data.animations
+        has_color_data = animation_index in color_data.animations or animation_index in palette_data.animations
 
         if anim_data.anim_length is None:
             anim_length = 0
@@ -319,6 +329,7 @@ class ObjFile:
             "bounding_box":   anim_data.bounding_box,
             "has_color_data": has_color_data,
             "color_data":     color_data.animations,
+            "palette_data":   palette_data.animations,
         }
     
     def get_frame_properties(self, object_name, animation_index = None, frame_index = None, cache_id = None):
@@ -528,13 +539,11 @@ class ObjFile:
         obj_anim_data = cached_object.obj_anim_data
         palette_data  = cached_object.palette_data
 
-        try:
-            color_timer = self.color_timer
-        except AttributeError:
-            color_timer = 0
-
         palette = palette_data.get_palette(
-            timer = color_timer,
+            global_timer = 0,
+            anim_timer = 0,
+            global_slot = None,
+            anim_slot = None,
         )
         
         return draw_part(
@@ -1183,8 +1192,8 @@ class ObjFile:
 
                     self.color_mode = [{ # key, bits-per-pixel
                         1: "A3I5",
-                        3: "I4",
-                        4: "I8",
+                        3: "PLTT16",
+                        4: "PLTT256",
                         6: "A5I3",
                     }.get(color_mode, f"Not Found: {color_mode}"), 8 if bpp_flag else 4]
 
@@ -1310,7 +1319,7 @@ class ObjFile:
                         if self.horizontal_flip != 0 and self.horizontal_flip != -1:
                             print(f"'self.horizontal_flip' IS WEIRD IN ONE OF THE SPRITE PARTS: {self.horizontal_flip}")
 
-                        self.transform = 0 # TODO: find a way to make it obvious whether transform is unused or straight up not supported
+                        self.transform = 0 # TODO: find a way to make it obvious whether transform is matrix or rot/scale/translate
                         self.palette_shift = 0
 
                 if game_id in GAME_IDS_THAT_USE_NORMAL_MAPS:
@@ -1344,7 +1353,7 @@ class ObjFile:
                     ]
                 else:
                     # TODO: unknowns? maybe?
-                    angle, scale_x, scale_y, translate_x, translate_y = struct.unpack('<Hhhhh2x', input_data) # TODO: make the matrix be better
+                    angle, scale_x, scale_y, translate_x, translate_y = struct.unpack('<Hhhhh2x', input_data) # TODO: fix matrix errors
                     theta = (angle / 0x10000) * 2 * numpy.pi
                     scale_x /= 0x100
                     scale_y /= 0x100
@@ -1607,17 +1616,58 @@ class ObjFile:
             self.input_data = BytesIO(input_data)
             self.input_anim_data = BytesIO(input_anim_data)
 
+            # with open("testpalette.dat", "wb") as test:
+            #     test.write(input_anim_data)
+
             palette_colors = struct.unpack(f'<{len(input_data) // 2}H', self.input_data.read())
             self.palette_size = len(palette_colors)
             self.palette[:len(palette_colors)] = palette_colors
 
             self.anim_data = palette_anim.parse(input_anim_data)
+            self.default_anim = palette_anim.resolve(self.anim_data)
+            self.last_single_anim = int.from_bytes(self.input_anim_data.read(2), 'little') - 2 if input_anim_data != b'' else 0
 
-        def get_palette(self, timer, strict = False):
+            slots = []
+            if self.anim_data is not None:
+                for i, slot in enumerate(self.anim_data['slots']):
+                    if slot != []:
+                        slots.append(i)
+            
+            self.animations = {}
+            self.global_animations = {}
+
+            for slot in slots:
+                if slot == 0:
+                    self.global_animations[-1] = [slot] # TODO: put data here
+                elif slot <= self.last_single_anim - 1:
+                    self.animations[slot - 1] = [slot]
+                else:
+                    self.global_animations[slot - self.last_single_anim] = [slot] # TODO: put data here
+
+        def get_palette(self, global_timer, anim_timer, global_slot = None, anim_slot = None, strict = False):
+            if self.palette_size == 0:
+                return None
+
             frame_palette = self.palette
-            slot = palette_anim.resolve(self.anim_data)
-            if slot is not None:
-                frame_palette = palette_anim.apply(frame_palette, self.anim_data['slots'][slot], timer, self.palette_size)
+
+            if self.anim_data is not None:
+                # default palette animation
+                slot = self.default_anim
+                timer = global_timer
+                if slot is not None and timer is not None and global_slot is not None:
+                    frame_palette = palette_anim.apply(frame_palette, self.anim_data['slots'][slot], timer, self.palette_size)
+
+                # global palette animations
+                slot = self.global_animations.get(global_slot, [None])[0]
+                timer = global_timer
+                if slot is not None and timer is not None and global_slot != -1:
+                    frame_palette = palette_anim.apply(frame_palette, self.anim_data['slots'][slot], timer, self.palette_size)
+
+                # per-anim palette animations
+                slot = self.animations.get(anim_slot, [None])[0]
+                timer = anim_timer
+                if slot is not None and timer is not None:
+                    frame_palette = palette_anim.apply(frame_palette, self.anim_data['slots'][slot], timer, self.palette_size)
 
             palette = []
             if strict:
