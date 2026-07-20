@@ -1361,8 +1361,8 @@ class ObjFile:
                     # whole-cell transform (has_offset) consumes translate_x/translate_y
                     tx, ty = (translate_x, -translate_y) if has_offset else (0, 0)
                     self.matrix = [
-                        scale_x * numpy.cos(theta), -numpy.sin(theta), tx,
-                        numpy.sin(theta),  scale_y * numpy.cos(theta), ty,
+                        scale_x * numpy.cos(theta), -scale_y * numpy.sin(theta), tx,
+                        scale_x * numpy.sin(theta),  scale_y * numpy.cos(theta), ty,
                     ]
     
         class Renderer:
