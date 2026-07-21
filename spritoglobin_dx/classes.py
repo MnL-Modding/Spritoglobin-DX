@@ -6,7 +6,7 @@ from mnllib.bis import decompress as rlz_decompress
 import numpy
 
 from spritoglobin_dx.constants import *
-from spritoglobin_dx.graphics import SIZING_TABLE, SWIZZLE_TABLE, get_sprite_graphic, get_sprite_part_set_graphic, draw_part, bgr555_to_rgb888
+from spritoglobin_dx.graphics import SIZING_TABLE, SWIZZLE_TABLE, get_sprite_graphic, get_sprite_part_set_graphic, draw_part, nds_bgr555_to_rgb888
 from spritoglobin_dx import palette_anim
 
 
@@ -183,6 +183,7 @@ class ObjFile:
             pal_anim_data = self.data_files[current_pal_data.palette_anim_file].data
             
             cached_object.palette_data = self.PaletteData(
+                self,
                 pal_data[:current_pal_data.palette_size] if pal_data is not None else b'',
                 pal_anim_data[:current_pal_data.palette_anim_size] if pal_anim_data is not None else b'',
             )
@@ -511,6 +512,7 @@ class ObjFile:
             color_data          = color_data,
             bypass_shader       = bypass_shader,
             separate            = separate,
+            engine_is_3d        = self.game_id in GAME_IDS_THAT_USE_3D_ENGINES,
         )
     
     def get_sprite_part_set_with_offset(self, object_name, first_part, total_parts, highlighted_part = None, cache_id = None):
@@ -527,6 +529,7 @@ class ObjFile:
             palette_data     = palette_data,
             first_part       = first_part,
             total_parts      = total_parts,
+            engine_is_3d     = self.game_id in GAME_IDS_THAT_USE_3D_ENGINES,
             highlighted_part = highlighted_part,
         )
     
@@ -551,6 +554,7 @@ class ObjFile:
             graph_file    = graph_file,
             obj_anim_data = obj_anim_data,
             palette       = palette,
+            engine_is_3d  = self.game_id in GAME_IDS_THAT_USE_3D_ENGINES,
             ignore_flips  = True,
         )
     
@@ -1357,7 +1361,9 @@ class ObjFile:
             return return_set
     
     class PaletteData:
-        def __init__(self, input_data, input_anim_data):
+        def __init__(self, parent, input_data, input_anim_data):
+            self.parent = parent
+
             self.palette = [0x0000] * 256
             self.input_data = BytesIO(input_data)
             self.input_anim_data = BytesIO(input_anim_data)
@@ -1421,9 +1427,9 @@ class ObjFile:
                 palette_size = 256
 
             palette = numpy.array([
-                bgr555_to_rgb888(numpy.array(frame_palette), 0),
-                bgr555_to_rgb888(numpy.array(frame_palette), 1),
-                bgr555_to_rgb888(numpy.array(frame_palette), 2),
+                nds_bgr555_to_rgb888(numpy.array(frame_palette), engine_is_3d = self.parent.game_id in GAME_IDS_THAT_USE_3D_ENGINES, channel = 0),
+                nds_bgr555_to_rgb888(numpy.array(frame_palette), engine_is_3d = self.parent.game_id in GAME_IDS_THAT_USE_3D_ENGINES, channel = 1),
+                nds_bgr555_to_rgb888(numpy.array(frame_palette), engine_is_3d = self.parent.game_id in GAME_IDS_THAT_USE_3D_ENGINES, channel = 2),
             ]).transpose(1, 0)
 
             return palette

@@ -18,7 +18,7 @@ SWIZZLE_TABLE = numpy.array([
 SIZING_TABLE = [[(8, 8), (16, 16), (32, 32), (64, 64)], [(16, 8), (32, 8), (32, 16), (64, 32)], [(8, 16), (8, 32), (16, 32), (32, 64)]]
 
 
-def get_sprite_graphic(obj_anim_data, graph_file, palette_data, current_anim_index, color_anim_index, current_frame_index, current_time_anim, current_time_color, color_data, bypass_shader, separate):
+def get_sprite_graphic(obj_anim_data, graph_file, palette_data, current_anim_index, color_anim_index, current_frame_index, current_time_anim, current_time_color, color_data, bypass_shader, separate, engine_is_3d):
     anim_data = obj_anim_data.get_anim_data(current_anim_index)
     frame_data = obj_anim_data.get_frame_data(anim_data.first_frame + current_frame_index)
 
@@ -77,6 +77,7 @@ def get_sprite_graphic(obj_anim_data, graph_file, palette_data, current_anim_ind
         palette_data           = palette_data,
         first_part             = frame_data.first_part,
         total_parts            = frame_data.total_parts,
+        engine_is_3d           = engine_is_3d,
         bypass_shader          = bypass_shader,
         separate               = separate,
         matrix                 = matrix,
@@ -162,7 +163,7 @@ def get_sprite_part_set_bounding_box(obj_anim_data, first_part, total_parts, giv
     
     return min_x, max_x, min_y, max_y
 
-def get_sprite_part_set_graphic(obj_anim_data, graph_file, palette_data, first_part, total_parts, bypass_shader = False, separate = False, matrix = None, given_bounding_box = None, color_data = None, current_anim_index = None, color_anim_index = None, current_time_anim = None, current_time_color = None, highlighted_part = None):
+def get_sprite_part_set_graphic(obj_anim_data, graph_file, palette_data, first_part, total_parts, engine_is_3d, bypass_shader = False, separate = False, matrix = None, given_bounding_box = None, color_data = None, current_anim_index = None, color_anim_index = None, current_time_anim = None, current_time_color = None, highlighted_part = None):
     min_x, max_x, min_y, max_y = get_sprite_part_set_bounding_box(
         obj_anim_data      = obj_anim_data,
         first_part         = first_part,
@@ -214,6 +215,7 @@ def get_sprite_part_set_graphic(obj_anim_data, graph_file, palette_data, first_p
                     graph_file    = graph_file,
                     obj_anim_data = obj_anim_data,
                     palette       = palette,
+                    engine_is_3d  = engine_is_3d,
                     alpha_divisor = alpha_divisor,
                 )
 
@@ -321,7 +323,7 @@ def get_sprite_part_set_graphic(obj_anim_data, graph_file, palette_data, first_p
     
     return img.tobytes(), (graph_w, graph_h), (offset_x, offset_y)
 
-def draw_part(part_data, graph_file, obj_anim_data, palette, alpha_divisor = None, ignore_flips = False):
+def draw_part(part_data, graph_file, obj_anim_data, palette, engine_is_3d, alpha_divisor = None, ignore_flips = False):
     part_size = part_data.part_size
     part_shape = part_data.part_shape
     img_width, img_height = SIZING_TABLE[part_shape][part_size]
@@ -335,7 +337,7 @@ def draw_part(part_data, graph_file, obj_anim_data, palette, alpha_divisor = Non
     size = ((img_width * img_height) * color_mode[1]) // 8
     raw = numpy.frombuffer(graph_file[start:start + size], dtype = numpy.uint8)
 
-    pixels = get_pixels_from_buffer(raw, palette, part_data.palette_shift, color_mode, swizzle)
+    pixels = get_pixels_from_buffer(raw, palette, part_data.palette_shift, color_mode, swizzle, engine_is_3d)
 
     if alpha_divisor is not None:
         pixels[..., 3] //= alpha_divisor
@@ -364,7 +366,7 @@ def draw_segment(segment_data, graph_file, obj_anim_data, sheet_size, palette, a
     size = ((img_width * img_height) * color_mode[1]) // 8
     raw = numpy.frombuffer(graph_file[start:start + size], dtype = numpy.uint8)
 
-    pixels = get_pixels_from_buffer(raw, palette, 0, color_mode, swizzle)
+    pixels = get_pixels_from_buffer(raw, palette, 0, color_mode, swizzle, engine_is_3d)
     
     tiles_x, tiles_y = img_width // 8, img_height // 8
     
@@ -388,7 +390,7 @@ def draw_segment(segment_data, graph_file, obj_anim_data, sheet_size, palette, a
     
     return out, (img_width, img_height)
 
-def get_pixels_from_buffer(raw, palette, palette_shift, color_mode, swizzle):
+def get_pixels_from_buffer(raw, palette, palette_shift, color_mode, swizzle, engine_is_3d):
     # for more info:
     # https://problemkaputt.de/gbatek-3ds-gpu-texture-formats.htm
 
@@ -509,14 +511,14 @@ def get_pixels_from_buffer(raw, palette, palette_shift, color_mode, swizzle):
             r = palette[raw_pixel & 0x7, 0]
             g = palette[raw_pixel & 0x7, 1]
             b = palette[raw_pixel & 0x7, 2]
-            a = bgr555_to_rgb888((raw_pixel >> 3) & 0x1F)
+            a = nds_bgr555_to_rgb888((raw_pixel >> 3) & 0x1F, engine_is_3d)
         case "A3I5":
             raw_pixel = raw.view(numpy.uint8)
             palette = numpy.array(palette, dtype=numpy.uint8)
             r = palette[raw_pixel & 0x1F, 0]
             g = palette[raw_pixel & 0x1F, 1]
             b = palette[raw_pixel & 0x1F, 2]
-            a = bgr555_to_rgb888((((raw_pixel >> 5) & 0x7) << 2) + (((raw_pixel >> 5) & 0x7) >> 1))
+            a = nds_bgr555_to_rgb888((((raw_pixel >> 5) & 0x7) << 2) + (((raw_pixel >> 5) & 0x7) >> 1), engine_is_3d)
         case "PLTT16":
             raw = raw.view(numpy.uint8)
             pixels = numpy.empty(raw.size * 2, dtype = numpy.uint8)
@@ -813,8 +815,9 @@ def etc1_decompress(color_block, alpha_block=None):
 
 
 
-def bgr555_to_rgb888(color_input, channel = 0):
-    x = color_input >> (channel * 5) & 0x1F # 5 bit color
-    x = (x << 1) + numpy.where(x > 0, 1, 0) # 6 bit color
-    x = (x << 2) | (x >> 4)                 # 8 bit color
+def nds_bgr555_to_rgb888(color_input, engine_is_3d = False, channel = 0):
+    add_value = 1 if engine_is_3d else 0
+    x = color_input >> (channel * 5) & 0x1F         # 5 bit color
+    x = (x << 1) + numpy.where(x > 0, add_value, 0) # 6 bit color
+    x = (x << 2) | (x >> 4)                         # 8 bit color
     return x
