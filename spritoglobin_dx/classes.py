@@ -6,7 +6,7 @@ from mnllib.bis import decompress as rlz_decompress
 import numpy
 
 from spritoglobin_dx.constants import *
-from spritoglobin_dx.graphics import SIZING_TABLE, SWIZZLE_TABLE, get_sprite_graphic, get_sprite_part_set_graphic, draw_part
+from spritoglobin_dx.graphics import SIZING_TABLE, SWIZZLE_TABLE, get_sprite_graphic, get_sprite_part_set_graphic, draw_part, bgr555_to_rgb888
 from spritoglobin_dx import palette_anim
 
 
@@ -1415,18 +1415,15 @@ class ObjFile:
                 if slot is not None and timer is not None:
                     frame_palette = palette_anim.apply(frame_palette, self.anim_data['slots'][slot], timer, self.palette_size)
 
-            palette = []
             if strict:
                 palette_size = self.palette_size
             else:
                 palette_size = 256
 
-            for i in range(palette_size):
-                color = frame_palette[i]
-                out_color = []
-                for x in range(3):
-                    x = color >> (x * 5) & 0x1F       # 5 bit color
-                    x = (x << 1) + min(x, 1)              # 6 bit color
-                    out_color.append((x << 2) | (x >> 4)) # 8 bit color
-                palette.append(out_color)
+            palette = numpy.array([
+                bgr555_to_rgb888(numpy.array(frame_palette), 0),
+                bgr555_to_rgb888(numpy.array(frame_palette), 1),
+                bgr555_to_rgb888(numpy.array(frame_palette), 2),
+            ]).transpose(1, 0)
+
             return palette

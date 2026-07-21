@@ -509,24 +509,14 @@ def get_pixels_from_buffer(raw, palette, palette_shift, color_mode, swizzle):
             r = palette[raw_pixel & 0x7, 0]
             g = palette[raw_pixel & 0x7, 1]
             b = palette[raw_pixel & 0x7, 2]
-            # 5bit
-            a = (raw_pixel >> 3) & 0x1F
-            # 5bit -> 6bit
-            a = (a << 1) + numpy.where(a == 0, 0, 1).astype(numpy.uint8)
-            # 6bit -> 8bit
-            a = (a << 2) | (a >> 4)
+            a = bgr555_to_rgb888((raw_pixel >> 3) & 0x1F)
         case "A3I5":
             raw_pixel = raw.view(numpy.uint8)
             palette = numpy.array(palette, dtype=numpy.uint8)
             r = palette[raw_pixel & 0x1F, 0]
             g = palette[raw_pixel & 0x1F, 1]
             b = palette[raw_pixel & 0x1F, 2]
-            # 3bit -> 5bit
-            a = (((raw_pixel >> 5) & 0x7) << 2) + (((raw_pixel >> 5) & 0x7) >> 1)
-            # 5bit -> 6bit
-            a = (a << 1) + numpy.where(a == 0, 0, 1).astype(numpy.uint8)
-            # 6bit -> 8bit
-            a = (a << 2) | (a >> 4)
+            a = bgr555_to_rgb888((((raw_pixel >> 5) & 0x7) << 2) + (((raw_pixel >> 5) & 0x7) >> 1))
         case "PLTT16":
             raw = raw.view(numpy.uint8)
             pixels = numpy.empty(raw.size * 2, dtype = numpy.uint8)
@@ -820,3 +810,11 @@ def etc1_decompress(color_block, alpha_block=None):
     pixels = pixels.reshape(num_tiles, 64, 4)
 
     return pixels
+
+
+
+def bgr555_to_rgb888(color_input, channel = 0):
+    x = color_input >> (channel * 5) & 0x1F # 5 bit color
+    x = (x << 1) + numpy.where(x > 0, 1, 0) # 6 bit color
+    x = (x << 2) | (x >> 4)                 # 8 bit color
+    return x
