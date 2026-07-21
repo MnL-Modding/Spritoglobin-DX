@@ -306,9 +306,9 @@ class InteractiveGraphicsWindow(QtWidgets.QLabel):
 
 
 class PaletteDisplay(QtWidgets.QLabel):
-    # TODO: add highlighted palette range (based on color mode), highlighted palette colors (based on current sprite part), and a border around the whole thing
+    # TODO urgent: add highlighted palette range (based on color mode), highlighted palette colors (based on current sprite part), and a border around the whole thing
+    # TODO urgent: make it not be so fucky to resize
     # TODO: add color copying feature (maybe just copy hex code to clipboard if you click a color)
-    # TODO: make it not be so fucky to resize
     background_color = QtCore.Qt.GlobalColor.black
 
     def __init__(self, parent, size, padding_amount):
@@ -348,7 +348,7 @@ class PaletteDisplay(QtWidgets.QLabel):
         x_values = [round((self.size[0] - (self.padding_amount * 2)) * (i / 16)) for i in range(17)]
         y_values = [round((self.size[1] - (self.padding_amount * 2)) * (i / 16)) for i in range(17)]
 
-        match self.color_mode: # TODO: replace this with the actual pixels used in a sprite part, and make the highlighted area be a box
+        match self.color_mode: # TODO urgent: replace this with the actual pixels used in a sprite part, and make the highlighted area be a box
             case "PLTT16":
                 highlighted_colors = set(range(self.palette_shift * 16, (self.palette_shift + 1) * 16))
             case "A5I3":

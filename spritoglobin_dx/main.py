@@ -438,7 +438,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.sprite_color_anim_timeline.timelineScrubbed.connect(self.set_animation_timer)
         self.sprite_color_anim_timeline.setEnabled(False)
 
-        # TODO: actually display nds palette animations in the program's GUI, with default palette animation being the one that's set to play by default in-game
+        # TODO urgent: actually display nds palette animations in the program's GUI
         self.global_color_anim_timeline = ColorAnimationTimeline(
             parent           = self,
             font             = mono_font,
@@ -601,7 +601,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.palette_rendering_info = QtWidgets.QWidget()
         palette_rendering_info_layout = QtWidgets.QGridLayout(self.palette_rendering_info)
 
-        self.palette_viewer = PaletteDisplay( # TODO: display palette number
+        self.palette_viewer = PaletteDisplay( # TODO urgent: display palette number
             parent         = self,
             size           = [16, 16],
             padding_amount = 0.5,
@@ -1189,7 +1189,7 @@ class MainWindow(QtWidgets.QMainWindow):
             else:
                 color_data = animation_properties["palette_data"].get(self.anim_list_box.currentRow(), None)
                 if color_data is not None:
-                    self.sprite_color_anim_timeline.send_palette_data( # TODO: do this shit
+                    self.sprite_color_anim_timeline.send_palette_data( # TODO urgent: do this shit
                         layer_amt      = 1,
                         keyframes      = None,
                         length         = None,
@@ -1250,7 +1250,7 @@ class MainWindow(QtWidgets.QMainWindow):
             else:
                 color_data = object_properties["palette_data"].get(color_anim_index, None)
                 if color_data is not None:
-                    self.global_color_anim_timeline.send_palette_data( # TODO: do this shit
+                    self.global_color_anim_timeline.send_palette_data( # TODO urgent: do this shit
                         layer_amt      = 1,
                         keyframes      = None,
                         length         = None,
