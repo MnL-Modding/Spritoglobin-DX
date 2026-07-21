@@ -1124,6 +1124,7 @@ class MainWindow(QtWidgets.QMainWindow):
             if sprite_part_set[1] == 1:
                 self.sprite_part_set_list_box.addItem(f"{sprite_part_set[0]}")
             else:
+                # TODO: add unused sprite part sets in PiT
                 self.sprite_part_set_list_box.addItem(f"{sprite_part_set[0]} - {sum(sprite_part_set) - 1}")
     
     def set_anim_list_box_palette_icons(self):
@@ -1421,8 +1422,12 @@ class MainWindow(QtWidgets.QMainWindow):
             if self.current_game_id in GAME_IDS_THAT_USE_PALETTES and highlighted_part is not None:
                 object_properties = self.obj_data.get_object_properties(object_name = self.obj_list_box.currentText())
                 self.palette_viewer.set_highlighted_area(
-                    color_mode    = object_properties["color_mode"][0],
-                    palette_shift = sprite_part_properties["palette_shift"],
+                    color_mode         = object_properties["color_mode"][0],
+                    palette_shift      = sprite_part_properties["palette_shift"],
+                    highlighted_colors = self.obj_data.get_sprite_part_palette_indices(
+                        object_name       = self.obj_list_box.currentText(),
+                        sprite_part_index = sprite_part_set[0] + self.sprite_part_list_box.currentIndex() - 1,
+                    )
                 )
 
             (x, y), (w, h) = sprite_part_properties["offset"], sprite_part_properties["size"]
@@ -1652,14 +1657,14 @@ class MainWindow(QtWidgets.QMainWindow):
                 except ValueError:
                     color_anim_index = -1
 
-            palette = self.obj_data.get_object_palette(
+            palette, palette_size = self.obj_data.get_object_palette(
                 object_name        = self.obj_list_box.currentText(),
                 color_anim_index   = color_anim_index,
                 current_anim_index = self.anim_list_box.currentRow(),
-                strict             = True,
+                return_size        = True,
             )
 
-            self.palette_viewer.draw_palette(palette)
+            self.palette_viewer.draw_palette(palette, palette_size)
         else:
             self.palette_rendering_info.setHidden(True)
 

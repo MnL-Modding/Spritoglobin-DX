@@ -6,7 +6,7 @@ from mnllib.bis import decompress as rlz_decompress
 import numpy
 
 from spritoglobin_dx.constants import *
-from spritoglobin_dx.graphics import SIZING_TABLE, SWIZZLE_TABLE, get_sprite_graphic, get_sprite_part_set_graphic, draw_part, nds_bgr555_to_rgb888
+from spritoglobin_dx.graphics import SIZING_TABLE, SWIZZLE_TABLE, get_sprite_part_palette_indeces, get_sprite_graphic, get_sprite_part_set_graphic, draw_part, nds_bgr555_to_rgb888
 from spritoglobin_dx import palette_anim
 
 
@@ -201,7 +201,7 @@ class ObjFile:
             "game_id": self.game_id,
         }
     
-    def get_object_palette(self, object_name, color_anim_index = None, current_anim_index = None, strict = False, cache_id = None):
+    def get_object_palette(self, object_name, color_anim_index = None, current_anim_index = None, return_size = False, cache_id = None):
         self.cache_object(object_name, cache_id)
         cached_object = self.get_cached_object(cache_id)
 
@@ -226,7 +226,7 @@ class ObjFile:
             anim_timer   = anim_timer,
             global_slot  = color_anim_index,
             anim_slot    = current_anim_index,
-            strict       = strict,
+            return_size  = return_size,
         )
 
         return palette
@@ -418,6 +418,25 @@ class ObjFile:
             "renderer_index":  part_data.renderer,
             "palette_shift":   part_data.palette_shift,
         }
+    
+    def get_sprite_part_palette_indices(self, object_name, sprite_part_index, cache_id = None):
+        self.cache_object(object_name, cache_id)
+        cached_object = self.get_cached_object(cache_id)
+
+        if self.game_id not in GAME_IDS_THAT_USE_PALETTES:
+            return set()
+
+        obj_data = cached_object.obj_anim_data
+        graph_file = cached_object.graph_file
+        part_data = cached_object.obj_anim_data.get_part_data(sprite_part_index)
+
+        color_mode = obj_data.color_mode
+
+        return get_sprite_part_palette_indeces(
+            graph_file = graph_file,
+            part_data  = part_data,
+            color_mode = color_mode,
+        )
     
     def get_sprite(self, object_name, animation_index, color_anim_index = None, frame_index = None, bypass_shader = False, cache_id = None):
         img, size, _ = self._get_sprite_data(
@@ -1396,7 +1415,7 @@ class ObjFile:
                 else:
                     self.global_animations[slot - self.last_single_anim] = [slot]
 
-        def get_palette(self, global_timer, anim_timer, global_slot = None, anim_slot = None, strict = False):
+        def get_palette(self, global_timer, anim_timer, global_slot = None, anim_slot = None, return_size = False):
             if self.palette_size == 0:
                 return None
 
@@ -1421,15 +1440,13 @@ class ObjFile:
                 if slot is not None and timer is not None:
                     frame_palette = palette_anim.apply(frame_palette, self.anim_data['slots'][slot], timer, self.palette_size)
 
-            if strict:
-                palette_size = self.palette_size
-            else:
-                palette_size = 256
-
             palette = numpy.array([
                 nds_bgr555_to_rgb888(numpy.array(frame_palette), engine_is_3d = self.parent.game_id in GAME_IDS_THAT_USE_3D_ENGINES, channel = 0),
                 nds_bgr555_to_rgb888(numpy.array(frame_palette), engine_is_3d = self.parent.game_id in GAME_IDS_THAT_USE_3D_ENGINES, channel = 1),
                 nds_bgr555_to_rgb888(numpy.array(frame_palette), engine_is_3d = self.parent.game_id in GAME_IDS_THAT_USE_3D_ENGINES, channel = 2),
             ]).transpose(1, 0)
 
-            return palette
+            if return_size:
+                return palette, self.palette_size
+            else:
+                return palette

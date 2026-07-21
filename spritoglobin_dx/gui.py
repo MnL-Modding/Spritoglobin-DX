@@ -306,7 +306,6 @@ class InteractiveGraphicsWindow(QtWidgets.QLabel):
 
 
 class PaletteDisplay(QtWidgets.QLabel):
-    # TODO urgent: add highlighted palette range (based on color mode), highlighted palette colors (based on current sprite part), and a border around the whole thing
     # TODO urgent: make it not be so fucky to resize
     # TODO: add color copying feature (maybe just copy hex code to clipboard if you click a color)
     background_color = QtCore.Qt.GlobalColor.black
@@ -318,10 +317,12 @@ class PaletteDisplay(QtWidgets.QLabel):
         self.size = size
 
         self.palette = [[0, 0, 0]] * 256
+        self.palette_size = 0
 
         self.padding_amount = padding_amount
         self.color_mode = None
         self.palette_shift = 0
+        self.highlighted_colors = set()
         self.canvas = QtGui.QPixmap(*size)
     
     def resizeEvent(self, event):
@@ -332,58 +333,109 @@ class PaletteDisplay(QtWidgets.QLabel):
         self.canvas = QtGui.QPixmap(*size)
         self.update_image()
     
-    def draw_palette(self, palette):
+    def draw_palette(self, palette, palette_size):
         self.palette = palette
+        self.palette_size = palette_size
         self.update_image()
     
-    def set_highlighted_area(self, color_mode, palette_shift):
+    def set_highlighted_area(self, color_mode, palette_shift, highlighted_colors = set()):
         self.color_mode = color_mode
         self.palette_shift = palette_shift
+        self.highlighted_colors = highlighted_colors
         self.update_image()
     
     def update_image(self):
         self.canvas.fill(self.background_color)
         qp = QtGui.QPainter(self.canvas)
 
-        x_values = [round((self.size[0] - (self.padding_amount * 2)) * (i / 16)) for i in range(17)]
-        y_values = [round((self.size[1] - (self.padding_amount * 2)) * (i / 16)) for i in range(17)]
+        thickness = 2
 
-        match self.color_mode: # TODO urgent: replace this with the actual pixels used in a sprite part, and make the highlighted area be a box
-            case "PLTT16":
-                highlighted_colors = set(range(self.palette_shift * 16, (self.palette_shift + 1) * 16))
-            case "A5I3":
-                highlighted_colors = set(range(0, 8))
-            case "A3I5":
-                highlighted_colors = set(range(0, 32))
-            case _:
-                highlighted_colors = set(range(256))
+        pen = QtGui.QPen()
+        pen.setWidth(thickness)
+        pen.setJoinStyle(QtCore.Qt.MiterJoin)
+        
+        pen.setColor(QtGui.QColor(THEME_COLORS["P_COLOR_0"]))
+        qp.setPen(pen)
+        qp.drawRect(thickness * 0.5, thickness * 0.5, self.size[0] - thickness, self.size[1] - thickness)
 
+        pen.setColor(QtGui.QColor(THEME_COLORS["LIGHT"]))
+        qp.setPen(pen)
+        qp.drawRect(thickness * 1.5, thickness * 1.5, self.size[0] - (thickness * 3), self.size[1] - (thickness * 3))
+
+        x_values = [round((self.size[0] - (self.padding_amount * 2) - (thickness * 4)) * (i / 16)) for i in range(17)]
+        y_values = [round((self.size[1] - (self.padding_amount * 2) - (thickness * 4)) * (i / 16)) for i in range(17)]
+
+        palette_colors_to_draw = set(range(self.palette_size)) | self.highlighted_colors
         if self.palette is not None:
-            for i in range(len(self.palette)):
+            for i in palette_colors_to_draw:
                 palette_color = QtGui.QColor(*self.palette[i])
-                if i not in highlighted_colors:
-                    palette_color.setAlpha(100)
+                if i not in self.highlighted_colors and not self.color_mode is None:
+                    palette_color.setAlpha(51)
                     qp.setPen(QtGui.QPen(QtCore.Qt.transparent))
                 else:
                     qp.setPen(QtGui.QPen(palette_color.darker(133)))
 
                 qp.setBrush(palette_color)
 
-                x_s = x_values[i % 16] + (self.padding_amount * 2)
-                y_s = y_values[i // 16] + (self.padding_amount * 2)
-                x_e = x_values[(i % 16) + 1] - x_s - (self.padding_amount * 2)
-                y_e = y_values[(i // 16) + 1] - y_s - (self.padding_amount * 2)
+                x_s = x_values[i % 16] + (self.padding_amount * 2) + (thickness * 2)
+                y_s = y_values[i // 16] + (self.padding_amount * 2) + (thickness * 2)
+                x_e = x_values[(i % 16) + 1] - x_s - (self.padding_amount * 2) + (thickness * 2)
+                y_e = y_values[(i // 16) + 1] - y_s - (self.padding_amount * 2) + (thickness * 2)
 
-                if i not in highlighted_colors:
+                if i not in self.highlighted_colors and self.color_mode is not None:
                     rect = QtCore.QRectF(x_s, y_s, x_e + 1, y_e + 1)
                 else:
                     rect = QtCore.QRectF(x_s, y_s, x_e, y_e)
                 qp.drawRect(rect)
 
-                if i in highlighted_colors:
+                if i in self.highlighted_colors or self.color_mode is None:
                     qp.setPen(QtGui.QPen(palette_color.lighter(133)))
                     qp.drawLine(rect.topLeft(), rect.topRight())
                     qp.drawLine(rect.topLeft(), rect.bottomLeft())
+
+            if self.color_mode is not None:
+                match self.color_mode:
+                    case "PLTT16":
+                        x_s = x_values[0]
+                        x_e = x_values[16]
+                        y_s = y_values[self.palette_shift]
+                        y_e = y_values[1]
+                    case "A5I3":
+                        x_s = x_values[0]
+                        x_e = x_values[8]
+                        y_s = y_values[0]
+                        y_e = y_values[1]
+                        highlighted_colors = set(range(0, 8))
+                    case "A3I5":
+                        x_s = x_values[0]
+                        x_e = x_values[16]
+                        y_s = y_values[0]
+                        y_e = y_values[2]
+                    case _:
+                        x_s = x_values[0]
+                        x_e = x_values[16]
+                        y_s = y_values[0]
+                        y_e = y_values[16]
+
+                qp.setBrush(QtGui.QBrush(QtCore.Qt.transparent))
+
+                pen.setColor(QtGui.QColor(THEME_COLORS["K_COLOR_0"]))
+                qp.setPen(pen)
+                qp.drawRect(
+                    (thickness * 0.5) + x_s,
+                    (thickness * 0.5) + y_s,
+                    (thickness * 3.5) + x_e,
+                    (thickness * 3.5) + y_e,
+                )
+
+                pen.setColor(QtGui.QColor(THEME_COLORS["LIGHT"]))
+                qp.setPen(pen)
+                qp.drawRect(
+                    (thickness * 1.5) + x_s,
+                    (thickness * 1.5) + y_s,
+                    (thickness * 1.5) + x_e,
+                    (thickness * 1.5) + y_e,
+                )
 
             qp.end()
         self.setPixmap(self.canvas)

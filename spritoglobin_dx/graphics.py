@@ -176,7 +176,7 @@ def get_sprite_part_set_graphic(obj_anim_data, graph_file, palette_data, first_p
     if (graph_w < 1 or graph_h < 1) and not separate:
         return None, (0, 0), (0, 0)
     
-    img = numpy.zeros((graph_h, graph_w, 4), dtype=numpy.uint8)
+    img = numpy.zeros((graph_h, graph_w, 4), dtype = numpy.uint8)
 
     offset_x, offset_y, = -min_x, max_y
 
@@ -489,8 +489,7 @@ def get_pixels_from_buffer(raw, palette, palette_shift, color_mode, swizzle, eng
 
             pixels = etc1_decompress(color_block, alpha_block)
         case "PLTT16" | "PLTT256":
-            raw_pixel = raw.view(numpy.uint8)
-            palette = numpy.array(palette, dtype=numpy.uint8)
+            palette = numpy.array(palette, dtype = numpy.uint8)
             match color_mode[1]:
                 case 4:
                     raw = raw.view(numpy.uint8)
@@ -507,33 +506,57 @@ def get_pixels_from_buffer(raw, palette, palette_shift, color_mode, swizzle, eng
             a = numpy.where(raw_pixel == 0, 0, 255).astype(numpy.uint8)
         case "A5I3":
             raw_pixel = raw.view(numpy.uint8)
-            palette = numpy.array(palette, dtype=numpy.uint8)
+            palette = numpy.array(palette, dtype = numpy.uint8)
             r = palette[raw_pixel & 0x7, 0]
             g = palette[raw_pixel & 0x7, 1]
             b = palette[raw_pixel & 0x7, 2]
             a = nds_bgr555_to_rgb888((raw_pixel >> 3) & 0x1F, engine_is_3d)
         case "A3I5":
             raw_pixel = raw.view(numpy.uint8)
-            palette = numpy.array(palette, dtype=numpy.uint8)
+            palette = numpy.array(palette, dtype = numpy.uint8)
             r = palette[raw_pixel & 0x1F, 0]
             g = palette[raw_pixel & 0x1F, 1]
             b = palette[raw_pixel & 0x1F, 2]
             a = nds_bgr555_to_rgb888((((raw_pixel >> 5) & 0x7) << 2) + (((raw_pixel >> 5) & 0x7) >> 1), engine_is_3d)
-        case "PLTT16":
-            raw = raw.view(numpy.uint8)
-            pixels = numpy.empty(raw.size * 2, dtype = numpy.uint8)
-            pixels[0::2] = raw & 0x0F
-            pixels[1::2] = raw >> 4
-            raw_pixel = pixels
-            r = palette[raw_pixel, 0]
-            g = palette[raw_pixel, 1]
-            b = palette[raw_pixel, 2]
-            a = numpy.where(raw_pixel == 0, 0, 255).astype(numpy.uint8)
 
     if not etc1:
         pixels = numpy.stack([r, g, b, a], axis=-1).astype(numpy.uint8)
     
     return pixels
+
+def get_sprite_part_palette_indeces(graph_file, part_data, color_mode):
+    return_set = set()
+
+    part_size = part_data.part_size
+    part_shape = part_data.part_shape
+    img_width, img_height = SIZING_TABLE[part_shape][part_size]
+    
+    start = part_data.graphics_buffer_offset
+    size = ((img_width * img_height) * color_mode[1]) // 8
+    raw = numpy.frombuffer(graph_file[start:start + size], dtype = numpy.uint8)
+
+    match color_mode[0]:
+        case "PLTT16" | "PLTT256":
+            match color_mode[1]:
+                case 4:
+                    raw = raw.view(numpy.uint8)
+                    pixels = numpy.empty(raw.size * 2, dtype = numpy.uint8)
+                    pixels[0::2] = raw & 0x0F
+                    pixels[1::2] = raw >> 4
+                    raw_pixel = pixels
+                    palette_shift = part_data.palette_shift * 16
+                case 8:
+                    raw_pixel = raw.view(numpy.uint8)
+                    palette_shift = 0
+            return_set = set(raw_pixel + palette_shift)
+        case "A5I3":
+            raw_pixel = raw.view(numpy.uint8)
+            return_set = set(raw_pixel & 0x7)
+        case "A3I5":
+            raw_pixel = raw.view(numpy.uint8)
+            return_set = set(raw_pixel & 0x1F)
+    
+    return return_set
 
 def apply_sprite_color(img, obj_anim_data, color_data, renderer_data, default_renderer_colors, current_anim_index, global_anim_index, current_time_anim, current_time_color, current_anim_length):
     anim_set = color_data.get_rgba(
@@ -724,7 +747,7 @@ ETC1_TABLE = numpy.array([
 ], dtype = numpy.int16)
 
 
-def etc1_decompress(color_block, alpha_block=None):
+def etc1_decompress(color_block, alpha_block = None):
     num_tiles = color_block.shape[0]
     blocks = color_block.flatten().view(numpy.uint8).reshape(-1, 8)
     blocks_amt = blocks.shape[0]
