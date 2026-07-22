@@ -402,9 +402,9 @@ class GifExportWindow(QtWidgets.QDialog):
         color_animation = None
         if self.color_anim_list_box.currentIndex() != 0:
             try:
-                color_anim_index = int(self.color_anim_list_box.currentText())
+                color_animation = int(self.color_anim_list_box.currentText())
             except ValueError:
-                color_anim_index = -1
+                color_animation = -1
         
         img_data = self.obj_data.get_sprite_part_entities(
             object_name      = cached_object.name, 
@@ -606,9 +606,9 @@ class GifExportWindow(QtWidgets.QDialog):
         color_animation = None
         if self.color_anim_list_box.currentIndex() != 0:
             try:
-                color_anim_index = int(self.color_anim_list_box.currentText())
+                color_animation = int(self.color_anim_list_box.currentText())
             except ValueError:
-                color_anim_index = -1
+                color_animation = -1
 
         framerate = self.framerate_choose_box.currentIndex()
         # 60 / 50 fps, 30 / 25 fps
