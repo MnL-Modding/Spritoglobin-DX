@@ -6,11 +6,20 @@ import numpy
 
 
 
+# i spent a whole evening debugging rendering issues in the "pretty" renderer and ultimately landed on "fuck this idc anymore"
+# if anybody wants to fix it, the issue is that i cannot get all of the following to be true at once:
+# - fat pixel anti-aliasing works at the boundaries of quads
+# - quads whose boundaries perfectly align look connected and never have a half-ish-pixel-wide gap
+# - edges of anti-aliasing (not at the boundaries of quad) never pull from the rgb of the transparent pixel next to them
+# in the current implementation, only the third point is true. but honestly that's good enough for me for the time being
+# especially since the "accurate" renderer doesn't have the second or third issue which is all it needs in order to truly be accurate
+
 class SpriteRenderer:
+    # TODO: limit resolution
     def __init__(self, canvas_size, pretty = True, use_filtering = False, limit_resolution = False):
         self.framebuffer = None
         
-        self.context = moderngl.create_context(standalone=True)
+        self.context = moderngl.create_context(standalone = True)
         self.context.gc_mode = "auto"
         self.context.enable(moderngl.BLEND)
 
@@ -23,11 +32,6 @@ class SpriteRenderer:
         )
         
     def set_program(self, pretty, use_filtering, limit_resolution):
-        if use_filtering:
-            self.filtering_mode = moderngl.LINEAR
-        else:
-            self.filtering_mode = moderngl.NEAREST
-        
         main_passes = """
             for (int i = 0; i < 6; i++) {
                 if (!passes[i].keep_going) break;
@@ -55,16 +59,28 @@ class SpriteRenderer:
                     buffer_save[i] = temp_buffer;
                 }
             }"""
+        
+        if use_filtering: # TODO: get linear filtering working (yes i wanna do a manual implementation bc the built-in one doesn't cut it for my needs)
+            get_coord = """
+                current_coord = v_texcoord;
+                out_tex = texture(u_texture_0, current_coord);
+            """
+        else:
+            get_coord = """
+                current_coord = v_texcoord;
+                out_tex = texture(u_texture_0, current_coord);
+            """
 
         if pretty:
             main = """
-                float blur_radius = 0.3;
+                float blur_radius = 0.333;
                 vec2 uv_per_screen_pixel = vec2(length(dFdx(v_texcoord)), length(dFdy(v_texcoord)));
                 vec2 offset = uv_per_screen_pixel * blur_radius;
 
                 vec4 total_color = vec4(0.0, 0.0, 0.0, 0.0);
 
-                float rgb_mix = 9.0;
+                float mix_rgb = 9.0;
+                float mix_a = 9.0;
 
                 for (int x = -1; x <= 1; x += 1) {
                     for (int y = -1; y <= 1; y += 1) {
@@ -76,11 +92,19 @@ class SpriteRenderer:
                         if (any(greaterThan(current_coord, vec2(1.0)))) invalid_pixel = true;
 
                         if (invalid_pixel) {
-                            rgb_mix -= 1.0;
+                            mix_rgb -= 1.0;
+                            mix_a -= 1.0;
                             continue;
                         }
 
                         out_tex = texture(u_texture_0, current_coord);
+                        if (out_tex.a <= 0.0) invalid_pixel = true;
+
+                        if (invalid_pixel) {
+                            mix_rgb -= 1.0;
+                            continue;
+                        }
+
                         vec4 temp_buffer = vec4(0.0);
                         vec4 saved_buffer;
 
@@ -93,18 +117,17 @@ class SpriteRenderer:
                     }
                 }
 
-                f_color = total_color / rgb_mix;
+                f_color.rgb = total_color.rgb / mix_rgb;
+                f_color.a = total_color.a / mix_a;
                 if (f_color.a <= 0.0) discard;
             """
         else:
-            main = """
-                out_tex = texture(u_texture_0, current_coord);
+            main = get_coord + """
                 vec4 temp_buffer = vec4(0.0);
                 vec4 saved_buffer;
 
                 if (previous_buffer_start > -1) temp_buffer = u_globalPalette[previous_buffer_start];
-
-                current_coord = v_texcoord;
+                vec4 init_buffer = temp_buffer;
 
                 """ + main_passes + """
 
@@ -286,11 +309,12 @@ class SpriteRenderer:
                     """ + main + "}"
         )
 
+        pad = 0
         vertices = numpy.array([
-            -0.5, -0.5, 0, 1,
-             0.5, -0.5, 1, 1,
-            -0.5,  0.5, 0, 0,
-             0.5,  0.5, 1, 0,
+            -0.5 - pad, -0.5 - pad, 0 - pad, 1 + pad,
+             0.5 + pad, -0.5 - pad, 1 + pad, 1 + pad,
+            -0.5 - pad,  0.5 + pad, 0 - pad, 0 - pad,
+             0.5 + pad,  0.5 + pad, 1 + pad, 0 - pad,
         ], dtype='f4')
 
         self.vertex_buffer = self.context.buffer(vertices)
@@ -393,7 +417,7 @@ class SpriteRenderer:
                     full_matrix = self.projection @ global_matrix @ local_matrix @ pattern_matrix @ part_matrix
 
                     tex = self.context.texture(size, 4, graphics_buffer)
-                    tex.filter = (self.filtering_mode, self.filtering_mode)
+                    tex.filter = (moderngl.NEAREST, moderngl.NEAREST)
                     tex.repeat_x = False
                     tex.repeat_y = False
                     tex.use(0)

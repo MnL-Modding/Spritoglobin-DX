@@ -399,7 +399,7 @@ class GifExportWindow(QtWidgets.QDialog):
 
         scale = self.scale_controller.value()
 
-        color_animation = -1
+        color_animation = None
         if self.color_anim_list_box.currentIndex() != 0:
             try:
                 color_anim_index = int(self.color_anim_list_box.currentText())
@@ -603,7 +603,7 @@ class GifExportWindow(QtWidgets.QDialog):
         self.animation_timer.stop()
         object_properties = self.obj_data.get_object_properties(object_name = cached_object.name)
 
-        color_animation = -1
+        color_animation = None
         if self.color_anim_list_box.currentIndex() != 0:
             try:
                 color_anim_index = int(self.color_anim_list_box.currentText())
@@ -685,7 +685,7 @@ class GifExportWindow(QtWidgets.QDialog):
                 self.obj_data.increment_timers(
                     advance_amt_adjusted,
                     animation_timer = True,
-                    color_timer     = color_animation >= 0,
+                    color_timer     = color_animation is not None,
                 )
 
         # compile the image data

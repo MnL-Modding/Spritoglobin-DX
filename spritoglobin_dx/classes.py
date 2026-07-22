@@ -243,10 +243,13 @@ class ObjFile:
         anim_data = obj_data.get_anim_data(animation_index)
 
         try:
-            animation_timer = self.animation_timer
+            anim_timer = self.animation_timer
+        except AttributeError:
+            anim_timer = 0
+
+        try:
             color_timer = self.color_timer
         except AttributeError:
-            animation_timer = 0
             color_timer = 0
 
         if anim_data.anim_length is None:
@@ -260,7 +263,7 @@ class ObjFile:
         anim_set = color_data.get_rgba(
             anim_index        = animation_index,
             global_anim_index = color_anim_index,
-            time_anim         = animation_timer,
+            time_anim         = anim_timer,
             time_color        = color_timer,
             anim_length       = anim_data.anim_length,
         )
