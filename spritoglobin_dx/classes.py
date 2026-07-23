@@ -30,6 +30,7 @@ class InvalidObjectFileError(Exception):
 class ObjFile:
     def __init__(self, input_data, game_id = None):
         self.cellanim_files = {}
+        self.cellanim_files_numeric = {}
         self.palette_files = {"": self.PaletteFile("", b'')}
         self.data_files = {"": self.DataFile("", None)}
         self.cached_objects = {}
@@ -90,6 +91,9 @@ class ObjFile:
                         if data == bytes(len(data)): continue # invalid data TODO urgent: display that number
                         name = f"Sprite 0x{i:03X}"
                         self.cellanim_files[name] = self.CellAnimFile(name, data)
+                        # for lang stuff
+                        self.cellanim_files[name].numeric_id = i
+                        self.cellanim_files_numeric[i] = name
                     for i, data in enumerate(nds_palettes):
                         name = f"{i:04X}"
                         self.palette_files[name] = self.PaletteFile(name, data)
@@ -275,6 +279,48 @@ class ObjFile:
                     renderer_colors[renderer_channel][i] = channel
     
         return renderer_colors
+    
+    def get_object_language(self, object_name):
+        true_obj_name = None
+        languages = []
+        if self.game_id in GAME_IDS_THAT_USE_ML3_LANGUAGE_KEY:
+            current_region = "EJKP" # all regions for now
+
+            current_obj_data = self.cellanim_files[object_name]
+            obj_lang_id = None
+            for i in range(6):
+                test_obj_name = self.cellanim_files_numeric.get(current_obj_data.numeric_id - i, None)
+                if test_obj_name is None: continue
+
+                test_object = self.cellanim_files[test_obj_name]
+                if test_object.is_language_pivot:
+                    obj_lang_id = i
+                    break
+            
+            for lang in LANGUAGES:
+                key = LANGUAGES[lang].get('ml3_key', None)
+                if key is None: continue
+
+                if key[0] in current_region and key[1] == str(obj_lang_id):
+                    languages.append(lang)
+            
+            if obj_lang_id is not None:
+                true_obj_name = self.cellanim_files_numeric[current_obj_data.numeric_id - obj_lang_id]
+        
+        elif self.game_id in GAME_IDS_THAT_USE_ML4_LANGUAGE_KEY: # TODO
+            ...
+        
+        elif self.game_id in GAME_IDS_THAT_USE_ML5_LANGUAGE_KEY:
+            for lang in LANGUAGES:
+                key = LANGUAGES[lang].get('ml5_key', None)
+                if key is None: continue
+
+                if object_name[-5:] == key:
+                    true_obj_name = f"?{object_name[:-6]}"
+                    languages.append(lang)
+                    break
+        
+        return true_obj_name, languages
     
     def get_object_properties(self, object_name, cache_id = None):
         self.cache_object(object_name, cache_id)
@@ -769,6 +815,10 @@ class ObjFile:
                 self.graph_file = self.get_num(anim_file + 1)
                 self.color_file = ""
                 self.palette_entry = self.get_num(int.from_bytes(data.read(2), 'little'))
+                self.hitbox_file = self.get_num(int.from_bytes(data.read(2), 'little')) # TODO: figure out how this works
+
+                flags = int.from_bytes(data.read(2), 'little')
+                self.is_language_pivot = (flags & 0b0000000100000000) != 0 # this is not accurate to BIS but i don't feel like adding a shitton of checks yet lmao
                 # more unknowns past here
             
             else: # poor ol' lonely ml4

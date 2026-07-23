@@ -1239,3 +1239,45 @@ class ColorAnimationTimeline(AnimationTimeline):
 
     def set_pica_data_enabled(self, enabled):
         self.layer_info.setVisible(enabled)
+
+
+class LanguageDisplay(QtWidgets.QWidget):
+    def __init__(self):
+        super().__init__()
+
+        layout = QtWidgets.QGridLayout(self)
+        layout.setContentsMargins(0, 0, 0, 0)
+
+        self.obj_name = QtWidgets.QLabel()
+        layout.addWidget(self.obj_name, 0, 0)
+        self.obj_name.setEnabled(False)
+        
+        self.flags_display = QtWidgets.QWidget()
+        flag_layout = QtWidgets.QHBoxLayout(self.flags_display)
+        flag_layout.setContentsMargins(0, 0, 0, 0)
+        layout.addWidget(self.flags_display, 0, 1, alignment = QtCore.Qt.AlignmentFlag.AlignRight)
+    
+    def display_lang(self, obj_name, languages):
+        if obj_name is None:
+            self.hide()
+            return
+
+        self.show()
+        self.obj_name.setText(obj_name)
+
+        flag_layout = self.flags_display.layout()
+        while flag_layout.count():
+            item = flag_layout.takeAt(0)
+            widget = item.widget()
+            if widget:
+                widget.deleteLater()
+
+        if len(languages) == 0:
+            languages = ["Unreachable"]
+
+        for lang_key in languages:
+            flag = QtWidgets.QLabel()
+            pixmap = QtGui.QPixmap(str(LANG_DIR / f"{lang_key}.png"))
+            flag.setPixmap(pixmap)
+
+            flag_layout.addWidget(flag)

@@ -13,7 +13,7 @@ from PySide6 import QtWidgets, QtGui, QtMultimedia
 
 from spritoglobin_dx.classes import ObjFile, GAME_IDS_THAT_USE_BOUNDING_BOXES
 from spritoglobin_dx.constants import *
-from spritoglobin_dx.gui import ItemDelegate, InteractiveGraphicsWindow, PaletteDisplay, GraphicsAnimationTimeline, ColorAnimationTimeline
+from spritoglobin_dx.gui import ItemDelegate, InteractiveGraphicsWindow, PaletteDisplay, GraphicsAnimationTimeline, ColorAnimationTimeline, LanguageDisplay
 from spritoglobin_dx.popups import FileImportWindow, GifExportWindow, ProgramThemeEditor
 from spritoglobin_dx.render import SpriteRenderer
 
@@ -471,6 +471,9 @@ class MainWindow(QtWidgets.QMainWindow):
         #object_info.setFrameShadow(QtWidgets.QFrame.Raised)
         object_info_layout = QtWidgets.QGridLayout(object_info)
         object_info_layout.setContentsMargins(0, 0, 0, 0)
+
+        self.language_display = LanguageDisplay()
+        object_info_layout.addWidget(self.language_display)
 
         self.color_mode_info_text = QtWidgets.QLabel()
         object_info_layout.addWidget(self.color_mode_info_text)
@@ -1010,6 +1013,8 @@ class MainWindow(QtWidgets.QMainWindow):
 
             self.theme_icons_current_obj_color_anim_icon = 'blank'
             self.global_animation_icon.setPixmap(self.theme_icons[self.theme_icons_current_obj_color_anim_icon])
+
+            self.language_display.display_lang(None, [])
             
             self.color_anim_list_box.blockSignals(True)
             self.color_anim_list_box.clear()
@@ -1029,6 +1034,8 @@ class MainWindow(QtWidgets.QMainWindow):
         self.anim_list_box.blockSignals(False)
 
         object_properties = self.obj_data.get_object_properties(object_name = self.obj_list_box.currentText())
+
+        self.language_display.display_lang(*self.obj_data.get_object_language(self.obj_list_box.currentText()))
 
 
         self.color_anim_list_box.blockSignals(True)
