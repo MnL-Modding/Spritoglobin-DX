@@ -160,7 +160,8 @@ class ObjFile:
 
             # for testing DT
             use_force = False
-            force_root = "DT/FObjUI"
+            force_game = "ML4"
+            force_root = f"{force_game}/FObjUI"
             force = (0x130, 0x131, None)
 
             cached_object.name = object_name
@@ -169,7 +170,7 @@ class ObjFile:
                 cached_object.obj_anim_data = self.AnimData(self.data_files[current_obj_data.anim_file].decompress_data(self.game_id), self.game_id)
             else:
                 with open(f"{force_root}/{force[0]:04X}.dat", "rb") as test:
-                    cached_object.obj_anim_data = self.AnimData(test.read(), "ML4")
+                    cached_object.obj_anim_data = self.AnimData(test.read(), force_game)
 
             if not use_force or not force[1] is not None:
                 cached_object.graph_file = self.data_files[current_obj_data.graph_file].decompress_data(self.game_id)

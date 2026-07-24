@@ -233,6 +233,7 @@ def get_sprite_part_set_graphic(obj_anim_data, graph_file, palette_data, first_p
                     obj_anim_data = obj_anim_data,
                     sheet_size    = part_data_master.sheet_size,
                     palette       = palette,
+                    engine_is_3d  = engine_is_3d,
                     alpha_divisor = alpha_divisor,
                 )
 
@@ -354,7 +355,7 @@ def draw_part(part_data, graph_file, obj_anim_data, palette, engine_is_3d, alpha
     
     return out, (img_width, img_height)
 
-def draw_segment(segment_data, graph_file, obj_anim_data, sheet_size, palette, alpha_divisor = None, ignore_flips = False):
+def draw_segment(segment_data, graph_file, obj_anim_data, sheet_size, palette, engine_is_3d, alpha_divisor = None, ignore_flips = False):
     img_width, img_height = sheet_size
     color_mode = obj_anim_data.color_mode
 
