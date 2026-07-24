@@ -1476,15 +1476,15 @@ class ObjFile:
 
             if self.anim_data is not None:
                 # default palette animation
-                slot = self.default_anim
-                timer = global_timer
-                if slot is not None and timer is not None and global_slot is not None:
-                    frame_palette = palette_anim.apply(frame_palette, self.anim_data['slots'][slot], timer, self.palette_size)
+                #slot = self.default_anim
+                #timer = global_timer
+                #if slot is not None and timer is not None and global_slot is not None:
+                #    frame_palette = palette_anim.apply(frame_palette, self.anim_data['slots'][slot], timer, self.palette_size)
 
                 # global palette animations
                 slot = self.global_animations.get(global_slot, [None])[0]
                 timer = global_timer
-                if slot is not None and timer is not None and global_slot != -1:
+                if slot is not None and timer is not None: #and global_slot != -1:
                     frame_palette = palette_anim.apply(frame_palette, self.anim_data['slots'][slot], timer, self.palette_size)
 
                 # per-anim palette animations

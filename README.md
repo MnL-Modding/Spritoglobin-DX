@@ -12,6 +12,8 @@ Spritoglobin DX is a sprite viewer for Mario and Luigi: Bowser's Inside Story + 
 
 [8y8x](https://github.com/8y8x) ![Github](spritoglobin_dx/files/img_soc_github.png) - Assistance with 3D Renderer Code
 
+[JeyLists](https://github.com/JeyLists) ![Github](spritoglobin_dx/files/img_soc_github.png) - Major Help with Partners in Time Support
+
 Translators:
 - Español (ES) ![es_ES Flag](spritoglobin_dx/lang/es_ES.png) - [Danius](https://github.com/Dani88alv) ![Github](spritoglobin_dx/files/img_soc_github.png)
 - Français (FR) ![fr_FR Flag](spritoglobin_dx/lang/fr_FR.png) - [Yo-New 3DS](## "Discord: yo_2ds") ![Discord](spritoglobin_dx/files/img_soc_discord.png)
