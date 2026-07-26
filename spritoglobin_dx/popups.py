@@ -639,23 +639,21 @@ class GifExportWindow(QtWidgets.QDialog):
                 animation_index = anim,
             )
 
+            xmn, xmx, ymn, ymx = self.obj_data.get_animation_bounding_box(
+                object_name      = object_name, 
+                animation_index  = anim,
+            )
+
+            min_x, max_x, min_y, max_y = [
+                min(min_x, xmn), # left
+                max(max_x, xmx), # right
+                min(min_y, ymn), # down
+                max(max_y, ymx), # up
+            ]
+
             anim_length = animation_properties["length"] * count
 
             for i in range(math.ceil(anim_length / advance_amt_adjusted)):
-                img, (w, h), (x, y) = self.obj_data.get_sprite_with_offset(
-                    object_name      = object_name, 
-                    animation_index  = anim,
-                    color_anim_index = color_animation,
-                    bypass_shader    = True,
-                )
-
-                if img is not None:
-                    min_x, max_x, min_y, max_y = [
-                        min(min_x, -x,    ), # left
-                        max(max_x, -x + w,), # right
-                        min(min_y,  y - h,), # down
-                        max(max_y,  y,    ), # up
-                    ]
                 
                 img = self.obj_data.get_sprite_part_entities(
                     object_name      = object_name, 

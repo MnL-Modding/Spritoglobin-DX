@@ -45,31 +45,8 @@ def get_sprite_graphic(obj_anim_data, graph_file, palette_data, current_anim_ind
             total_parts        = frame_data.total_parts,
             given_bounding_box = None,
         )
-        
-        if matrix is not None:
-            corners = [
-                (min_x, min_y),
-                (max_x, min_y),
-                (min_x, max_y),
-                (max_x, max_y)
-            ]
 
-            trans_x, trans_y = [], []
-            for x, y in corners:
-                # have to invert stuff manually here since +Y is up for bounding boxes but down for matrices
-                new_x =  matrix[0] * x - matrix[1] * y + matrix[2]
-                new_y = -matrix[3] * x + matrix[4] * y - matrix[5]
-                trans_x.append(new_x)
-                trans_y.append(new_y)
-
-            full_bounding_box = (
-                numpy.floor(min(trans_x)).astype(int),
-                numpy.ceil(max(trans_x)).astype(int),
-                numpy.floor(min(trans_y)).astype(int),
-                numpy.ceil(max(trans_y)).astype(int),
-            )
-        else:
-            full_bounding_box = min_x, max_x, min_y, max_y
+        full_bounding_box = transform_boundaries(matrix, min_x, max_x, min_y, max_y)
     
     data = get_sprite_part_set_graphic(
         obj_anim_data          = obj_anim_data,
@@ -119,7 +96,7 @@ def get_sprite_graphic(obj_anim_data, graph_file, palette_data, current_anim_ind
 
     return img, (graph_w, graph_h), (offset_x, offset_y)
 
-def get_sprite_part_set_bounding_box(obj_anim_data, first_part, total_parts, given_bounding_box = None):
+def get_sprite_part_set_bounding_box(obj_anim_data, first_part, total_parts, given_bounding_box = None, bypass_part_matrix = True):
     # TODO: sprite sheet shit
     min_x, max_x, min_y, max_y = 0, 0, 0, 0
     for i in range(total_parts):
@@ -137,6 +114,14 @@ def get_sprite_part_set_bounding_box(obj_anim_data, first_part, total_parts, giv
             part_min_y = y - (h // 2)
             part_max_y = y + (h // 2)
 
+            if part_data.transform != 0 and not bypass_part_matrix:
+                transform_data = obj_anim_data.get_part_transform_data(part_data.transform - 1)
+                matrix = list(transform_data.matrix)
+            else:
+                matrix = None
+
+            part_min_x, part_max_x, part_min_y, part_max_y = transform_boundaries(matrix, part_min_x, part_max_x, part_min_y, part_max_y)
+
             min_x, max_x = min(min_x, part_min_x), max(max_x, part_max_x)
             min_y, max_y = min(min_y, part_min_y), max(max_y, part_max_y)
         else:
@@ -148,6 +133,14 @@ def get_sprite_part_set_bounding_box(obj_anim_data, first_part, total_parts, giv
                 part_max_x = x + w
                 part_min_y = y
                 part_max_y = y + h
+
+                if segment.transform != 0 and not bypass_part_matrix:
+                    transform_data = obj_anim_data.get_part_transform_data(segment.transform - 1)
+                    matrix = list(transform_data.matrix)
+                else:
+                    matrix = None
+
+                part_min_x, part_max_x, part_min_y, part_max_y = transform_boundaries(matrix, part_min_x, part_max_x, part_min_y, part_max_y)
 
                 min_x, max_x = min(min_x, part_min_x), max(max_x, part_max_x)
                 min_y, max_y = min(min_y, part_min_y), max(max_y, part_max_y)
@@ -323,6 +316,34 @@ def get_sprite_part_set_graphic(obj_anim_data, graph_file, palette_data, first_p
         )
     
     return img.tobytes(), (graph_w, graph_h), (offset_x, offset_y)
+
+def transform_boundaries(matrix, min_x, max_x, min_y, max_y):
+    if matrix is not None:
+        corners = [
+            (min_x, min_y),
+            (max_x, min_y),
+            (min_x, max_y),
+            (max_x, max_y)
+        ]
+
+        trans_x, trans_y = [], []
+        for x, y in corners:
+            # have to invert stuff manually here since +Y is up for bounding boxes but down for matrices
+            new_x =  matrix[0] * x - matrix[1] * y + matrix[2]
+            new_y = -matrix[3] * x + matrix[4] * y - matrix[5]
+            trans_x.append(new_x)
+            trans_y.append(new_y)
+
+        full_bounding_box = (
+            numpy.floor(min(trans_x)).astype(int),
+            numpy.ceil(max(trans_x)).astype(int),
+            numpy.floor(min(trans_y)).astype(int),
+            numpy.ceil(max(trans_y)).astype(int),
+        )
+    else:
+        full_bounding_box = min_x, max_x, min_y, max_y
+    
+    return full_bounding_box
 
 def draw_part(part_data, graph_file, obj_anim_data, palette, engine_is_3d, alpha_divisor = None, ignore_flips = False):
     part_size = part_data.part_size

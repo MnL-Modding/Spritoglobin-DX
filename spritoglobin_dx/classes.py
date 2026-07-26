@@ -6,7 +6,7 @@ from mnllib.bis import decompress as rlz_decompress
 import numpy
 
 from spritoglobin_dx.constants import *
-from spritoglobin_dx.graphics import SIZING_TABLE, SWIZZLE_TABLE, get_sprite_part_palette_indeces, get_sprite_graphic, get_sprite_part_set_graphic, draw_part, nds_bgr555_to_rgb888
+from spritoglobin_dx.graphics import SIZING_TABLE, SWIZZLE_TABLE, get_sprite_part_set_bounding_box, get_sprite_part_palette_indeces, get_sprite_graphic, get_sprite_part_set_graphic, transform_boundaries, draw_part, nds_bgr555_to_rgb888
 from spritoglobin_dx import palette_anim
 
 
@@ -547,7 +547,7 @@ class ObjFile:
     def _get_sprite_data(self, object_name, animation_index, color_anim_index, frame_index, bypass_shader, separate, cache_id = None):
         self.cache_object(object_name, cache_id)
         cached_object = self.get_cached_object(cache_id)
-        
+
         obj_anim_data = cached_object.obj_anim_data
         graph_file    = cached_object.graph_file
         color_data    = cached_object.color_data
@@ -600,6 +600,46 @@ class ObjFile:
             separate            = separate,
             engine_is_3d        = self.game_id in GAME_IDS_THAT_USE_3D_ENGINES,
         )
+
+    def get_animation_bounding_box(self, object_name, animation_index, cache_id = None):
+        self.cache_object(object_name, cache_id)
+        cached_object = self.get_cached_object(cache_id)
+
+        obj_anim_data = cached_object.obj_anim_data
+        anim_data = obj_anim_data.get_anim_data(animation_index)
+
+        min_x0, max_x0, min_y0, max_y0 = 0, 0, 0, 0
+
+        # me when i copy a bunch of code that i really shouldn't bc i hate everything and i'm tired of it not working
+        # (how many comments in this program are just me bitching about shit lmao)
+        for i in range(anim_data.total_frames):
+            frame_data = obj_anim_data.get_frame_data(anim_data.first_frame + i)
+
+            matrix = None
+            if frame_data.transform != 0:
+                transform_data = obj_anim_data.get_full_transform_data(frame_data.transform - 1)
+                matrix = list(transform_data.matrix)
+                if frame_data.invert_matrix_rotation is None:
+                    invert_matrix = (matrix[0] < 0) != (matrix[4] < 0)
+                else:
+                    invert_matrix = frame_data.invert_matrix_rotation == 1
+
+                if invert_matrix:
+                    matrix[1], matrix[3] = -matrix[1], -matrix[3]
+
+            min_x1, max_x1, min_y1, max_y1 = get_sprite_part_set_bounding_box(
+                obj_anim_data      = obj_anim_data,
+                first_part         = frame_data.first_part,
+                total_parts        = frame_data.total_parts,
+                bypass_part_matrix = False,
+            )
+
+            min_x1, max_x1, min_y1, max_y1 = transform_boundaries(matrix, min_x1, max_x1, min_y1, max_y1)
+
+            min_x0, max_x0 = min(min_x0, min_x1), max(max_x0, max_x1)
+            min_y0, max_y0 = min(min_y0, min_y1), max(max_y0, max_y1)
+
+        return min_x0, max_x0, min_y0, max_y0
     
     def get_sprite_part_set_with_offset(self, object_name, first_part, total_parts, highlighted_part = None, cache_id = None):
         self.cache_object(object_name, cache_id)
