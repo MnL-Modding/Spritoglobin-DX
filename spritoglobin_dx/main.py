@@ -604,8 +604,12 @@ class MainWindow(QtWidgets.QMainWindow):
         self.palette_rendering_info = QtWidgets.QWidget()
         palette_rendering_info_layout = QtWidgets.QGridLayout(self.palette_rendering_info)
 
+        string = QtWidgets.QLabel(self.tr("Current Palette:"))
+        string.setEnabled(False)
+        palette_rendering_info_layout.addWidget(string, 0, 0, alignment = QtCore.Qt.AlignmentFlag.AlignLeft)
+
         self.palette_name_display = QtWidgets.QLabel()
-        palette_rendering_info_layout.addWidget(self.palette_name_display, 0, 0, alignment = QtCore.Qt.AlignmentFlag.AlignCenter)
+        palette_rendering_info_layout.addWidget(self.palette_name_display, 0, 1, alignment = QtCore.Qt.AlignmentFlag.AlignRight)
 
         self.palette_viewer = PaletteDisplay(
             parent         = self,
@@ -613,7 +617,7 @@ class MainWindow(QtWidgets.QMainWindow):
             padding_amount = 0.5,
         )
         self.palette_viewer.setSizePolicy(QtWidgets.QSizePolicy.Ignored, QtWidgets.QSizePolicy.Ignored)
-        palette_rendering_info_layout.addWidget(self.palette_viewer, 1, 0)
+        palette_rendering_info_layout.addWidget(self.palette_viewer, 1, 0, 1, 2)
 
         sprite_part_info_layout.addWidget(self.palette_rendering_info, 9, 0, 1, 2)
         self.palette_rendering_info.setHidden(True)
@@ -706,9 +710,9 @@ class MainWindow(QtWidgets.QMainWindow):
         main_layout.addWidget(self.timeline_tabs, 1, 0, 2, 2)
         main_layout.addWidget(self.sprite_part_info, 0, 2, 2, 1)
         main_layout.addWidget(self.sprite_sheet_info, 0, 2, 2, 1)
-        main_layout.setColumnStretch(0, 1)
-        main_layout.setColumnStretch(1, 5)
-        main_layout.setColumnStretch(2, 1)
+        main_layout.setColumnStretch(0,  2)
+        main_layout.setColumnStretch(1, 10)
+        main_layout.setColumnStretch(2,  3)
 
         try:
             dist = importlib.metadata.distribution(APP_NAME)

@@ -97,7 +97,7 @@ class ObjFile:
                             continue
                         else:
                             self.valid_sprite_entries += 1
-                        name = f"Sprite 0x{i:03X}"
+                        name = f"0x{i:04X}"
                         self.cellanim_files[name] = self.CellAnimFile(name, data)
                         # for lang stuff
                         self.cellanim_files[name].numeric_id = i
@@ -109,7 +109,7 @@ class ObjFile:
                             continue
                         else:
                             self.valid_palette_entries += 1
-                        name = f"Palette 0x{i:03X}"
+                        name = f"0x{i:04X}"
                         self.palette_files[name] = self.PaletteFile(name, data)
                         self.palette_files_numeric[i] = name
 
@@ -875,7 +875,7 @@ class ObjFile:
         def interpret_data(self, game_id):
             data = BytesIO(self.input_data)
 
-            if game_id in GAME_IDS_THAT_USE_BG4: # > ml5
+            if game_id in GAME_IDS_THAT_USE_BG4: # >= ml5
                 self.anim_file = self.get_string(data.read(4))
                 self.graph_file = self.get_string(data.read(4))
                 self.color_file = self.get_string(data.read(4))
@@ -883,7 +883,7 @@ class ObjFile:
                 self.hitbox_file = self.get_string(data.read(4)) # TODO: figure out how this works
                 # more unknowns past here
 
-            elif game_id in GAME_IDS_THAT_USE_PALETTES: # < ml3
+            elif game_id in GAME_IDS_THAT_USE_PALETTES: # <= ml3
                 anim_file = int.from_bytes(data.read(2), 'little')
                 self.anim_file = self.get_num(anim_file)
                 self.graph_file = self.get_num(anim_file + 1)
@@ -1188,21 +1188,25 @@ class ObjFile:
                         self.y_offset               = ((attr0 & 0b0000000011111111) ^ 0x80) - 0x80
                         trans_flag                  =  (attr0 & 0b0000000100000000) != 0
                         double_size_flag            =  (attr0 & 0b0000001000000000) != 0
-                        #                               attr0 & 0b0001110000000000
+                        # unk                           attr0 & 0b0001110000000000
                         self.depth                  =  (attr0 & 0b0010000000000000) >> 13
                         self.part_shape             =  (attr0 & 0b1100000000000000) >> 14
         
                         self.x_offset               = ((attr1 & 0b0000000111111111) ^ 0x100) - 0x100
-                        #                               attr1 & 0b0000111000000000
+                        # unk                           attr1 & 0b0000111000000000
                         self.x_flip                 =  (attr1 & 0b0001000000000000) != 0
                         self.y_flip                 =  (attr1 & 0b0010000000000000) != 0
                         self.part_size              =  (attr1 & 0b1100000000000000) >> 14
 
                         self.graphics_buffer_offset =  (attr2 & 0b1111111111111111) << parent.graph_shift
 
+                        # unk                           attr3 & 0b1111111111111111
+
                         self.transform              =  (attr4 & 0b0000001111111111) + 1 if trans_flag else 0 # TODO urgent: expose to user
                         self.palette_shift          =  (attr4 & 0b0011110000000000) >> 10
-                        #                               attr4 & 0b1100000000000000
+                        # unk                           attr4 & 0b1100000000000000
+
+                        # unk                           attr5 & 0b1111111111111111
 
                         self.renderer = None
                     case _:
