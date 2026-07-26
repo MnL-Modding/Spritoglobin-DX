@@ -76,10 +76,10 @@ class ObjFile:
             # (support for further container formats would go here as the next
             # attempts)
             try:
-                nds_extract, self.valid_entries, self.invalid_entries = self.nds_dat_extract(input_data)
+                dat_extract, self.valid_entries, self.invalid_entries = self.generic_archive_extract(input_data)
 
-                for name in nds_extract:
-                    data = nds_extract[name]
+                for name in dat_extract:
+                    data = dat_extract[name]
 
                     if name != "0000":
                         self.data_files[name] = self.DataFile(name, data)
@@ -87,21 +87,34 @@ class ObjFile:
 
                     # entry 0 holds the sprite and palette records, filling the
                     # role that _CA_INFO_ fills in the BG4 archives
-                    self.nds_is_bobj, sprites, nds_palettes = self.nds_header_extract(data, len(nds_extract))
+                    sprites, palettes = self.ml2_header_extract(data, len(dat_extract))
+                    self.valid_sprite_entries, self.invalid_sprite_entries = 0, 0
+                    self.valid_palette_entries, self.invalid_palette_entries = 0, 0
                     for i, data in enumerate(sprites):
-                        if data == bytes(len(data)): continue # invalid data TODO urgent: display that number
+                        if data == bytes(len(data)):
+                            # invalid data
+                            self.invalid_sprite_entries += 1
+                            continue
+                        else:
+                            self.valid_sprite_entries += 1
                         name = f"Sprite 0x{i:03X}"
                         self.cellanim_files[name] = self.CellAnimFile(name, data)
                         # for lang stuff
                         self.cellanim_files[name].numeric_id = i
                         self.cellanim_files_numeric[i] = name
-                    for i, data in enumerate(nds_palettes):
+                    for i, data in enumerate(palettes):
+                        if data == bytes(len(data)):
+                            # invalid data
+                            self.invalid_palette_entries += 1
+                            continue
+                        else:
+                            self.valid_palette_entries += 1
                         name = f"Palette 0x{i:03X}"
                         self.palette_files[name] = self.PaletteFile(name, data)
                         self.palette_files_numeric[i] = name
 
                 if game_id is None:
-                    for game_key in GAME_IDS_THAT_ARE_ON_NDS:
+                    for game_key in GAME_IDS_THAT_USE_GENERIC_ARCHIVES:
                         tests_completed = True
                         for file in self.cellanim_files:
                             self.cellanim_files[file].interpret_data(game_key)
@@ -772,9 +785,9 @@ class ObjFile:
 
         return files, ((version >> 8) & 0xFF, version & 0xFF), valid_count, invalid_count
 
-    def nds_dat_extract(self, input_data):
+    def generic_archive_extract(self, input_data):
         files = {}
-        padding_words = 0
+        invalid_files = 0
         data = BytesIO(input_data)
 
         # --- Offset table ---
@@ -788,7 +801,6 @@ class ObjFile:
         for i in range(1, first_offset // 4):
             word = int.from_bytes(data.read(4), 'little')
             if word == 0xFFFFFFFF:
-                padding_words = (first_offset // 4) - i
                 break
             if word < offsets[-1] or word > len(input_data):
                 raise ValueError("invalid .dat offset table")
@@ -800,11 +812,15 @@ class ObjFile:
         # --- Extract entries ---
         for i in range(len(offsets) - 1):
             data.seek(offsets[i])
-            files[f"{i:04X}"] = data.read(offsets[i + 1] - offsets[i])
+            amt_to_read = offsets[i + 1] - offsets[i]
+            if amt_to_read == 0:
+                invalid_files += 1
+                continue
+            files[f"{i:04X}"] = data.read(amt_to_read)
 
-        return files, len(files), padding_words
+        return files, len(files), invalid_files
 
-    def nds_header_extract(self, header, entry_count):
+    def ml2_header_extract(self, header, entry_count):
         data = BytesIO(header)
 
         # --- Header ---
@@ -835,7 +851,7 @@ class ObjFile:
             if len(palettes) != palette_count:
                 continue
 
-            return record_size == 0x14, sprites, palettes
+            return sprites, palettes
 
         raise ValueError("invalid sprite or palette records")
 
@@ -1187,8 +1203,6 @@ class ObjFile:
                         self.transform              =  (attr4 & 0b0000001111111111) + 1 if trans_flag else 0 # TODO urgent: expose to user
                         self.palette_shift          =  (attr4 & 0b0011110000000000) >> 10
                         #                               attr4 & 0b1100000000000000
-
-                        # TODO urgent: make transform shit available to all the thingies that get bounding boxes based on sprite parts
 
                         self.renderer = None
                     case _:

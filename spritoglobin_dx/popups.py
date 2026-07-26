@@ -145,17 +145,21 @@ class FileImportWindow(QtWidgets.QDialog):
             self.import_button.setEnabled(True)
             self.sort_contents_toggle.setVisible(True)
 
-            is_nds = obj_data.game_id in GAME_IDS_THAT_ARE_ON_NDS
-            if is_nds:
-                #: Describes an NDS sprite container. "BObj" and "FObj" are internal names, do not translate them.
-                info = self.tr("NDS {0} Container").format("BObj" if obj_data.nds_is_bobj else "FObj")
+            if obj_data.game_id in GAME_IDS_THAT_USE_GENERIC_ARCHIVES:
+                #: "DAT" is an internal format. Do not translate.
+                info = self.tr("DAT Archive")
                 valid = (obj_data.valid_entries, obj_data.invalid_entries)
-                ca_valid = (len(obj_data.cellanim_files), len(obj_data.palette_files) - 1)
-            else:
+                ca_valid = (obj_data.valid_sprite_entries, obj_data.invalid_sprite_entries)
+                palette_valid = (obj_data.valid_palette_entries, obj_data.invalid_palette_entries)
+                self.sort_contents_toggle.setVisible(False)
+            elif obj_data.game_id in GAME_IDS_THAT_USE_BG4:
+                #: "BG4" is an internal format. Do not translate.
                 info = self.tr("BG4 Archive (Version {0}.{1})").format(*obj_data.bg4_version)
                 valid = (obj_data.valid_entries, obj_data.invalid_entries)
                 ca_info = self.tr("BG4 Archive (Version {0}.{1})").format(*obj_data.bg4_ca_version)
                 ca_valid = (obj_data.valid_ca_entries, obj_data.invalid_ca_entries)
+                palette_valid = 0, 0
+                self.sort_contents_toggle.setVisible(True)
 
             game_title = self.game_title_strings[f"GameTitle{self.current_game_id}"]
         finally:
@@ -173,10 +177,13 @@ class FileImportWindow(QtWidgets.QDialog):
             string += f"({game_title})"
             string += "\n"
             string += "\n"
-            if is_nds:
-                #: Displays the amount of sprite and palette records inside a Partners in Time sprite container.
-                string += self.tr("{0} Sprites, {1} Palettes").format(*ca_valid)
-            else:
+            if obj_data.game_id in GAME_IDS_THAT_USE_GENERIC_ARCHIVES:
+                #: Displays the amount of CellAnime that are full of data, versus how many files are blank.
+                string += self.tr("{0} Valid CellAnime, {1} Invalid CellAnime").format(*ca_valid)
+                string += "\n"
+                #: Displays the amount of palettes that are full of data, versus how many files are blank.
+                string += self.tr("{0} Valid Palettes, {1} Invalid Palettes").format(*palette_valid)
+            elif obj_data.game_id in GAME_IDS_THAT_USE_BG4:
                 string += f"{cellanime_title_string} - {ca_info}"
                 string += "\n"
                 string += self.tr("{0} Valid Entries, {1} Invalid Entries").format(*ca_valid)
