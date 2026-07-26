@@ -306,12 +306,16 @@ class InteractiveGraphicsWindow(QtWidgets.QLabel):
 
 
 class PaletteDisplay(QtWidgets.QLabel):
-    # TODO urgent: make it not be so fucky to resize
     # TODO: add color copying feature (maybe just copy hex code to clipboard if you click a color)
     background_color = QtCore.Qt.GlobalColor.black
 
     def __init__(self, parent, size, padding_amount):
         super().__init__()
+        layout = QtWidgets.QGridLayout(self)
+
+        padding = QtWidgets.QWidget()
+        layout.addWidget(padding, 0, 0)
+        padding.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
 
         self.parent = parent
         self.size = size
@@ -698,6 +702,7 @@ class GraphicsAnimationTimeline(AnimationTimeline):
         self.current_parts = None
         self.current_matrix = None
         self.current_matrix_inv = False
+        self.current_prematrix = None
 
         self.minimal = minimal
 
@@ -839,23 +844,47 @@ class GraphicsAnimationTimeline(AnimationTimeline):
             matrix = list(self.current_matrix)
             [label.setEnabled(True) for label in self.frame_data_matrix]
 
-        for i, label in enumerate(self.frame_data_matrix):
-            string = [
-                #: Part of affine matrix data.
-                self.tr("X Scale: {0}"),
-                #: Part of affine matrix data.
-                self.tr("X Shear: {0}"),
-                #: Part of affine matrix data.
-                self.tr("X Position: {1}"),
-                #: Part of affine matrix data.
-                self.tr("Y Shear: {0}"),
-                #: Part of affine matrix data.
-                self.tr("Y Scale: {0}"),
-                #: Part of affine matrix data.
-                self.tr("Y Position: {1}"),
-            ][i]
+        if self.current_prematrix is None:
+            for i, label in enumerate(self.frame_data_matrix):
+                string = [
+                    #: Part of affine matrix data.
+                    self.tr("X Scale: {0}"),
+                    #: Part of affine matrix data.
+                    self.tr("X Shear: {0}"),
+                    #: Part of affine matrix data.
+                    self.tr("X Position: {1}"),
+                    #: Part of affine matrix data.
+                    self.tr("Y Shear: {0}"),
+                    #: Part of affine matrix data.
+                    self.tr("Y Scale: {0}"),
+                    #: Part of affine matrix data.
+                    self.tr("Y Position: {1}"),
+                ][i]
 
-            label.setText(string.format(f"{matrix[i]:7.4f}", matrix[i]))
+                label.setHidden(False)
+                label.setText(string.format(f"{matrix[i]:7.4f}", matrix[i]))
+        else:
+            for i, label in enumerate(self.frame_data_matrix):
+                string = [
+                    #: Part of transform data.
+                    self.tr("Rotation: {0}"),
+                    #: Part of affine matrix data.
+                    self.tr("X Scale: {0}"),
+                    #: Part of affine matrix data.
+                    self.tr("X Position: {1}"),
+                    # filler
+                    None,
+                    #: Part of affine matrix data.
+                    self.tr("Y Scale: {0}"),
+                    #: Part of affine matrix data.
+                    self.tr("Y Position: {1}"),
+                ][i]
+
+                if string is None:
+                    label.setHidden(True)
+                else:
+                    label.setHidden(False)
+                    label.setText(string.format(f"{self.current_prematrix[[0, 1, 3, 0, 2, 4][i]]:7.4f}", self.current_prematrix[[0, 1, 3, 0, 2, 4][i]]))
 
         matrix_demo = QtGui.QPixmap(72, 72)
         matrix_demo.fill(self.background_color)
@@ -894,12 +923,13 @@ class GraphicsAnimationTimeline(AnimationTimeline):
         self.matrix_demo.setPixmap(matrix_demo)
         self.matrix_demo.resize(matrix_demo.size())
     
-    def send_frame_data(self, current_parts = None, current_keyframe_timer = None, current_matrix_index = None, current_matrix = None, current_matrix_inv = False):
+    def send_frame_data(self, current_parts = None, current_keyframe_timer = None, current_matrix_index = None, current_matrix = None, current_matrix_inv = False, current_prematrix = None):
         self.current_parts          = current_parts
         self.current_keyframe_timer = current_keyframe_timer
         self.current_matrix_index   = current_matrix_index
         self.current_matrix         = current_matrix
         self.current_matrix_inv     = current_matrix_inv
+        self.current_prematrix      = current_prematrix
         
         if self.current_parts is None:
             self.play_button.setEnabled(False)

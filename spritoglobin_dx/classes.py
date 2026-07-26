@@ -31,7 +31,8 @@ class ObjFile:
     def __init__(self, input_data, game_id = None):
         self.cellanim_files = {}
         self.cellanim_files_numeric = {}
-        self.palette_files = {"": self.PaletteFile("", b'')}
+        self.palette_files = {}
+        self.palette_files_numeric = {}
         self.data_files = {"": self.DataFile("", None)}
         self.cached_objects = {}
 
@@ -95,8 +96,9 @@ class ObjFile:
                         self.cellanim_files[name].numeric_id = i
                         self.cellanim_files_numeric[i] = name
                     for i, data in enumerate(nds_palettes):
-                        name = f"{i:04X}"
+                        name = f"Palette 0x{i:03X}"
                         self.palette_files[name] = self.PaletteFile(name, data)
+                        self.palette_files_numeric[i] = name
 
                 if game_id is None:
                     for game_key in GAME_IDS_THAT_ARE_ON_NDS:
@@ -156,7 +158,8 @@ class ObjFile:
 
         if cached_object.name != object_name:
             current_obj_data = self.cellanim_files[object_name]
-            current_pal_data = self.palette_files[current_obj_data.palette_entry]
+            if current_obj_data.palette_entry != "":
+                current_pal_data = self.palette_files[self.palette_files_numeric[current_obj_data.palette_entry]]
 
             # for testing DT
             use_force = False
@@ -184,14 +187,17 @@ class ObjFile:
                 with open(f"{force_root}/{force[2]:04X}.dat", "rb") as test:
                     cached_object.color_data = self.ColorData(test.read())
 
-            pal_data = self.data_files[current_pal_data.palette_file].data
-            pal_anim_data = self.data_files[current_pal_data.palette_anim_file].data
-            
-            cached_object.palette_data = self.PaletteData(
-                self,
-                pal_data[:current_pal_data.palette_size] if pal_data is not None else b'',
-                pal_anim_data[:current_pal_data.palette_anim_size] if pal_anim_data is not None else b'',
-            )
+            if current_obj_data.palette_entry != "":
+                pal_data = self.data_files[current_pal_data.palette_file].data
+                pal_anim_data = self.data_files[current_pal_data.palette_anim_file].data
+
+                cached_object.palette_data = self.PaletteData(
+                    self,
+                    pal_data[:current_pal_data.palette_size] if pal_data is not None else b'',
+                    pal_anim_data[:current_pal_data.palette_anim_size] if pal_anim_data is not None else b'',
+                )
+            else:
+                cached_object.palette_data = self.PaletteData(self, b'', b'')
             
             self.cached_objects[cache_id] = cached_object
     
@@ -327,6 +333,7 @@ class ObjFile:
         self.cache_object(object_name, cache_id)
         cached_object = self.get_cached_object(cache_id)
 
+        current_obj_data = self.cellanim_files[object_name]
         obj_data = cached_object.obj_anim_data
         color_data = cached_object.color_data
         palette_data = cached_object.palette_data
@@ -341,6 +348,7 @@ class ObjFile:
             "has_color_data":    has_color_data,
             "color_data":        color_data.global_animations,
             "palette_data":      palette_data.global_animations,
+            "palette_entry":     self.palette_files_numeric.get(current_obj_data.palette_entry, None),
             "sprite_sheet_mode": obj_data.sprite_sheet_mode,
         }
     
@@ -422,16 +430,24 @@ class ObjFile:
         else:
             frame_data = cached_object.obj_anim_data.get_frame_data(anim_data.first_frame + frame_index)
 
-        if frame_data.transform != 0: transform_matrix = cached_object.obj_anim_data.get_full_transform_data(frame_data.transform - 1).matrix
-        else: transform_matrix = []
+            if frame_data.transform != 0: transform_matrix = cached_object.obj_anim_data.get_full_transform_data(frame_data.transform - 1).matrix
+            else: transform_matrix = []
 
-        if transform_matrix != []:
-            if frame_data.invert_matrix_rotation is None:
-                invert_matrix = (transform_matrix[0] < 0) != (transform_matrix[4] < 0)
+            if transform_matrix != []:
+                if frame_data.invert_matrix_rotation is None:
+                    invert_matrix = (transform_matrix[0] < 0) != (transform_matrix[4] < 0)
+                else:
+                    invert_matrix = frame_data.invert_matrix_rotation == 1
             else:
-                invert_matrix = frame_data.invert_matrix_rotation == 1
+                invert_matrix = False
+
+        if self.game_id not in GAME_IDS_THAT_USE_MATRICES:
+            if frame_data.transform != 0:
+                transform_prematrix = cached_object.obj_anim_data.get_full_transform_data(frame_data.transform - 1).prematrix
+            else:
+                transform_prematrix = [0, 1, 1, 0, 0]
         else:
-            invert_matrix = False
+            transform_prematrix = None
 
         timer_accumulate = 0
         if frame_data.anim_timer is None:
@@ -449,6 +465,7 @@ class ObjFile:
             "transform_index":    frame_data.transform - 1,
             "transform":          transform_matrix,
             "transform_inverted": invert_matrix,
+            "raw_transform":      transform_prematrix,
         }
     
     def get_sprite_part_properties(self, object_name, sprite_part_index, cache_id = None):
@@ -815,7 +832,7 @@ class ObjFile:
                 self.anim_file = self.get_num(anim_file)
                 self.graph_file = self.get_num(anim_file + 1)
                 self.color_file = ""
-                self.palette_entry = self.get_num(int.from_bytes(data.read(2), 'little'))
+                self.palette_entry = int.from_bytes(data.read(2), 'little')
                 self.hitbox_file = self.get_num(int.from_bytes(data.read(2), 'little')) # TODO: figure out how this works
 
                 flags = int.from_bytes(data.read(2), 'little')
@@ -1115,18 +1132,21 @@ class ObjFile:
                         self.y_offset               = ((attr0 & 0b0000000011111111) ^ 0x80) - 0x80
                         trans_flag                  =  (attr0 & 0b0000000100000000) != 0
                         double_size_flag            =  (attr0 & 0b0000001000000000) != 0
+                        #                               attr0 & 0b0001110000000000
                         self.depth                  =  (attr0 & 0b0010000000000000) >> 13
                         self.part_shape             =  (attr0 & 0b1100000000000000) >> 14
         
                         self.x_offset               = ((attr1 & 0b0000000111111111) ^ 0x100) - 0x100
+                        #                               attr1 & 0b0000111000000000
                         self.x_flip                 =  (attr1 & 0b0001000000000000) != 0
                         self.y_flip                 =  (attr1 & 0b0010000000000000) != 0
                         self.part_size              =  (attr1 & 0b1100000000000000) >> 14
 
                         self.graphics_buffer_offset =  (attr2 & 0b1111111111111111) << parent.graph_shift
 
-                        self.transform              =  (attr4 & 0b0000001111111111) + 1 if trans_flag else 0
-                        self.palette_shift          =  (attr4 & 0b0011110000000000) >> 10 # TODO: expose to user
+                        self.transform              =  (attr4 & 0b0000001111111111) + 1 if trans_flag else 0 # TODO urgent: expose to user
+                        self.palette_shift          =  (attr4 & 0b0011110000000000) >> 10
+                        #                               attr4 & 0b1100000000000000
 
                         # TODO urgent: make transform shit available to all the thingies that get bounding boxes based on sprite parts
 
@@ -1142,13 +1162,13 @@ class ObjFile:
                         if self.horizontal_flip != 0 and self.horizontal_flip != -1:
                             print(f"'self.horizontal_flip' IS WEIRD IN ONE OF THE SPRITE PARTS: {self.horizontal_flip}")
 
-                        self.transform = 0 # TODO urgent: find a way to make it obvious whether transform is matrix or rot/scale/translate
+                        self.transform = 0
                         self.palette_shift = 0
 
                 if game_id in GAME_IDS_THAT_USE_NORMAL_MAPS:
                     self.normal_map, = struct.unpack('<I', input_data[12:])
                 
-                if game_id in GAME_IDS_THAT_USE_ALT_COORDINATES_SYSTEM: # TODO: make these changes reflect in sprite part info so it's not dishonest to the end user
+                if game_id in GAME_IDS_THAT_USE_ALT_COORDINATES_SYSTEM: # TODO: make these changes reflect in sprite part info so it's not dishonest to the end user (and for transform too)
                     x, y = SIZING_TABLE[self.part_shape][self.part_size]
                     if not double_size_flag:
                         self.x_offset += x // 2
@@ -1187,6 +1207,8 @@ class ObjFile:
                         scale_x * numpy.cos(theta), -scale_y * numpy.sin(theta), tx,
                         scale_x * numpy.sin(theta),  scale_y * numpy.cos(theta), ty,
                     ]
+
+                    self.prematrix = [(angle / 0x10000) * 360, scale_x, scale_y, tx, ty]
     
         class Renderer:
             def __init__(self, parent, input_data, game_id):
@@ -1436,6 +1458,13 @@ class ObjFile:
     class PaletteData:
         def __init__(self, parent, input_data, input_anim_data):
             self.parent = parent
+            
+            self.animations = {}
+            self.global_animations = {}
+
+            if input_data == b'' and input_anim_data == b'':
+                self.palette_size = 0
+                return
 
             self.palette = [0x0000] * 256
             self.input_data = BytesIO(input_data)
@@ -1457,9 +1486,6 @@ class ObjFile:
                 for i, slot in enumerate(self.anim_data['slots']):
                     if slot != []:
                         slots.append(i)
-            
-            self.animations = {}
-            self.global_animations = {}
 
             for slot in slots:
                 if slot == 0:

@@ -604,20 +604,21 @@ class MainWindow(QtWidgets.QMainWindow):
         self.palette_rendering_info = QtWidgets.QWidget()
         palette_rendering_info_layout = QtWidgets.QGridLayout(self.palette_rendering_info)
 
-        self.palette_viewer = PaletteDisplay( # TODO urgent: display palette number
+        self.palette_name_display = QtWidgets.QLabel()
+        palette_rendering_info_layout.addWidget(self.palette_name_display, 0, 0, alignment = QtCore.Qt.AlignmentFlag.AlignCenter)
+
+        self.palette_viewer = PaletteDisplay(
             parent         = self,
             size           = [16, 16],
             padding_amount = 0.5,
         )
-        self.palette_viewer.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
-
-        palette_rendering_info_layout.addWidget(self.palette_viewer, 0, 0)
+        self.palette_viewer.setSizePolicy(QtWidgets.QSizePolicy.Ignored, QtWidgets.QSizePolicy.Ignored)
+        palette_rendering_info_layout.addWidget(self.palette_viewer, 1, 0)
 
         sprite_part_info_layout.addWidget(self.palette_rendering_info, 9, 0, 1, 2)
         self.palette_rendering_info.setHidden(True)
 
         # 3DS Shit:tm:
-        # only one of them needs to be given this
 
         self.pica_rendering_info = QtWidgets.QWidget()
         pica_rendering_info_layout = QtWidgets.QGridLayout(self.pica_rendering_info)
@@ -625,6 +626,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
         self.global_palette_size = 1
         self.global_palette_line_thickness = 1
+        # only one of them needs to be given this
         self.global_palette_labels[palette_total - 1].resizeEvent = self.resize_global_palette
 
         pica_rendering_info_layout.addWidget(global_palette, 0, 0)
@@ -644,8 +646,8 @@ class MainWindow(QtWidgets.QMainWindow):
 
         sprite_part_info_layout.setColumnStretch(0, 1)
         sprite_part_info_layout.setColumnStretch(1, 1)
-        sprite_part_info_layout.setRowStretch(2, 1)
-        sprite_part_info_layout.setRowStretch(9, 1)
+        sprite_part_info_layout.setRowStretch(2, 5)
+        sprite_part_info_layout.setRowStretch(9, 5)
 
 
 
@@ -1362,6 +1364,7 @@ class MainWindow(QtWidgets.QMainWindow):
             current_matrix_index   = frame_properties["transform_index"],
             current_matrix         = frame_properties["transform"],
             current_matrix_inv     = frame_properties["transform_inverted"],
+            current_prematrix      = frame_properties["raw_transform"],
         )
 
         sprite_timer, color_timer = self.obj_data.get_timers(animation_timer = True, color_timer = True)
@@ -1672,6 +1675,8 @@ class MainWindow(QtWidgets.QMainWindow):
             )
 
             self.palette_viewer.draw_palette(palette, palette_size)
+
+            self.palette_name_display.setText(object_properties["palette_entry"])
         else:
             self.palette_rendering_info.setHidden(True)
 
