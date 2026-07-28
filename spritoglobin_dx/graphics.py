@@ -18,7 +18,7 @@ SWIZZLE_TABLE = numpy.array([
 SIZING_TABLE = [[(8, 8), (16, 16), (32, 32), (64, 64)], [(16, 8), (32, 8), (32, 16), (64, 32)], [(8, 16), (8, 32), (16, 32), (32, 64)]]
 
 
-def get_sprite_graphic(obj_anim_data, graph_file, palette_data, current_anim_index, color_anim_index, current_frame_index, current_time_anim, current_time_color, color_data, bypass_shader, separate, engine_is_3d):
+def get_sprite_graphic(ca_flags, obj_anim_data, graph_file, palette_data, current_anim_index, color_anim_index, current_frame_index, current_time_anim, current_time_color, color_data, bypass_shader, separate, engine_is_3d):
     anim_data = obj_anim_data.get_anim_data(current_anim_index)
     frame_data = obj_anim_data.get_frame_data(anim_data.first_frame + current_frame_index)
 
@@ -49,6 +49,7 @@ def get_sprite_graphic(obj_anim_data, graph_file, palette_data, current_anim_ind
         full_bounding_box = transform_boundaries(matrix, min_x, max_x, min_y, max_y)
     
     data = get_sprite_part_set_graphic(
+        ca_flags               = ca_flags,
         obj_anim_data          = obj_anim_data,
         graph_file             = graph_file,
         palette_data           = palette_data,
@@ -156,7 +157,7 @@ def get_sprite_part_set_bounding_box(obj_anim_data, first_part, total_parts, giv
     
     return min_x, max_x, min_y, max_y
 
-def get_sprite_part_set_graphic(obj_anim_data, graph_file, palette_data, first_part, total_parts, engine_is_3d, bypass_shader = False, separate = False, matrix = None, given_bounding_box = None, color_data = None, current_anim_index = None, color_anim_index = None, current_time_anim = None, current_time_color = None, highlighted_part = None):
+def get_sprite_part_set_graphic(ca_flags, obj_anim_data, graph_file, palette_data, first_part, total_parts, engine_is_3d, bypass_shader = False, separate = False, matrix = None, given_bounding_box = None, color_data = None, current_anim_index = None, color_anim_index = None, current_time_anim = None, current_time_color = None, highlighted_part = None):
     min_x, max_x, min_y, max_y = get_sprite_part_set_bounding_box(
         obj_anim_data      = obj_anim_data,
         first_part         = first_part,
@@ -172,6 +173,15 @@ def get_sprite_part_set_graphic(obj_anim_data, graph_file, palette_data, first_p
     img = numpy.zeros((graph_h, graph_w, 4), dtype = numpy.uint8)
 
     offset_x, offset_y, = -min_x, max_y
+
+    skip_parts = set()
+    if ca_flags.get("has_invisible", False):
+        for i in range(total_parts):
+            part_data = obj_anim_data.get_part_data(first_part + i)
+            if part_data.graphics_buffer_offset == 0:
+                skip_parts.add(i)
+            else:
+                break
 
     sprite_part_list = []
     for i in reversed(range(total_parts)):
@@ -273,6 +283,8 @@ def get_sprite_part_set_graphic(obj_anim_data, graph_file, palette_data, first_p
                     part_matrix = list(transform_data.matrix)
                 else:
                     part_matrix = [1, 0, 0, 0, 1, 0]
+
+                if i in skip_parts: continue
 
                 sprite_part_list.append([tile.flatten(), (w, h), (x_offset, y_offset), matrix, part_matrix, renderer_data])
                 continue
