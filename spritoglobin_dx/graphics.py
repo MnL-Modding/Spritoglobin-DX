@@ -376,7 +376,7 @@ def draw_part(part_data, graph_file, obj_anim_data, palette, engine_is_3d, alpha
     if alpha_divisor is not None:
         pixels[..., 3] //= alpha_divisor
 
-    if obj_anim_data.tiled_mode:
+    if obj_anim_data.anim_flags.get("tiled_mode", True):
         tiles_x, tiles_y = img_width // 8, img_height // 8
         pixels = pixels.reshape(tiles_y, tiles_x, 8, 8, 4).transpose(0, 2, 1, 3, 4)
 

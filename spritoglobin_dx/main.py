@@ -480,7 +480,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.color_mode_info_text.setVisible(False)
 
         #: In BISDX, bounding boxes are defined in each animation and for the whole file as a 2D box around the graphic. This toggle shows and hides that.
-        self.object_bounding_box_enable = QtWidgets.QCheckBox(self.tr("Show Object Bounding Box"))
+        self.object_bounding_box_enable = QtWidgets.QCheckBox(self.tr("Show CellAnime Bounding Box"))
         self.object_bounding_box_enable.checkStateChanged.connect(self.update_sprite_viewer)
         object_info_layout.addWidget(self.object_bounding_box_enable)
 
@@ -675,15 +675,15 @@ class MainWindow(QtWidgets.QMainWindow):
         lists_and_stuff_layout.addWidget(object_info, 2, 0, 1, 2)
         lists_and_stuff_layout.addWidget(self.anim_list_box, 5, 0, 1, 2)
 
-        string = QtWidgets.QLabel(self.tr("Current Object:"))
+        string = QtWidgets.QLabel(self.tr("Current CellAnime:"))
         string.setBuddy(self.obj_list_box)
         string.setEnabled(False)
         lists_and_stuff_layout.addWidget(string, 0, 0, 1, 2)
 
-        string = QtWidgets.QLabel(self.tr("Animations:"))
-        string.setBuddy(self.anim_list_box)
-        string.setEnabled(False)
-        lists_and_stuff_layout.addWidget(string, 4, 0, 1, 1)
+        self.sequences_string = QtWidgets.QLabel()
+        self.sequences_string.setBuddy(self.anim_list_box)
+        self.sequences_string.setEnabled(False)
+        lists_and_stuff_layout.addWidget(self.sequences_string, 4, 0, 1, 1)
 
         line = QtWidgets.QFrame()
         line.setFrameShape(QtWidgets.QFrame.HLine)
@@ -768,8 +768,8 @@ class MainWindow(QtWidgets.QMainWindow):
             QtWidgets.QMessageBox.critical(
                 self,
                 #: Window title.
-                self.tr("No Object Data"),
-                self.tr("There is no currently loaded Object data! Please load an Object archive before attempting to export a file."),
+                self.tr("No CellAnime Data"),
+                self.tr("There is no currently loaded CellAnime data! Please load an Obj archive before attempting to export a file."),
             )
             return
 
@@ -1020,6 +1020,8 @@ class MainWindow(QtWidgets.QMainWindow):
             self.theme_icons_current_obj_color_anim_icon = 'blank'
             self.global_animation_icon.setPixmap(self.theme_icons[self.theme_icons_current_obj_color_anim_icon])
 
+            #: Renamed from "Animations," as "Sequence" is a term used in the game's files. Number inside the brackets is the total amount of sequences present in the CellAnime.
+            self.sequences_string.setText(self.tr("Sequences: ({0})").format(0))
             self.language_display.display_lang(None, [])
             
             self.color_anim_list_box.blockSignals(True)
@@ -1087,7 +1089,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.global_color_anim_timeline.setEnabled(object_properties["has_color_data"])
         self.color_anim_list_box.setEnabled(object_properties["has_color_data"])
 
-
+        self.sequences_string.setText(self.tr("Sequences: ({0})").format(object_properties["animation_number"]))
         for i in range(object_properties["animation_number"]):
             item = QtWidgets.QListWidgetItem(f"0x{i:02X}  ---  {i}")
             # if self.obj_data.get_animation_properties(
@@ -1515,7 +1517,7 @@ class MainWindow(QtWidgets.QMainWindow):
             buffer_offset = ("?", "?")
         
         # The "h" after each value indicates that the preceding numbers are in hexadecimal, please do not change them.
-        self.sprite_part_graphics_buffer_info_text.setText(self.tr("Graphics Buffer Data: {0}h - {1}h").format(*buffer_offset))
+        self.sprite_part_graphics_buffer_info_text.setText(self.tr("Texture Data: {0}h - {1}h").format(*buffer_offset))
 
         string = ""
 

@@ -213,7 +213,6 @@ class ObjFile:
                 cached_object.palette_data = self.PaletteData(self, b'', b'')
             
             cached_object.ca_flags = current_obj_data.ca_flags
-            print(current_obj_data.ca_flags)
             
             self.cached_objects[cache_id] = cached_object
     
@@ -907,7 +906,7 @@ class ObjFile:
                     self.ca_flags["has_invisible"]     = (flags & 0b0000001000000000) != 0 # TODO: expose this to the user
                     # unk                                (flags & 0b1111110000000000)
                     # more unknowns past here
-            
+
             else: # poor ol' lonely ml4
                 ...
         
@@ -1043,8 +1042,8 @@ class ObjFile:
                     self.anim_num, color_mode, self.renderer_num, unused, self.anim_file_length, self.graph_file_length = struct.unpack('<4B2I', self.input_data.read(0xC))
                     self.bounding_box = struct.unpack('<4h', self.input_data.read(0x8))
                     self.frame_offset, self.part_offset, self.part_trans_offset, self.full_trans_offset, self.renderer_offset, self.normal_offset, unused_offset = struct.unpack('<7I', self.input_data.read(0x1C))
-                    # header stuff from previous games
-                    self.tiled_mode = True
+
+                    self.anim_flags = {}
 
                     self.anim_size = 16
                     self.frame_size = 8
@@ -1061,8 +1060,8 @@ class ObjFile:
                 case "ML1R": # Superstar Saga DX --- added normal maps (or something lighting related)
                     self.anim_num, color_mode, self.renderer_num, unused, self.anim_file_length, self.graph_file_length = struct.unpack('<4B2I', self.input_data.read(0xC))
                     self.frame_offset, self.part_offset, self.part_trans_offset, self.full_trans_offset, self.renderer_offset, self.normal_offset = struct.unpack('<6I', self.input_data.read(0x18))
-                    # header stuff from previous games
-                    self.tiled_mode = True
+
+                    self.anim_flags = {}
 
                     self.anim_size = 8
                     self.frame_size = 8
@@ -1078,8 +1077,8 @@ class ObjFile:
                 case "ML4" | "ML5": # Dream Team & Paper Jam --- complete overhaul from the previous games
                     self.anim_num, color_mode, self.renderer_num, unused, self.anim_file_length, self.graph_file_length = struct.unpack('<4B2I', self.input_data.read(0xC))
                     self.frame_offset, self.part_offset, self.part_trans_offset, self.full_trans_offset, self.renderer_offset = struct.unpack('<5I', self.input_data.read(0x14))
-                    # header stuff from previous games
-                    self.tiled_mode = True
+
+                    self.anim_flags = {}
 
                     self.anim_size = 8
                     self.frame_size = 8
@@ -1097,16 +1096,19 @@ class ObjFile:
                     flags, part_trans_num, unk, unk, unk, unk = struct.unpack('<6H', self.input_data.read(0xC))
                     self.anim_num, frame_num, part_set_num, part_num, unk = struct.unpack('<4HI', self.input_data.read(0xC))
 
+                    self.anim_flags = {}
                     # things are laid out like this so it's easy to see what bits are used where
-                    # unk                (flags & 0b0000000000001111)
-                    self.graph_shift   = (flags & 0b0000000001110000) >> 4
-                    # unk                (flags & 0b0000001110000000)
-                    color_mode         = (flags & 0b0001110000000000) >> 10
-                    self.tiled_mode    = (flags & 0b0010000000000000) == 0 # TODO: expose this to the user
-                    bpp_flag           = (flags & 0b0100000000000000) != 0 # TODO: expose this to the user
-                    # unk                (flags & 0b1000000000000000)
+                    # unk                            (flags & 0b0000000000001111)
+                    self.anim_flags["graph_shift"] = (flags & 0b0000000001110000) >> 4
+                    # unk                            (flags & 0b0000001110000000)
+                    self.anim_flags["color_mode"]  = (flags & 0b0001110000000000) >> 10
+                    self.anim_flags["tiled_mode"]  = (flags & 0b0010000000000000) == 0 # TODO: expose this to the user
+                    self.anim_flags["bpp_flag"]    = (flags & 0b0100000000000000) != 0 # TODO: expose this to the user
+                    # unk                            (flags & 0b1000000000000000)
 
 
+                    color_mode = self.anim_flags["color_mode"]
+                    bpp_flag   = self.anim_flags["bpp_flag"]
                     self.color_mode = [{ # key, bits-per-pixel
                         1: "A3I5",
                         3: "PLTT16",
@@ -1165,7 +1167,7 @@ class ObjFile:
             else:
                 self.sprite_sheet_mode = False
     
-        class Animation:
+        class Sequence:
             def __init__(self, parent, input_data, game_id):
                 if game_id in GAME_IDS_THAT_USE_ALT_COUNTING_SCHEMES:
                     # TODO: unknowns
@@ -1174,14 +1176,14 @@ class ObjFile:
                     self.anim_length = None
                 else:
                     self.first_frame, self.total_frames, self.anim_length, unused = struct.unpack('<4H', input_data[:8])
-                    if unused != 0: print(f"THE 'unused' VALUE IN CLASS ObjFile.AnimData.Animation IS USED ACTUALLY: unused = {unused}")
+                    if unused != 0: print(f"THE 'unused' VALUE IN CLASS ObjFile.AnimData.Sequence IS USED ACTUALLY: unused = {unused}")
 
                 if game_id in GAME_IDS_THAT_USE_BOUNDING_BOXES:
                     self.bounding_box = struct.unpack('<4h', input_data[8:])
                 else:
                     self.bounding_box = None
     
-        class AnimFrame:
+        class Pattern:
             def __init__(self, parent, input_data, game_id):
                 if game_id in GAME_IDS_THAT_USE_SPLIT_PATTERN_DATA:
                     part_set_index, self.anim_duration, transform = struct.unpack('<H2B', input_data)
@@ -1218,7 +1220,7 @@ class ObjFile:
                         self.y_flip                 =  (attr1 & 0b0010000000000000) != 0
                         self.part_size              =  (attr1 & 0b1100000000000000) >> 14
 
-                        self.graphics_buffer_offset =  (attr2 & 0b1111111111111111) << parent.graph_shift
+                        self.graphics_buffer_offset =  (attr2 & 0b1111111111111111) << parent.anim_flags["graph_shift"]
 
                         # unk                           attr3 & 0b1111111111111111
 
@@ -1399,13 +1401,13 @@ class ObjFile:
             data_size = self.anim_size
             data_offset = self.anim_offset
 
-            return self.Animation(self, self.get_data_at_offset(data_size, data_offset, index_num), self.game_id)
+            return self.Sequence(self, self.get_data_at_offset(data_size, data_offset, index_num), self.game_id)
 
         def get_frame_data(self, index_num):
             data_size = self.frame_size
             data_offset = self.frame_offset
 
-            return self.AnimFrame(self, self.get_data_at_offset(data_size, data_offset, index_num), self.game_id)
+            return self.Pattern(self, self.get_data_at_offset(data_size, data_offset, index_num), self.game_id)
 
         def get_part_data(self, index_num):
             data_size = self.part_size
@@ -1591,6 +1593,7 @@ class ObjFile:
                 timer = global_timer
                 if slot is not None and timer is not None: #and global_slot != -1:
                     frame_palette = palette_anim.apply(frame_palette, self.anim_data['slots'][slot], timer, self.palette_size)
+                    print(self.anim_data['slots'][slot])
 
                 # per-anim palette animations
                 slot = self.animations.get(anim_slot, [None])[0]

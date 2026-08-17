@@ -28,7 +28,7 @@ class FileImportWindow(QtWidgets.QDialog):
         self.supported_games_list_string_format = ", ".join(supported_games[:-1]), supported_games[-1]
 
         #: Window title.
-        self.setWindowTitle(self.tr("Import Object File"))
+        self.setWindowTitle(self.tr("Import CellAnime Data"))
         self.setWindowIcon(self.current_window_icon)
 
         layout = QtWidgets.QGridLayout()
@@ -79,14 +79,14 @@ class FileImportWindow(QtWidgets.QDialog):
         QtWidgets.QMessageBox.information(
             self,
             #: Window title.
-            self.tr("Choose Object Archive"),
+            self.tr("Choose Obj Archive"),
             #: "{0}, or {1}" appears as "Paper Jam, Superstar Saga DX, or Bowser's Inside Story DX" in-program (not exact titles but you get the idea)
-            self.tr("Please choose an Object archive from {0}, or {1}.").format(*self.supported_games_list_string_format),
+            self.tr("Please choose an Obj archive from {0}, or {1}.").format(*self.supported_games_list_string_format),
         )
 
         path, _ = QtWidgets.QFileDialog.getOpenFileName(
             self,
-            self.tr("Choose Object Archive"),
+            self.tr("Choose Obj Archive"),
             path,
             "Data Archives (*.dat);;All Files (*)",
         )
@@ -121,11 +121,11 @@ class FileImportWindow(QtWidgets.QDialog):
             err = QtWidgets.QMessageBox(self.parent)
             error_strings = {
                 #: For uploading unsupported Obj files. The file had valid CA info, but all tests to check which game it's from have failed.
-                100: self.tr("The file appears to be a valid Object archive, but the data appears to be corrupted or in an unrecognized format."),
+                100: self.tr("The file appears to be a valid Obj archive, but the data appears to be corrupted or in an unrecognized format."),
                 #: For uploading files with a valid BG4 magic number, but no CA info. It's not an Obj archive.
-                101: self.tr("The file does not appear to be a valid Object archive."),
+                101: self.tr("The file does not appear to be a valid Obj archive."),
                 #: For uploading any old data file that's not recognized by any of the program's tests. Clarifies which games are supported due to the fact that the uploader might be trying to import data from a game that's planned for future support, like Dream Team (as of writing this note).
-                102: self.tr("The file does not appear to be a valid Object archive. Only Object archives from {0}, and {1} are currently supported."),
+                102: self.tr("The file does not appear to be a valid Obj archive. Only Obj archives from {0}, and {1} are currently supported."),
             }
 
             #: Window title.
