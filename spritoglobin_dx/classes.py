@@ -212,7 +212,7 @@ class ObjFile:
             else:
                 cached_object.palette_data = self.PaletteData(self, b'', b'')
             
-            cached_object.ca_flags = current_obj_data.ca_flags
+            cached_object.ca_properties = current_obj_data.ca_properties
             
             self.cached_objects[cache_id] = cached_object
     
@@ -315,7 +315,7 @@ class ObjFile:
                 if test_obj_name is None: continue
 
                 test_object = self.cellanim_files[test_obj_name]
-                if test_object.ca_flags.get("is_language_pivot", False):
+                if test_object.ca_properties.get("is_language_pivot", False):
                     obj_lang_id = i
                     break
             
@@ -563,7 +563,7 @@ class ObjFile:
         self.cache_object(object_name, cache_id)
         cached_object = self.get_cached_object(cache_id)
 
-        ca_flags      = cached_object.ca_flags
+        ca_flags      = cached_object.ca_properties
         obj_anim_data = cached_object.obj_anim_data
         graph_file    = cached_object.graph_file
         color_data    = cached_object.color_data
@@ -662,7 +662,7 @@ class ObjFile:
         self.cache_object(object_name, cache_id)
         cached_object = self.get_cached_object(cache_id)
 
-        ca_flags      = cached_object.ca_flags
+        ca_flags      = cached_object.ca_properties
         obj_anim_data = cached_object.obj_anim_data
         graph_file    = cached_object.graph_file
         palette_data  = cached_object.palette_data
@@ -881,7 +881,7 @@ class ObjFile:
         def interpret_data(self, game_id):
             data = BytesIO(self.input_data)
 
-            self.ca_flags = {}
+            self.ca_properties = {}
 
             if game_id in GAME_IDS_THAT_USE_BG4: # >= ml5
                 self.anim_file = self.get_string(data.read(4))
@@ -900,12 +900,21 @@ class ObjFile:
                 self.hitbox_file = self.get_num(int.from_bytes(data.read(2), 'little')) # TODO: figure out how this works
 
                 if game_id == "ML2":
-                    flags = int.from_bytes(data.read(2), 'little')
-                    # unk                                (flags & 0b0000000011111111)
-                    self.ca_flags["is_language_pivot"] = (flags & 0b0000000100000000) != 0
-                    self.ca_flags["has_invisible"]     = (flags & 0b0000001000000000) != 0 # TODO: expose this to the user
-                    # unk                                (flags & 0b1111110000000000)
-                    # more unknowns past here
+                    unk = int.from_bytes(data.read(1))
+
+                    if len(self.input_data) != 20:
+                        flags = int.from_bytes(data.read(1), 'little')
+                        self.ca_properties["is_language_pivot"] = (flags & 0b00000001) != 0
+                        directions                              = (flags & 0b00000110) >> 1
+                        # unk                                     (flags & 0b11111000)
+
+                        self.ca_properties["facing_directions"] = [None, 4, 8][directions] # TODO: expose this to the user
+                    else:
+                        flags = int.from_bytes(data.read(1), 'little')
+                        self.ca_properties["is_language_pivot"] = (flags & 0b00000001) != 0
+                        self.ca_properties["has_invisible"]     = (flags & 0b00000010) != 0 # TODO: expose this to the user
+                        # unk                                     (flags & 0b11111100)
+                        # more unknowns past here
 
             else: # poor ol' lonely ml4
                 ...
