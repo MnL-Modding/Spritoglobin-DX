@@ -54,8 +54,8 @@ class ObjFile:
                         test = self.AnimData(self.data_files[self.cellanim_files[file].anim_file].blz77_decompress_data(), game_key, test = True)
 
                         # if file uses sprite sheet mode, move on TODO: re-enable and finish
-                        # if test.sprite_sheet_mode:
-                        #     continue
+                        if test.sprite_sheet_mode:
+                            continue
 
                         test_value = test.anim_offset + (test.anim_num * test.anim_size)
                         test_conditional = test_value == test.frame_offset
