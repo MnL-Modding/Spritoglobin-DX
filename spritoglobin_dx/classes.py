@@ -1602,7 +1602,7 @@ class ObjFile:
                 timer = global_timer
                 if slot is not None and timer is not None: #and global_slot != -1:
                     frame_palette = palette_anim.apply(frame_palette, self.anim_data['slots'][slot], timer, self.palette_size)
-                    print(self.anim_data['slots'][slot])
+                    #print(self.anim_data['slots'][slot])
 
                 # per-anim palette animations
                 slot = self.animations.get(anim_slot, [None])[0]
