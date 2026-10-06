@@ -13,7 +13,7 @@ from PySide6 import QtWidgets, QtGui, QtMultimedia
 
 from spritoglobin_dx.classes import ObjFile, GAME_IDS_THAT_USE_BOUNDING_BOXES
 from spritoglobin_dx.constants import *
-from spritoglobin_dx.gui import ItemDelegate, InteractiveGraphicsWindow, GraphicsAnimationTimeline, ColorAnimationTimeline
+from spritoglobin_dx.gui import ItemDelegate, InteractiveGraphicsWindow, PaletteDisplay, GraphicsAnimationTimeline, ColorAnimationTimeline, LanguageDisplay
 from spritoglobin_dx.popups import FileImportWindow, GifExportWindow, ProgramThemeEditor
 from spritoglobin_dx.render import SpriteRenderer
 
@@ -438,6 +438,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.sprite_color_anim_timeline.timelineScrubbed.connect(self.set_animation_timer)
         self.sprite_color_anim_timeline.setEnabled(False)
 
+        # TODO urgent: actually display nds palette animations in the program's GUI
         self.global_color_anim_timeline = ColorAnimationTimeline(
             parent           = self,
             font             = mono_font,
@@ -471,12 +472,15 @@ class MainWindow(QtWidgets.QMainWindow):
         object_info_layout = QtWidgets.QGridLayout(object_info)
         object_info_layout.setContentsMargins(0, 0, 0, 0)
 
+        self.language_display = LanguageDisplay()
+        object_info_layout.addWidget(self.language_display)
+
         self.color_mode_info_text = QtWidgets.QLabel()
         object_info_layout.addWidget(self.color_mode_info_text)
         self.color_mode_info_text.setVisible(False)
 
         #: In BISDX, bounding boxes are defined in each animation and for the whole file as a 2D box around the graphic. This toggle shows and hides that.
-        self.object_bounding_box_enable = QtWidgets.QCheckBox(self.tr("Show Object Bounding Box"))
+        self.object_bounding_box_enable = QtWidgets.QCheckBox(self.tr("Show CellAnime Bounding Box"))
         self.object_bounding_box_enable.checkStateChanged.connect(self.update_sprite_viewer)
         object_info_layout.addWidget(self.object_bounding_box_enable)
 
@@ -594,23 +598,60 @@ class MainWindow(QtWidgets.QMainWindow):
             palette_label.setSizePolicy(QtWidgets.QSizePolicy.Ignored, palette_label.sizePolicy().verticalPolicy())
             global_palette_layout.addWidget(palette_label, i // palette_row_width, i % palette_row_width)
             self.global_palette_labels.append(palette_label)
+        
+        # Pre-3DS Shit:tm:
 
-        # only one of them needs to be given this
+        self.palette_rendering_info = QtWidgets.QWidget()
+        palette_rendering_info_layout = QtWidgets.QGridLayout(self.palette_rendering_info)
+
+        string = QtWidgets.QLabel(self.tr("Current Palette:"))
+        string.setEnabled(False)
+        palette_rendering_info_layout.addWidget(string, 0, 0, alignment = QtCore.Qt.AlignmentFlag.AlignLeft)
+
+        self.palette_name_display = QtWidgets.QLabel()
+        palette_rendering_info_layout.addWidget(self.palette_name_display, 0, 1, alignment = QtCore.Qt.AlignmentFlag.AlignRight)
+
+        self.palette_viewer = PaletteDisplay(
+            parent         = self,
+            size           = [16, 16],
+            padding_amount = 0.5,
+        )
+        self.palette_viewer.setSizePolicy(QtWidgets.QSizePolicy.Ignored, QtWidgets.QSizePolicy.Ignored)
+        palette_rendering_info_layout.addWidget(self.palette_viewer, 1, 0, 1, 2)
+
+        sprite_part_info_layout.addWidget(self.palette_rendering_info, 9, 0, 1, 2)
+        self.palette_rendering_info.setHidden(True)
+
+        # 3DS Shit:tm:
+
+        self.pica_rendering_info = QtWidgets.QWidget()
+        pica_rendering_info_layout = QtWidgets.QGridLayout(self.pica_rendering_info)
+        pica_rendering_info_layout.setContentsMargins(0, 0, 0, 0)
+
         self.global_palette_size = 1
         self.global_palette_line_thickness = 1
+        # only one of them needs to be given this
         self.global_palette_labels[palette_total - 1].resizeEvent = self.resize_global_palette
 
-        sprite_part_info_layout.addWidget(global_palette, 9, 0, 1, 2)
+        pica_rendering_info_layout.addWidget(global_palette, 0, 0)
 
         self.sprite_part_renderer_info_text = QtWidgets.QLabel()
-        sprite_part_info_layout.addWidget(self.sprite_part_renderer_info_text, 10, 0, 1, 2, alignment = QtCore.Qt.AlignmentFlag.AlignCenter)
+        pica_rendering_info_layout.addWidget(self.sprite_part_renderer_info_text, 1, 0, alignment = QtCore.Qt.AlignmentFlag.AlignCenter)
 
         string = QtWidgets.QLabel("Renderer/Lighting Data Display NYI")
         string.setEnabled(False)
-        sprite_part_info_layout.addWidget(string, 11, 0, 1, 2, alignment = QtCore.Qt.AlignmentFlag.AlignCenter)
+        pica_rendering_info_layout.addWidget(string, 2, 0, alignment = QtCore.Qt.AlignmentFlag.AlignCenter)
+
+        padding = QtWidgets.QWidget()
+        pica_rendering_info_layout.addWidget(padding, 3, 0)
+        padding.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
+
+        sprite_part_info_layout.addWidget(self.pica_rendering_info, 9, 0, 1, 2)
 
         sprite_part_info_layout.setColumnStretch(0, 1)
         sprite_part_info_layout.setColumnStretch(1, 1)
+        sprite_part_info_layout.setRowStretch(2, 5)
+        sprite_part_info_layout.setRowStretch(9, 5)
 
 
 
@@ -634,15 +675,15 @@ class MainWindow(QtWidgets.QMainWindow):
         lists_and_stuff_layout.addWidget(object_info, 2, 0, 1, 2)
         lists_and_stuff_layout.addWidget(self.anim_list_box, 5, 0, 1, 2)
 
-        string = QtWidgets.QLabel(self.tr("Current Object:"))
+        string = QtWidgets.QLabel(self.tr("Current CellAnime:"))
         string.setBuddy(self.obj_list_box)
         string.setEnabled(False)
         lists_and_stuff_layout.addWidget(string, 0, 0, 1, 2)
 
-        string = QtWidgets.QLabel(self.tr("Animations:"))
-        string.setBuddy(self.anim_list_box)
-        string.setEnabled(False)
-        lists_and_stuff_layout.addWidget(string, 4, 0, 1, 1)
+        self.sequences_string = QtWidgets.QLabel()
+        self.sequences_string.setBuddy(self.anim_list_box)
+        self.sequences_string.setEnabled(False)
+        lists_and_stuff_layout.addWidget(self.sequences_string, 4, 0, 1, 1)
 
         line = QtWidgets.QFrame()
         line.setFrameShape(QtWidgets.QFrame.HLine)
@@ -669,9 +710,9 @@ class MainWindow(QtWidgets.QMainWindow):
         main_layout.addWidget(self.timeline_tabs, 1, 0, 2, 2)
         main_layout.addWidget(self.sprite_part_info, 0, 2, 2, 1)
         main_layout.addWidget(self.sprite_sheet_info, 0, 2, 2, 1)
-        main_layout.setColumnStretch(0, 1)
-        main_layout.setColumnStretch(1, 5)
-        main_layout.setColumnStretch(2, 2)
+        main_layout.setColumnStretch(0,  2)
+        main_layout.setColumnStretch(1, 10)
+        main_layout.setColumnStretch(2,  3)
 
         try:
             dist = importlib.metadata.distribution(APP_NAME)
@@ -682,6 +723,7 @@ class MainWindow(QtWidgets.QMainWindow):
         version_number = QtWidgets.QLabel(ver_num)
         version_number.setAlignment(QtCore.Qt.AlignmentFlag.AlignBottom | QtCore.Qt.AlignmentFlag.AlignRight)
         version_number.setEnabled(False)
+        version_number.setFixedHeight(20)
         main_layout.addWidget(version_number, 2, 2)
 
         self.setCentralWidget(main)
@@ -726,8 +768,8 @@ class MainWindow(QtWidgets.QMainWindow):
             QtWidgets.QMessageBox.critical(
                 self,
                 #: Window title.
-                self.tr("No Object Data"),
-                self.tr("There is no currently loaded Object data! Please load an Object archive before attempting to export a file."),
+                self.tr("No CellAnime Data"),
+                self.tr("There is no currently loaded CellAnime data! Please load an Obj archive before attempting to export a file."),
             )
             return
 
@@ -882,7 +924,7 @@ class MainWindow(QtWidgets.QMainWindow):
             if lang_key == "None":
                 lang_key = QtCore.QLocale.system().name()
             
-            github_lang_key = LANGUAGES[lang_key]['github_lang']
+            github_lang_key = LANGUAGES[lang_key]['github_lang'] if lang_key in LANGUAGES else None
             if github_lang_key is None:
                 github_lang_key = "en"
 
@@ -977,6 +1019,10 @@ class MainWindow(QtWidgets.QMainWindow):
 
             self.theme_icons_current_obj_color_anim_icon = 'blank'
             self.global_animation_icon.setPixmap(self.theme_icons[self.theme_icons_current_obj_color_anim_icon])
+
+            #: Renamed from "Animations," as "Sequence" is a term used in the game's files. Number inside the brackets is the total amount of sequences present in the CellAnime.
+            self.sequences_string.setText(self.tr("Sequences: ({0})").format(0))
+            self.language_display.display_lang(None, [])
             
             self.color_anim_list_box.blockSignals(True)
             self.color_anim_list_box.clear()
@@ -997,14 +1043,26 @@ class MainWindow(QtWidgets.QMainWindow):
 
         object_properties = self.obj_data.get_object_properties(object_name = self.obj_list_box.currentText())
 
+        self.language_display.display_lang(*self.obj_data.get_object_language(self.obj_list_box.currentText()))
+
 
         self.color_anim_list_box.blockSignals(True)
         self.color_anim_list_box.clear()
 
         self.color_anim_list_box.addItem(self.generic_strings[None])
 
-        for i in object_properties["color_data"].keys():
-            self.color_anim_list_box.addItem(str(i))
+        if self.current_game_id in GAME_IDS_THAT_USE_PICA200_RENDERING:
+            for i in object_properties["color_data"].keys():
+                self.color_anim_list_box.addItem(str(i))
+
+        if self.current_game_id in GAME_IDS_THAT_USE_PALETTES:
+            for i in object_properties["palette_data"].keys():
+                if i == -1:
+                    #: Used when a file has a default color animation.
+                    string = self.tr("Default")
+                else:
+                    string = str(i)
+                self.color_anim_list_box.addItem(string)
         
         if self.color_timer_going:
             self.color_anim_list_box.setCurrentRow(1)
@@ -1031,7 +1089,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.global_color_anim_timeline.setEnabled(object_properties["has_color_data"])
         self.color_anim_list_box.setEnabled(object_properties["has_color_data"])
 
-
+        self.sequences_string.setText(self.tr("Sequences: ({0})").format(object_properties["animation_number"]))
         for i in range(object_properties["animation_number"]):
             item = QtWidgets.QListWidgetItem(f"0x{i:02X}  ---  {i}")
             # if self.obj_data.get_animation_properties(
@@ -1081,6 +1139,7 @@ class MainWindow(QtWidgets.QMainWindow):
             if sprite_part_set[1] == 1:
                 self.sprite_part_set_list_box.addItem(f"{sprite_part_set[0]}")
             else:
+                # TODO: add unused sprite part sets in PiT
                 self.sprite_part_set_list_box.addItem(f"{sprite_part_set[0]} - {sum(sprite_part_set) - 1}")
     
     def set_anim_list_box_palette_icons(self):
@@ -1125,18 +1184,34 @@ class MainWindow(QtWidgets.QMainWindow):
             keyframes = animation_properties["keyframes"],
         )
 
-        color_data = animation_properties["color_data"].get(self.anim_list_box.currentRow(), None)
-        if color_data is not None:
-            self.sprite_color_anim_timeline.send_color_data(
-                layer_amt      = len(color_data),
-                keyframes      = [layer_data[0] for layer_data in color_data],
-                render_channel = [layer_data[1] for layer_data in color_data],
-                is_persistant  = [layer_data[2] for layer_data in color_data],
-                length         = [layer_data[3] for layer_data in color_data],
-                parent_length  = animation_properties["length"],
-            )
-        else:
-            self.sprite_color_anim_timeline.send_color_data()
+        if self.current_game_id in GAME_IDS_THAT_USE_PICA200_RENDERING:
+            color_data = animation_properties["color_data"].get(self.anim_list_box.currentRow(), None)
+            if color_data is not None:
+                self.sprite_color_anim_timeline.send_color_data(
+                    layer_amt      = len(color_data),
+                    keyframes      = [layer_data[0] for layer_data in color_data],
+                    render_channel = [layer_data[1] for layer_data in color_data],
+                    is_persistant  = [layer_data[2] for layer_data in color_data],
+                    length         = [layer_data[3] for layer_data in color_data],
+                    parent_length  = animation_properties["length"],
+                )
+            else:
+                self.sprite_color_anim_timeline.send_color_data()
+
+        if self.current_game_id in GAME_IDS_THAT_USE_PALETTES:
+            if animation_properties["palette_data"] is None:
+                self.sprite_color_anim_timeline.send_palette_data()
+            
+            else:
+                color_data = animation_properties["palette_data"].get(self.anim_list_box.currentRow(), None)
+                if color_data is not None:
+                    self.sprite_color_anim_timeline.send_palette_data( # TODO urgent: do this shit
+                        layer_amt      = 1,
+                        keyframes      = None,
+                        length         = None,
+                    )
+                else:
+                    self.sprite_color_anim_timeline.send_palette_data()
 
         if animation_properties["has_color_data"]:
             self.theme_icons_current_single_color_anim_timeline_icon = 'palette'
@@ -1163,22 +1238,41 @@ class MainWindow(QtWidgets.QMainWindow):
             animation_index = self.anim_list_box.currentRow(),
         )
 
-        color_anim_index = -1
+        color_anim_index = None
         if self.color_anim_list_box.currentRow() != 0 and object_properties["has_color_data"] and self.color_anim_list_box.currentItem() is not None:
-            color_anim_index = int(self.color_anim_list_box.currentItem().text())
-        
-        color_data = object_properties["color_data"].get(color_anim_index, None)
-        if color_data is not None:
-            self.global_color_anim_timeline.send_color_data(
-                layer_amt      = len(color_data),
-                keyframes      = [layer_data[0] for layer_data in color_data],
-                render_channel = [layer_data[1] for layer_data in color_data],
-                is_persistant  = [layer_data[2] for layer_data in color_data],
-                length         = [layer_data[3] for layer_data in color_data],
-                parent_length  = animation_properties["length"],
-            )
-        else:
-            self.global_color_anim_timeline.send_color_data()
+            try:
+                color_anim_index = int(self.color_anim_list_box.currentItem().text())
+            except ValueError:
+                color_anim_index = -1
+
+        if self.current_game_id in GAME_IDS_THAT_USE_PICA200_RENDERING:
+            color_data = object_properties["color_data"].get(color_anim_index, None)
+            if color_data is not None:
+                self.global_color_anim_timeline.send_color_data(
+                    layer_amt      = len(color_data),
+                    keyframes      = [layer_data[0] for layer_data in color_data],
+                    render_channel = [layer_data[1] for layer_data in color_data],
+                    is_persistant  = [layer_data[2] for layer_data in color_data],
+                    length         = [layer_data[3] for layer_data in color_data],
+                    parent_length  = animation_properties["length"],
+                )
+            else:
+                self.global_color_anim_timeline.send_color_data()
+
+        if self.current_game_id in GAME_IDS_THAT_USE_PALETTES:
+            if object_properties["palette_data"] is None:
+                self.global_color_anim_timeline.send_palette_data()
+            
+            else:
+                color_data = object_properties["palette_data"].get(color_anim_index, None)
+                if color_data is not None:
+                    self.global_color_anim_timeline.send_palette_data( # TODO urgent: do this shit
+                        layer_amt      = 1,
+                        keyframes      = None,
+                        length         = None,
+                    )
+                else:
+                    self.global_color_anim_timeline.send_palette_data()
         
         if reset_timer:
             self.obj_data.set_timers(0, color_timer = True)
@@ -1205,9 +1299,12 @@ class MainWindow(QtWidgets.QMainWindow):
         
         object_properties = self.obj_data.get_object_properties(object_name = self.obj_list_box.currentText())
 
-        color_anim_index = -1
+        color_anim_index = None
         if self.color_anim_list_box.currentRow() != 0 and object_properties["has_color_data"] and self.color_anim_list_box.currentItem() is not None:
-            color_anim_index = int(self.color_anim_list_box.currentItem().text())
+            try:
+                color_anim_index = int(self.color_anim_list_box.currentItem().text())
+            except ValueError:
+                color_anim_index = -1
 
         bounding_boxes = []
         if self.sprite_anim_timeline.bounding_box_toggle.isChecked():
@@ -1252,7 +1349,7 @@ class MainWindow(QtWidgets.QMainWindow):
                     (1, 1, 1), # scale
                 ]
 
-                palette = self.obj_data.get_object_palette(
+                palette = self.obj_data.get_object_pica200_palette(
                     object_name      = self.obj_list_box.currentText(),
                     animation_index  = self.anim_list_box.currentRow(),
                     color_anim_index = color_anim_index,
@@ -1273,6 +1370,7 @@ class MainWindow(QtWidgets.QMainWindow):
             current_matrix_index   = frame_properties["transform_index"],
             current_matrix         = frame_properties["transform"],
             current_matrix_inv     = frame_properties["transform_inverted"],
+            current_prematrix      = frame_properties["raw_transform"],
         )
 
         sprite_timer, color_timer = self.obj_data.get_timers(animation_timer = True, color_timer = True)
@@ -1336,6 +1434,18 @@ class MainWindow(QtWidgets.QMainWindow):
                 object_name       = self.obj_list_box.currentText(), 
                 sprite_part_index = sprite_part_set[0] + self.sprite_part_list_box.currentIndex() - 1,
             )
+        
+            if self.current_game_id in GAME_IDS_THAT_USE_PALETTES and highlighted_part is not None:
+                object_properties = self.obj_data.get_object_properties(object_name = self.obj_list_box.currentText())
+                self.palette_viewer.set_highlighted_area(
+                    color_mode         = object_properties["color_mode"][0],
+                    palette_shift      = sprite_part_properties["palette_shift"],
+                    highlighted_colors = self.obj_data.get_sprite_part_palette_indices(
+                        object_name       = self.obj_list_box.currentText(),
+                        sprite_part_index = sprite_part_set[0] + self.sprite_part_list_box.currentIndex() - 1,
+                    )
+                )
+
             (x, y), (w, h) = sprite_part_properties["offset"], sprite_part_properties["size"]
             bounding_boxes.append([
                 x - (w // 2),
@@ -1343,6 +1453,11 @@ class MainWindow(QtWidgets.QMainWindow):
                 y - (h // 2),
                 y + (h // 2),
             ])
+        elif self.current_game_id in GAME_IDS_THAT_USE_PALETTES:
+            self.palette_viewer.set_highlighted_area(
+                color_mode    = None,
+                palette_shift = 0,
+            )
         self.sprite_part_viewer.bounding_boxes = bounding_boxes
 
 
@@ -1387,7 +1502,7 @@ class MainWindow(QtWidgets.QMainWindow):
         if sprite_part_properties is not None:
             self.sprite_part_graphics_buffer_info_text.setEnabled(True)
 
-            buf_off = sprite_part_properties["buffer_offset"] * 128
+            buf_off = sprite_part_properties["buffer_offset"]
             buf_size = (sprite_part_properties["size"][0] * sprite_part_properties["size"][1])
             buf_size *= object_properties["color_mode"][1] / 8
             buf_size = round(buf_size)
@@ -1402,7 +1517,7 @@ class MainWindow(QtWidgets.QMainWindow):
             buffer_offset = ("?", "?")
         
         # The "h" after each value indicates that the preceding numbers are in hexadecimal, please do not change them.
-        self.sprite_part_graphics_buffer_info_text.setText(self.tr("Graphics Buffer Data: {0}h - {1}h").format(*buffer_offset))
+        self.sprite_part_graphics_buffer_info_text.setText(self.tr("Texture Data: {0}h - {1}h").format(*buffer_offset))
 
         string = ""
 
@@ -1474,16 +1589,19 @@ class MainWindow(QtWidgets.QMainWindow):
         self.update_renderer_data()
     
     def update_global_palette(self):
-        if self.obj_data is not None and self.obj_list_box.currentText() != '':
+        if self.obj_data is not None and self.obj_list_box.currentText() != '' and self.current_game_id in GAME_IDS_THAT_USE_PICA200_RENDERING:
             object_name = self.obj_list_box.currentText()
 
             object_properties = self.obj_data.get_object_properties(object_name = object_name)
 
-            color_anim_index = -1
+            color_anim_index = None
             if self.color_anim_list_box.currentRow() != 0 and object_properties["has_color_data"] and self.color_anim_list_box.currentItem() is not None:
-                color_anim_index = int(self.color_anim_list_box.currentItem().text())
+                try:
+                    color_anim_index = int(self.color_anim_list_box.currentItem().text())
+                except ValueError:
+                    color_anim_index = -1
 
-            palette = self.obj_data.get_object_palette(
+            palette = self.obj_data.get_object_pica200_palette(
                 object_name      = object_name,
                 animation_index  = self.anim_list_box.currentRow(),
                 color_anim_index = color_anim_index,
@@ -1495,49 +1613,78 @@ class MainWindow(QtWidgets.QMainWindow):
         self.update_renderer_data()
 
     def update_renderer_data(self):
-        size = self.global_palette_size
-        thickness = self.global_palette_line_thickness
-        color_label_base = QtGui.QPixmap((size * 2) + (thickness * 4), size + (thickness * 4))
+        if self.current_game_id in GAME_IDS_THAT_USE_PICA200_RENDERING or self.current_game_id is None:
+            self.pica_rendering_info.setHidden(False)
+            size = self.global_palette_size
+            thickness = self.global_palette_line_thickness
+            color_label_base = QtGui.QPixmap((size * 2) + (thickness * 4), size + (thickness * 4))
 
-        color_label_base.fill(QtCore.Qt.transparent)
-        qp = QtGui.QPainter(color_label_base)
-
-        pen = QtGui.QPen()
-        pen.setWidth(thickness)
-        pen.setJoinStyle(QtCore.Qt.MiterJoin)
-        qp.setPen(pen)
-
-        pen.setColor(QtGui.QColor(THEME_COLORS["P_COLOR_0"]))
-        qp.setPen(pen)
-        qp.drawRect(thickness // 2, thickness // 2, (size * 2) + ((thickness * 4) - thickness), size + ((thickness * 4) - thickness))
-
-        pen.setColor(QtGui.QColor(THEME_COLORS["LIGHT"]))
-        qp.setPen(pen)
-        qp.drawRect(thickness + (thickness // 2), thickness + (thickness // 2), (size * 2) + ((thickness * 4) - (thickness * 3)), size + ((thickness * 4) - (thickness * 3)))
-
-        qp.end()
-
-        for i, label in enumerate(self.global_palette_labels):
-            r, g, b, a = self.global_palette_data[i]
-
+            color_label_base.fill(QtCore.Qt.transparent)
             qp = QtGui.QPainter(color_label_base)
-            qp.fillRect(
-                thickness * 2,
-                thickness * 2,
-                (color_label_base.width() // 2) - (thickness * 2),
-                color_label_base.height() - (thickness * 4),
-                QtGui.QBrush(QtGui.QColor(r, g, b))
-            )
-            qp.fillRect(
-                color_label_base.width() // 2,
-                thickness * 2,
-                (color_label_base.width() // 2) - (thickness * 2),
-                color_label_base.height() - (thickness * 4),
-                QtGui.QBrush(QtGui.QColor(a, a, a))
-            )
+
+            pen = QtGui.QPen()
+            pen.setWidth(thickness)
+            pen.setJoinStyle(QtCore.Qt.MiterJoin)
+            qp.setPen(pen)
+
+            pen.setColor(QtGui.QColor(THEME_COLORS["P_COLOR_0"]))
+            qp.setPen(pen)
+            qp.drawRect(thickness // 2, thickness // 2, (size * 2) + ((thickness * 4) - thickness), size + ((thickness * 4) - thickness))
+
+            pen.setColor(QtGui.QColor(THEME_COLORS["LIGHT"]))
+            qp.setPen(pen)
+            qp.drawRect(thickness + (thickness // 2), thickness + (thickness // 2), (size * 2) + ((thickness * 4) - (thickness * 3)), size + ((thickness * 4) - (thickness * 3)))
+
             qp.end()
 
-            label.setPixmap(color_label_base)
+            for i, label in enumerate(self.global_palette_labels):
+                r, g, b, a = self.global_palette_data[i]
+
+                qp = QtGui.QPainter(color_label_base)
+                qp.fillRect(
+                    thickness * 2,
+                    thickness * 2,
+                    (color_label_base.width() // 2) - (thickness * 2),
+                    color_label_base.height() - (thickness * 4),
+                    QtGui.QBrush(QtGui.QColor(r, g, b))
+                )
+                qp.fillRect(
+                    color_label_base.width() // 2,
+                    thickness * 2,
+                    (color_label_base.width() // 2) - (thickness * 2),
+                    color_label_base.height() - (thickness * 4),
+                    QtGui.QBrush(QtGui.QColor(a, a, a))
+                )
+                qp.end()
+
+                label.setPixmap(color_label_base)
+        else:
+            self.pica_rendering_info.setHidden(True)
+        
+        if self.current_game_id in GAME_IDS_THAT_USE_PALETTES:
+            self.palette_rendering_info.setHidden(False)
+
+            object_properties = self.obj_data.get_object_properties(object_name = self.obj_list_box.currentText())
+
+            color_anim_index = None
+            if self.color_anim_list_box.currentRow() != 0 and object_properties["has_color_data"] and self.color_anim_list_box.currentItem() is not None:
+                try:
+                    color_anim_index = int(self.color_anim_list_box.currentItem().text())
+                except ValueError:
+                    color_anim_index = -1
+
+            palette, palette_size = self.obj_data.get_object_palette(
+                object_name        = self.obj_list_box.currentText(),
+                color_anim_index   = color_anim_index,
+                current_anim_index = self.anim_list_box.currentRow(),
+                return_size        = True,
+            )
+
+            self.palette_viewer.draw_palette(palette, palette_size)
+
+            self.palette_name_display.setText(object_properties["palette_entry"])
+        else:
+            self.palette_rendering_info.setHidden(True)
 
 
     def tick_timer(self):
@@ -1692,6 +1839,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.sprite_viewer.background_color = background_color
         self.sprite_part_viewer.background_color = background_color
         self.sprite_part_tile_viewer.background_color = background_color
+        self.palette_viewer.background_color = background_color
 
         tabs_palette = QtWidgets.QTabWidget().palette()
         if dark: tabs_palette.setColor(QtGui.QPalette.ColorRole.Button, QtGui.QPalette().color(QtGui.QPalette.ColorRole.Dark))
@@ -1721,6 +1869,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.sprite_viewer.update_program_theme()
         self.sprite_part_viewer.update_program_theme()
         self.sprite_part_tile_viewer.update_program_theme()
+        self.palette_viewer.update_program_theme()
 
         self.sprite_anim_timeline.update_program_theme()
         self.sprite_color_anim_timeline.update_program_theme()

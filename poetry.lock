@@ -225,6 +225,22 @@ files = [
 all = ["flake8 (>=7.1.1)", "mypy (>=1.11.2)", "pytest (>=8.3.2)", "ruff (>=0.6.2)"]
 
 [[package]]
+name = "mnllib"
+version = "0.2.3"
+description = "Python library for the Mario & Luigi games."
+optional = false
+python-versions = "<4.0,>=3.12"
+groups = ["main"]
+files = [
+    {file = "mnllib-0.2.3-py3-none-any.whl", hash = "sha256:ed43bdd51fe8b8e05b93c42eb15ef74a631253205cb6c4b2d525f3b9df149d6e"},
+    {file = "mnllib-0.2.3.tar.gz", hash = "sha256:c256b604b0d5d803270b10358858d47daa956fcba6ee21ffc6381130c46007e5"},
+]
+
+[package.dependencies]
+pymsbmnl = ">=1.1.0,<2.0.0"
+structured-classes = ">=3.1.0,<4.0.0"
+
+[[package]]
 name = "moderngl"
 version = "5.12.0"
 description = "ModernGL: High performance rendering for Python 3"
@@ -551,6 +567,18 @@ tests = ["check-manifest", "coverage (>=7.4.2)", "defusedxml", "markdown2", "ole
 xmp = ["defusedxml"]
 
 [[package]]
+name = "pymsbmnl"
+version = "1.1.0"
+description = "Python library for Nintendo's MSBT & MSBF formats (Mario & Luigi Modding fork)."
+optional = false
+python-versions = "<4.0,>=3.10"
+groups = ["main"]
+files = [
+    {file = "pymsbmnl-1.1.0-py3-none-any.whl", hash = "sha256:15806adf1214131e0ca6d0d8b2e214a0425885a977e124dcb51256831ceed012"},
+    {file = "pymsbmnl-1.1.0.tar.gz", hash = "sha256:04492e663b820b6ea12d920b4948a8a0f39deafb65e6ee257b9feb6893894795"},
+]
+
+[[package]]
 name = "pyside6"
 version = "6.10.2"
 description = "Python bindings for the Qt cross-platform application and UI framework"
@@ -642,6 +670,18 @@ files = [
     {file = "shiboken6-6.10.2-cp39-abi3-manylinux_2_39_aarch64.whl", hash = "sha256:f74d3ed1f92658077d0630c39e694eb043aeb1d830a5d275176c45d07147427f"},
     {file = "shiboken6-6.10.2-cp39-abi3-win_amd64.whl", hash = "sha256:10f3c8c5e1b8bee779346f21c10dbc14cff068f0b0b4e62420c82a6bf36ac2e7"},
     {file = "shiboken6-6.10.2-cp39-abi3-win_arm64.whl", hash = "sha256:20c671645d70835af212ee05df60361d734c5305edb2746e9875c6a31283f963"},
+]
+
+[[package]]
+name = "structured-classes"
+version = "3.1.0"
+description = "Annotated classes that pack and unpack C structures."
+optional = false
+python-versions = ">=3.9"
+groups = ["main"]
+files = [
+    {file = "structured_classes-3.1.0-py3-none-any.whl", hash = "sha256:95b5480cb7807ce295594e95f29dfd7e814f0214d2b17d8c47889d5642108a46"},
+    {file = "structured_classes-3.1.0.tar.gz", hash = "sha256:bd63722f505afc319230aee162bba61ce13d5ab5647ed05d5296385a04190628"},
 ]
 
 [[package]]
@@ -777,4 +817,4 @@ cffi = ["cffi (>=1.17,<2.0) ; platform_python_implementation != \"PyPy\" and pyt
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.12,<3.15"
-content-hash = "4df8af33eb6312e6a180a644260028b0f2e443abc4c4c9163c5fe5a6a2f43701"
+content-hash = "2326f09301658670a504c87bf67a6d8c3c077eaf90f63061a7154f9817e2397c"

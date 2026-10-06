@@ -18,7 +18,7 @@ SWIZZLE_TABLE = numpy.array([
 SIZING_TABLE = [[(8, 8), (16, 16), (32, 32), (64, 64)], [(16, 8), (32, 8), (32, 16), (64, 32)], [(8, 16), (8, 32), (16, 32), (32, 64)]]
 
 
-def get_sprite_graphic(obj_anim_data, graph_file, current_anim_index, color_anim_index, current_frame_index, current_time_anim, current_time_color, color_data, bypass_shader, separate):
+def get_sprite_graphic(ca_flags, obj_anim_data, graph_file, palette_data, current_anim_index, color_anim_index, current_frame_index, current_time_anim, current_time_color, color_data, bypass_shader, separate, engine_is_3d):
     anim_data = obj_anim_data.get_anim_data(current_anim_index)
     frame_data = obj_anim_data.get_frame_data(anim_data.first_frame + current_frame_index)
 
@@ -45,37 +45,17 @@ def get_sprite_graphic(obj_anim_data, graph_file, current_anim_index, color_anim
             total_parts        = frame_data.total_parts,
             given_bounding_box = None,
         )
-        
-        if matrix is not None:
-            corners = [
-                (min_x, min_y),
-                (max_x, min_y),
-                (min_x, max_y),
-                (max_x, max_y)
-            ]
 
-            trans_x, trans_y = [], []
-            for x, y in corners:
-                # have to invert stuff manually here since +Y is up for bounding boxes but down for matrices
-                new_x =  matrix[0] * x - matrix[1] * y + matrix[2]
-                new_y = -matrix[3] * x + matrix[4] * y - matrix[5]
-                trans_x.append(new_x)
-                trans_y.append(new_y)
-
-            full_bounding_box = (
-                numpy.floor(min(trans_x)).astype(int),
-                numpy.ceil(max(trans_x)).astype(int),
-                numpy.floor(min(trans_y)).astype(int),
-                numpy.ceil(max(trans_y)).astype(int),
-            )
-        else:
-            full_bounding_box = min_x, max_x, min_y, max_y
+        full_bounding_box = transform_boundaries(matrix, min_x, max_x, min_y, max_y)
     
     data = get_sprite_part_set_graphic(
+        ca_flags               = ca_flags,
         obj_anim_data          = obj_anim_data,
         graph_file             = graph_file,
+        palette_data           = palette_data,
         first_part             = frame_data.first_part,
         total_parts            = frame_data.total_parts,
+        engine_is_3d           = engine_is_3d,
         bypass_shader          = bypass_shader,
         separate               = separate,
         matrix                 = matrix,
@@ -117,7 +97,7 @@ def get_sprite_graphic(obj_anim_data, graph_file, current_anim_index, color_anim
 
     return img, (graph_w, graph_h), (offset_x, offset_y)
 
-def get_sprite_part_set_bounding_box(obj_anim_data, first_part, total_parts, given_bounding_box = None):
+def get_sprite_part_set_bounding_box(obj_anim_data, first_part, total_parts, given_bounding_box = None, bypass_part_matrix = True):
     # TODO: sprite sheet shit
     min_x, max_x, min_y, max_y = 0, 0, 0, 0
     for i in range(total_parts):
@@ -125,8 +105,8 @@ def get_sprite_part_set_bounding_box(obj_anim_data, first_part, total_parts, giv
 
         # check for sprite sheet mode
         if not obj_anim_data.sprite_sheet_mode:
-            part_size = (part_data.oam_data) & 0b11
-            part_shape = (part_data.oam_data >> 2) & 0b11
+            part_size = part_data.part_size
+            part_shape = part_data.part_shape
             w, h = SIZING_TABLE[part_shape][part_size]
             x, y = part_data.x_offset, part_data.y_offset
 
@@ -134,6 +114,14 @@ def get_sprite_part_set_bounding_box(obj_anim_data, first_part, total_parts, giv
             part_max_x = x + (w // 2)
             part_min_y = y - (h // 2)
             part_max_y = y + (h // 2)
+
+            if part_data.transform != 0 and not bypass_part_matrix:
+                transform_data = obj_anim_data.get_part_transform_data(part_data.transform - 1)
+                matrix = list(transform_data.matrix)
+            else:
+                matrix = None
+
+            part_min_x, part_max_x, part_min_y, part_max_y = transform_boundaries(matrix, part_min_x, part_max_x, part_min_y, part_max_y)
 
             min_x, max_x = min(min_x, part_min_x), max(max_x, part_max_x)
             min_y, max_y = min(min_y, part_min_y), max(max_y, part_max_y)
@@ -146,6 +134,14 @@ def get_sprite_part_set_bounding_box(obj_anim_data, first_part, total_parts, giv
                 part_max_x = x + w
                 part_min_y = y
                 part_max_y = y + h
+
+                if segment.transform != 0 and not bypass_part_matrix:
+                    transform_data = obj_anim_data.get_part_transform_data(segment.transform - 1)
+                    matrix = list(transform_data.matrix)
+                else:
+                    matrix = None
+
+                part_min_x, part_max_x, part_min_y, part_max_y = transform_boundaries(matrix, part_min_x, part_max_x, part_min_y, part_max_y)
 
                 min_x, max_x = min(min_x, part_min_x), max(max_x, part_max_x)
                 min_y, max_y = min(min_y, part_min_y), max(max_y, part_max_y)
@@ -161,7 +157,7 @@ def get_sprite_part_set_bounding_box(obj_anim_data, first_part, total_parts, giv
     
     return min_x, max_x, min_y, max_y
 
-def get_sprite_part_set_graphic(obj_anim_data, graph_file, first_part, total_parts, bypass_shader = False, separate = False, matrix = None, given_bounding_box = None, color_data = None, current_anim_index = None, color_anim_index = None, current_time_anim = None, current_time_color = None, highlighted_part = None):
+def get_sprite_part_set_graphic(ca_flags, obj_anim_data, graph_file, palette_data, first_part, total_parts, engine_is_3d, bypass_shader = False, separate = False, matrix = None, given_bounding_box = None, color_data = None, current_anim_index = None, color_anim_index = None, current_time_anim = None, current_time_color = None, highlighted_part = None):
     min_x, max_x, min_y, max_y = get_sprite_part_set_bounding_box(
         obj_anim_data      = obj_anim_data,
         first_part         = first_part,
@@ -174,9 +170,18 @@ def get_sprite_part_set_graphic(obj_anim_data, graph_file, first_part, total_par
     if (graph_w < 1 or graph_h < 1) and not separate:
         return None, (0, 0), (0, 0)
     
-    img = numpy.zeros((graph_h, graph_w, 4), dtype=numpy.uint8)
+    img = numpy.zeros((graph_h, graph_w, 4), dtype = numpy.uint8)
 
     offset_x, offset_y, = -min_x, max_y
+
+    skip_parts = set()
+    if ca_flags.get("has_invisible", False):
+        for i in range(total_parts):
+            part_data = obj_anim_data.get_part_data(first_part + i)
+            if part_data.graphics_buffer_offset == 0:
+                skip_parts.add(i)
+            else:
+                break
 
     sprite_part_list = []
     for i in reversed(range(total_parts)):
@@ -194,6 +199,13 @@ def get_sprite_part_set_graphic(obj_anim_data, graph_file, first_part, total_par
             else:
                 renderer_data = None
                 # renderer_data = obj_anim_data.get_renderer_data(part_data.renderer)
+            
+            palette = palette_data.get_palette(
+                global_timer = current_time_color,
+                anim_timer   = current_time_anim,
+                global_slot  = color_anim_index,
+                anim_slot    = current_anim_index,
+            )
 
             alpha_divisor = None
             if highlighted_part is not None and highlighted_part != i:
@@ -205,6 +217,8 @@ def get_sprite_part_set_graphic(obj_anim_data, graph_file, first_part, total_par
                     part_data     = part_data,
                     graph_file    = graph_file,
                     obj_anim_data = obj_anim_data,
+                    palette       = palette,
+                    engine_is_3d  = engine_is_3d,
                     alpha_divisor = alpha_divisor,
                 )
 
@@ -221,6 +235,8 @@ def get_sprite_part_set_graphic(obj_anim_data, graph_file, first_part, total_par
                     graph_file    = graph_file,
                     obj_anim_data = obj_anim_data,
                     sheet_size    = part_data_master.sheet_size,
+                    palette       = palette,
+                    engine_is_3d  = engine_is_3d,
                     alpha_divisor = alpha_divisor,
                 )
 
@@ -262,7 +278,15 @@ def get_sprite_part_set_graphic(obj_anim_data, graph_file, first_part, total_par
                 if matrix is None:
                     matrix = [1, 0, 0, 0, 1, 0]
 
-                sprite_part_list.append([tile.flatten(), (w, h), (x_offset, y_offset), matrix, renderer_data])
+                if part_data.transform != 0:
+                    transform_data = obj_anim_data.get_part_transform_data(part_data.transform - 1)
+                    part_matrix = list(transform_data.matrix)
+                else:
+                    part_matrix = [1, 0, 0, 0, 1, 0]
+
+                if i in skip_parts: continue
+
+                sprite_part_list.append([tile.flatten(), (w, h), (x_offset, y_offset), matrix, part_matrix, renderer_data])
                 continue
 
             target_area = img[y:y+h, x:x+w].astype(numpy.float32)
@@ -305,9 +329,37 @@ def get_sprite_part_set_graphic(obj_anim_data, graph_file, first_part, total_par
     
     return img.tobytes(), (graph_w, graph_h), (offset_x, offset_y)
 
-def draw_part(part_data, graph_file, obj_anim_data, alpha_divisor = None, ignore_flips = False):
-    part_size = (part_data.oam_data) & 0b11
-    part_shape = (part_data.oam_data >> 2) & 0b11
+def transform_boundaries(matrix, min_x, max_x, min_y, max_y):
+    if matrix is not None:
+        corners = [
+            (min_x, min_y),
+            (max_x, min_y),
+            (min_x, max_y),
+            (max_x, max_y)
+        ]
+
+        trans_x, trans_y = [], []
+        for x, y in corners:
+            # have to invert stuff manually here since +Y is up for bounding boxes but down for matrices
+            new_x =  matrix[0] * x - matrix[1] * y + matrix[2]
+            new_y = -matrix[3] * x + matrix[4] * y - matrix[5]
+            trans_x.append(new_x)
+            trans_y.append(new_y)
+
+        full_bounding_box = (
+            numpy.floor(min(trans_x)).astype(int),
+            numpy.ceil(max(trans_x)).astype(int),
+            numpy.floor(min(trans_y)).astype(int),
+            numpy.ceil(max(trans_y)).astype(int),
+        )
+    else:
+        full_bounding_box = min_x, max_x, min_y, max_y
+    
+    return full_bounding_box
+
+def draw_part(part_data, graph_file, obj_anim_data, palette, engine_is_3d, alpha_divisor = None, ignore_flips = False):
+    part_size = part_data.part_size
+    part_shape = part_data.part_shape
     img_width, img_height = SIZING_TABLE[part_shape][part_size]
     color_mode = obj_anim_data.color_mode
 
@@ -315,29 +367,28 @@ def draw_part(part_data, graph_file, obj_anim_data, alpha_divisor = None, ignore
     tile_offsets = numpy.arange(tile_amt)[:, None] * 64
     swizzle = (tile_offsets + SWIZZLE_TABLE).flatten()
     
-    start = 128 * part_data.graphics_buffer_offset
+    start = part_data.graphics_buffer_offset
     size = ((img_width * img_height) * color_mode[1]) // 8
     raw = numpy.frombuffer(graph_file[start:start + size], dtype = numpy.uint8)
 
-    pixels = get_pixels_from_buffer(raw, color_mode, swizzle)
-    
-    tiles_x, tiles_y = img_width // 8, img_height // 8
-    
+    pixels = get_pixels_from_buffer(raw, palette, part_data.palette_shift, color_mode, swizzle, engine_is_3d)
+
     if alpha_divisor is not None:
         pixels[..., 3] //= alpha_divisor
-    
-    out = pixels.reshape(tiles_y, tiles_x, 8, 8, 4).transpose(0, 2, 1, 3, 4)
-    out = out.reshape(img_height, img_width, 4)
+
+    if obj_anim_data.anim_flags.get("tiled_mode", True):
+        tiles_x, tiles_y = img_width // 8, img_height // 8
+        pixels = pixels.reshape(tiles_y, tiles_x, 8, 8, 4).transpose(0, 2, 1, 3, 4)
+
+    out = pixels.reshape(img_height, img_width, 4)
 
     if not ignore_flips:
-        if part_data.oam_data & 0x100 != 0:
-            out = cv2.flip(out, 1)
-        if part_data.oam_data & 0x200 != 0:
-            out = cv2.flip(out, 0)
+        if part_data.x_flip: out = cv2.flip(out, 1)
+        if part_data.y_flip: out = cv2.flip(out, 0)
     
     return out, (img_width, img_height)
 
-def draw_segment(segment_data, graph_file, obj_anim_data, sheet_size, alpha_divisor = None, ignore_flips = False):
+def draw_segment(segment_data, graph_file, obj_anim_data, sheet_size, palette, engine_is_3d, alpha_divisor = None, ignore_flips = False):
     img_width, img_height = sheet_size
     color_mode = obj_anim_data.color_mode
 
@@ -349,7 +400,7 @@ def draw_segment(segment_data, graph_file, obj_anim_data, sheet_size, alpha_divi
     size = ((img_width * img_height) * color_mode[1]) // 8
     raw = numpy.frombuffer(graph_file[start:start + size], dtype = numpy.uint8)
 
-    pixels = get_pixels_from_buffer(raw, color_mode, swizzle)
+    pixels = get_pixels_from_buffer(raw, palette, 0, color_mode, swizzle, engine_is_3d)
     
     tiles_x, tiles_y = img_width // 8, img_height // 8
     
@@ -366,14 +417,14 @@ def draw_segment(segment_data, graph_file, obj_anim_data, sheet_size, alpha_divi
     out = out[y:y+h, x:x+w]
 
     # if not ignore_flips:
-    #     if part_data.oam_data & 0x100 != 0:
+    #     if part_data.x_flip:
     #         out = cv2.flip(out, 1)
-    #     if part_data.oam_data & 0x200 != 0:
+    #     if part_data.y_flip:
     #         out = cv2.flip(out, 0)
     
     return out, (img_width, img_height)
 
-def get_pixels_from_buffer(raw, color_mode, swizzle):
+def get_pixels_from_buffer(raw, palette, palette_shift, color_mode, swizzle, engine_is_3d):
     # for more info:
     # https://problemkaputt.de/gbatek-3ds-gpu-texture-formats.htm
 
@@ -442,7 +493,7 @@ def get_pixels_from_buffer(raw, color_mode, swizzle):
             a = ((raw_pixel >>  0) & 0x0F) << 4 | ((raw_pixel >>  0) & 0x0F)
         case "L4":
             raw = raw.view(numpy.uint8)
-            pixels = numpy.empty(raw.size * 2, dtype=numpy.uint8)
+            pixels = numpy.empty(raw.size * 2, dtype = numpy.uint8)
             pixels[0::2] = raw & 0x0F
             pixels[1::2] = raw >> 4
             raw_pixel = pixels[swizzle]
@@ -452,7 +503,7 @@ def get_pixels_from_buffer(raw, color_mode, swizzle):
             a = raw_pixel | 0xFF
         case "A4":
             raw = raw.view(numpy.uint8)
-            pixels = numpy.empty(raw.size * 2, dtype=numpy.uint8)
+            pixels = numpy.empty(raw.size * 2, dtype = numpy.uint8)
             pixels[0::2] = raw & 0x0F
             pixels[1::2] = raw >> 4
             raw_pixel = pixels[swizzle]
@@ -471,11 +522,75 @@ def get_pixels_from_buffer(raw, color_mode, swizzle):
             color_block = (raw.view(numpy.uint64)[1::2]).reshape(-1, 4)
 
             pixels = etc1_decompress(color_block, alpha_block)
+        case "PLTT16" | "PLTT256":
+            palette = numpy.array(palette, dtype = numpy.uint8)
+            match color_mode[1]:
+                case 4:
+                    raw = raw.view(numpy.uint8)
+                    pixels = numpy.empty(raw.size * 2, dtype = numpy.uint8)
+                    pixels[0::2] = raw & 0x0F
+                    pixels[1::2] = raw >> 4
+                    raw_pixel = pixels
+                case 8:
+                    raw_pixel = raw.view(numpy.uint8)
+                    palette_shift = 0
+            r = palette[raw_pixel | (palette_shift << 4), 0]
+            g = palette[raw_pixel | (palette_shift << 4), 1]
+            b = palette[raw_pixel | (palette_shift << 4), 2]
+            a = numpy.where(raw_pixel == 0, 0, 255).astype(numpy.uint8)
+        case "A5I3":
+            raw_pixel = raw.view(numpy.uint8)
+            palette = numpy.array(palette, dtype = numpy.uint8)
+            r = palette[raw_pixel & 0x7, 0]
+            g = palette[raw_pixel & 0x7, 1]
+            b = palette[raw_pixel & 0x7, 2]
+            a = nds_bgr555_to_rgb888((raw_pixel >> 3) & 0x1F, engine_is_3d)
+        case "A3I5":
+            raw_pixel = raw.view(numpy.uint8)
+            palette = numpy.array(palette, dtype = numpy.uint8)
+            r = palette[raw_pixel & 0x1F, 0]
+            g = palette[raw_pixel & 0x1F, 1]
+            b = palette[raw_pixel & 0x1F, 2]
+            a = nds_bgr555_to_rgb888((((raw_pixel >> 5) & 0x7) << 2) + (((raw_pixel >> 5) & 0x7) >> 1), engine_is_3d)
 
     if not etc1:
         pixels = numpy.stack([r, g, b, a], axis=-1).astype(numpy.uint8)
     
     return pixels
+
+def get_sprite_part_palette_indeces(graph_file, part_data, color_mode):
+    return_set = set()
+
+    part_size = part_data.part_size
+    part_shape = part_data.part_shape
+    img_width, img_height = SIZING_TABLE[part_shape][part_size]
+    
+    start = part_data.graphics_buffer_offset
+    size = ((img_width * img_height) * color_mode[1]) // 8
+    raw = numpy.frombuffer(graph_file[start:start + size], dtype = numpy.uint8)
+
+    match color_mode[0]:
+        case "PLTT16" | "PLTT256":
+            match color_mode[1]:
+                case 4:
+                    raw = raw.view(numpy.uint8)
+                    pixels = numpy.empty(raw.size * 2, dtype = numpy.uint8)
+                    pixels[0::2] = raw & 0x0F
+                    pixels[1::2] = raw >> 4
+                    raw_pixel = pixels
+                    palette_shift = part_data.palette_shift * 16
+                case 8:
+                    raw_pixel = raw.view(numpy.uint8)
+                    palette_shift = 0
+            return_set = set(raw_pixel + palette_shift)
+        case "A5I3":
+            raw_pixel = raw.view(numpy.uint8)
+            return_set = set(raw_pixel & 0x7)
+        case "A3I5":
+            raw_pixel = raw.view(numpy.uint8)
+            return_set = set(raw_pixel & 0x1F)
+    
+    return return_set
 
 def apply_sprite_color(img, obj_anim_data, color_data, renderer_data, default_renderer_colors, current_anim_index, global_anim_index, current_time_anim, current_time_color, current_anim_length):
     anim_set = color_data.get_rgba(
@@ -605,7 +720,7 @@ def apply_sprite_color(img, obj_anim_data, color_data, renderer_data, default_re
     return img
 
 def transform_image(img, matrix, center, size):
-    M = numpy.eye(3, dtype=numpy.float32)
+    M = numpy.eye(3, dtype = numpy.float32)
     M[0, 0:3] = matrix[0:3]
     M[1, 0:3] = matrix[3:6]
 
@@ -666,7 +781,7 @@ ETC1_TABLE = numpy.array([
 ], dtype = numpy.int16)
 
 
-def etc1_decompress(color_block, alpha_block=None):
+def etc1_decompress(color_block, alpha_block = None):
     num_tiles = color_block.shape[0]
     blocks = color_block.flatten().view(numpy.uint8).reshape(-1, 8)
     blocks_amt = blocks.shape[0]
@@ -745,7 +860,7 @@ def etc1_decompress(color_block, alpha_block=None):
         alpha = a_data & 0x0F | a_data << 4, a_data & 0xF0 | a_data >> 4
         a = numpy.stack(alpha, axis=2).reshape(blocks_amt, 16)
     else:
-        a = numpy.full((blocks_amt, 16), 255, dtype=numpy.uint8)
+        a = numpy.full((blocks_amt, 16), 255, dtype = numpy.uint8)
     
 
     pixels = numpy.stack([r, g, b, a], axis=-1)
@@ -754,3 +869,12 @@ def etc1_decompress(color_block, alpha_block=None):
     pixels = pixels.reshape(num_tiles, 64, 4)
 
     return pixels
+
+
+
+def nds_bgr555_to_rgb888(color_input, engine_is_3d = False, channel = 0):
+    add_value = 1 if engine_is_3d else 0
+    x = color_input >> (channel * 5) & 0x1F         # 5 bit color
+    x = (x << 1) + numpy.where(x > 0, add_value, 0) # 6 bit color
+    x = (x << 2) | (x >> 4)                         # 8 bit color
+    return x

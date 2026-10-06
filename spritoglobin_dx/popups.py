@@ -28,7 +28,7 @@ class FileImportWindow(QtWidgets.QDialog):
         self.supported_games_list_string_format = ", ".join(supported_games[:-1]), supported_games[-1]
 
         #: Window title.
-        self.setWindowTitle(self.tr("Import Object File"))
+        self.setWindowTitle(self.tr("Import CellAnime Data"))
         self.setWindowIcon(self.current_window_icon)
 
         layout = QtWidgets.QGridLayout()
@@ -79,14 +79,14 @@ class FileImportWindow(QtWidgets.QDialog):
         QtWidgets.QMessageBox.information(
             self,
             #: Window title.
-            self.tr("Choose Object Archive"),
+            self.tr("Choose Obj Archive"),
             #: "{0}, or {1}" appears as "Paper Jam, Superstar Saga DX, or Bowser's Inside Story DX" in-program (not exact titles but you get the idea)
-            self.tr("Please choose an Object archive from {0}, or {1}.").format(*self.supported_games_list_string_format),
+            self.tr("Please choose an Obj archive from {0}, or {1}.").format(*self.supported_games_list_string_format),
         )
 
         path, _ = QtWidgets.QFileDialog.getOpenFileName(
             self,
-            self.tr("Choose Object Archive"),
+            self.tr("Choose Obj Archive"),
             path,
             "Data Archives (*.dat);;All Files (*)",
         )
@@ -109,6 +109,7 @@ class FileImportWindow(QtWidgets.QDialog):
         valid = ("?", "?")
         ca_info = "???"
         ca_valid = ("?", "?")
+        is_nds = False
         QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.WaitCursor)
         try:
             with open(path, 'rb') as obj_in:
@@ -120,11 +121,11 @@ class FileImportWindow(QtWidgets.QDialog):
             err = QtWidgets.QMessageBox(self.parent)
             error_strings = {
                 #: For uploading unsupported Obj files. The file had valid CA info, but all tests to check which game it's from have failed.
-                100: self.tr("The file appears to be a valid Object archive, but the data appears to be corrupted or in an unrecognized format."),
+                100: self.tr("The file appears to be a valid Obj archive, but the data appears to be corrupted or in an unrecognized format."),
                 #: For uploading files with a valid BG4 magic number, but no CA info. It's not an Obj archive.
-                101: self.tr("The file does not appear to be a valid Object archive."),
+                101: self.tr("The file does not appear to be a valid Obj archive."),
                 #: For uploading any old data file that's not recognized by any of the program's tests. Clarifies which games are supported due to the fact that the uploader might be trying to import data from a game that's planned for future support, like Dream Team (as of writing this note).
-                102: self.tr("The file does not appear to be a valid Object archive. Only Object archives from {0}, and {1} are currently supported."),
+                102: self.tr("The file does not appear to be a valid Obj archive. Only Obj archives from {0}, and {1} are currently supported."),
             }
 
             #: Window title.
@@ -144,10 +145,21 @@ class FileImportWindow(QtWidgets.QDialog):
             self.import_button.setEnabled(True)
             self.sort_contents_toggle.setVisible(True)
 
-            info = self.tr("BG4 Archive (Version {0}.{1})").format(*obj_data.bg4_version)
-            valid = (obj_data.valid_entries, obj_data.invalid_entries)
-            ca_info = self.tr("BG4 Archive (Version {0}.{1})").format(*obj_data.bg4_ca_version)
-            ca_valid = (obj_data.valid_ca_entries, obj_data.invalid_ca_entries)
+            if obj_data.game_id in GAME_IDS_THAT_USE_GENERIC_ARCHIVES:
+                #: "DAT" is an internal format. Do not translate.
+                info = self.tr("DAT Archive")
+                valid = (obj_data.valid_entries, obj_data.invalid_entries)
+                ca_valid = (obj_data.valid_sprite_entries, obj_data.invalid_sprite_entries)
+                palette_valid = (obj_data.valid_palette_entries, obj_data.invalid_palette_entries)
+                self.sort_contents_toggle.setVisible(False)
+            elif obj_data.game_id in GAME_IDS_THAT_USE_BG4:
+                #: "BG4" is an internal format. Do not translate.
+                info = self.tr("BG4 Archive (Version {0}.{1})").format(*obj_data.bg4_version)
+                valid = (obj_data.valid_entries, obj_data.invalid_entries)
+                ca_info = self.tr("BG4 Archive (Version {0}.{1})").format(*obj_data.bg4_ca_version)
+                ca_valid = (obj_data.valid_ca_entries, obj_data.invalid_ca_entries)
+                palette_valid = 0, 0
+                self.sort_contents_toggle.setVisible(True)
 
             game_title = self.game_title_strings[f"GameTitle{self.current_game_id}"]
         finally:
@@ -165,9 +177,16 @@ class FileImportWindow(QtWidgets.QDialog):
             string += f"({game_title})"
             string += "\n"
             string += "\n"
-            string += f"{cellanime_title_string} - {ca_info}"
-            string += "\n"
-            string += self.tr("{0} Valid Entries, {1} Invalid Entries").format(*ca_valid)
+            if obj_data.game_id in GAME_IDS_THAT_USE_GENERIC_ARCHIVES:
+                #: Displays the amount of CellAnime that are full of data, versus how many files are blank.
+                string += self.tr("{0} Valid CellAnime, {1} Invalid CellAnime").format(*ca_valid)
+                string += "\n"
+                #: Displays the amount of palettes that are full of data, versus how many files are blank.
+                string += self.tr("{0} Valid Palettes, {1} Invalid Palettes").format(*palette_valid)
+            elif obj_data.game_id in GAME_IDS_THAT_USE_BG4:
+                string += f"{cellanime_title_string} - {ca_info}"
+                string += "\n"
+                string += self.tr("{0} Valid Entries, {1} Invalid Entries").format(*ca_valid)
             string += "\n"
 
             self.file_info_text.setText(string)
@@ -387,9 +406,12 @@ class GifExportWindow(QtWidgets.QDialog):
 
         scale = self.scale_controller.value()
 
-        color_animation = -1
+        color_animation = None
         if self.color_anim_list_box.currentIndex() != 0:
-            color_animation = int(self.color_anim_list_box.currentText())
+            try:
+                color_animation = int(self.color_anim_list_box.currentText())
+            except ValueError:
+                color_animation = -1
         
         img_data = self.obj_data.get_sprite_part_entities(
             object_name      = cached_object.name, 
@@ -404,7 +426,7 @@ class GifExportWindow(QtWidgets.QDialog):
             (scale, scale, 1), # scale
         ]
 
-        palette = self.obj_data.get_object_palette(
+        palette = self.obj_data.get_object_pica200_palette(
             object_name      = cached_object.name, 
             animation_index  = anim,
             color_anim_index = color_animation,
@@ -490,8 +512,18 @@ class GifExportWindow(QtWidgets.QDialog):
         #: Used when a file has no color animations.
         self.color_anim_list_box.addItem(self.tr("None"))
         if object_properties["has_color_data"]:
-            for anim in object_properties["color_data"].keys():
-                self.color_anim_list_box.addItem(str(anim))
+            if self.obj_data.game_id in GAME_IDS_THAT_USE_PICA200_RENDERING:
+                for anim in object_properties["color_data"].keys():
+                    self.color_anim_list_box.addItem(str(anim))
+
+            if self.obj_data.game_id in GAME_IDS_THAT_USE_PALETTES:
+                for i in object_properties["palette_data"].keys():
+                    if i == -1:
+                        #: Used when a file has a default color animation.
+                        string = self.tr("Default")
+                    else:
+                        string = str(i)
+                    self.color_anim_list_box.addItem(string)
         
             if initial_color_anim is not None:
                 self.color_anim_list_box.setCurrentIndex(initial_color_anim)
@@ -578,9 +610,12 @@ class GifExportWindow(QtWidgets.QDialog):
         self.animation_timer.stop()
         object_properties = self.obj_data.get_object_properties(object_name = cached_object.name)
 
-        color_animation = -1
+        color_animation = None
         if self.color_anim_list_box.currentIndex() != 0:
-            color_animation = int(self.color_anim_list_box.currentText())
+            try:
+                color_animation = int(self.color_anim_list_box.currentText())
+            except ValueError:
+                color_animation = -1
 
         framerate = self.framerate_choose_box.currentIndex()
         # 60 / 50 fps, 30 / 25 fps
@@ -611,23 +646,21 @@ class GifExportWindow(QtWidgets.QDialog):
                 animation_index = anim,
             )
 
+            xmn, xmx, ymn, ymx = self.obj_data.get_animation_bounding_box(
+                object_name      = object_name, 
+                animation_index  = anim,
+            )
+
+            min_x, max_x, min_y, max_y = [
+                min(min_x, xmn), # left
+                max(max_x, xmx), # right
+                min(min_y, ymn), # down
+                max(max_y, ymx), # up
+            ]
+
             anim_length = animation_properties["length"] * count
 
             for i in range(math.ceil(anim_length / advance_amt_adjusted)):
-                img, (w, h), (x, y) = self.obj_data.get_sprite_with_offset(
-                    object_name      = object_name, 
-                    animation_index  = anim,
-                    color_anim_index = color_animation,
-                    bypass_shader    = True,
-                )
-
-                if img is not None:
-                    min_x, max_x, min_y, max_y = [
-                        min(min_x, -x,    ), # left
-                        max(max_x, -x + w,), # right
-                        min(min_y,  y - h,), # down
-                        max(max_y,  y,    ), # up
-                    ]
                 
                 img = self.obj_data.get_sprite_part_entities(
                     object_name      = object_name, 
@@ -642,7 +675,7 @@ class GifExportWindow(QtWidgets.QDialog):
                     (1, 1, 1), # scale
                 ]
 
-                palette = self.obj_data.get_object_palette(
+                palette = self.obj_data.get_object_pica200_palette(
                     object_name      = object_name, 
                     animation_index  = anim,
                     color_anim_index = color_animation,
@@ -657,7 +690,7 @@ class GifExportWindow(QtWidgets.QDialog):
                 self.obj_data.increment_timers(
                     advance_amt_adjusted,
                     animation_timer = True,
-                    color_timer     = color_animation >= 0,
+                    color_timer     = color_animation is not None,
                 )
 
         # compile the image data

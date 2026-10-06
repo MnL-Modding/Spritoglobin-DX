@@ -305,6 +305,150 @@ class InteractiveGraphicsWindow(QtWidgets.QLabel):
 
 
 
+class PaletteDisplay(QtWidgets.QLabel):
+    # TODO: add color copying feature (maybe just copy hex code to clipboard if you click a color)
+    background_color = QtCore.Qt.GlobalColor.black
+
+    def __init__(self, parent, size, padding_amount):
+        super().__init__()
+        layout = QtWidgets.QGridLayout(self)
+
+        padding = QtWidgets.QWidget()
+        layout.addWidget(padding, 0, 0)
+        padding.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
+
+        self.parent = parent
+        self.size = size
+
+        self.palette = [[0, 0, 0]] * 256
+        self.palette_size = 0
+
+        self.padding_amount = padding_amount
+        self.color_mode = None
+        self.palette_shift = 0
+        self.highlighted_colors = set()
+        self.canvas = QtGui.QPixmap(*size)
+    
+    def resizeEvent(self, event):
+        size = event.size()
+        size = [size.width(), size.height()]
+
+        self.size = size
+        self.canvas = QtGui.QPixmap(*size)
+        self.update_image()
+    
+    def draw_palette(self, palette, palette_size):
+        self.palette = palette
+        self.palette_size = palette_size
+        self.update_image()
+    
+    def set_highlighted_area(self, color_mode, palette_shift, highlighted_colors = set()):
+        self.color_mode = color_mode
+        self.palette_shift = palette_shift
+        self.highlighted_colors = highlighted_colors
+        self.update_image()
+    
+    def update_image(self):
+        self.canvas.fill(self.background_color)
+        qp = QtGui.QPainter(self.canvas)
+
+        thickness = 2
+
+        pen = QtGui.QPen()
+        pen.setWidth(thickness)
+        pen.setJoinStyle(QtCore.Qt.MiterJoin)
+        
+        pen.setColor(QtGui.QColor(THEME_COLORS["P_COLOR_0"]))
+        qp.setPen(pen)
+        qp.drawRect(thickness * 0.5, thickness * 0.5, self.size[0] - thickness, self.size[1] - thickness)
+
+        pen.setColor(QtGui.QColor(THEME_COLORS["LIGHT"]))
+        qp.setPen(pen)
+        qp.drawRect(thickness * 1.5, thickness * 1.5, self.size[0] - (thickness * 3), self.size[1] - (thickness * 3))
+
+        x_values = [round((self.size[0] - (self.padding_amount * 2) - (thickness * 4)) * (i / 16)) for i in range(17)]
+        y_values = [round((self.size[1] - (self.padding_amount * 2) - (thickness * 4)) * (i / 16)) for i in range(17)]
+
+        palette_colors_to_draw = set(range(self.palette_size)) | self.highlighted_colors
+        if self.palette is not None:
+            for i in palette_colors_to_draw:
+                palette_color = QtGui.QColor(*self.palette[i])
+                if i not in self.highlighted_colors and not self.color_mode is None:
+                    palette_color.setAlpha(51)
+                    qp.setPen(QtGui.QPen(QtCore.Qt.transparent))
+                else:
+                    qp.setPen(QtGui.QPen(palette_color.darker(133)))
+
+                qp.setBrush(palette_color)
+
+                x_s = x_values[i % 16] + (self.padding_amount * 2) + (thickness * 2)
+                y_s = y_values[i // 16] + (self.padding_amount * 2) + (thickness * 2)
+                x_e = x_values[(i % 16) + 1] - x_s - (self.padding_amount * 2) + (thickness * 2)
+                y_e = y_values[(i // 16) + 1] - y_s - (self.padding_amount * 2) + (thickness * 2)
+
+                if i not in self.highlighted_colors and self.color_mode is not None:
+                    rect = QtCore.QRectF(x_s, y_s, x_e + 1, y_e + 1)
+                else:
+                    rect = QtCore.QRectF(x_s, y_s, x_e, y_e)
+                qp.drawRect(rect)
+
+                if i in self.highlighted_colors or self.color_mode is None:
+                    qp.setPen(QtGui.QPen(palette_color.lighter(133)))
+                    qp.drawLine(rect.topLeft(), rect.topRight())
+                    qp.drawLine(rect.topLeft(), rect.bottomLeft())
+
+            if self.color_mode is not None:
+                match self.color_mode:
+                    case "PLTT16":
+                        x_s = x_values[0]
+                        x_e = x_values[16]
+                        y_s = y_values[self.palette_shift]
+                        y_e = y_values[1]
+                    case "A5I3":
+                        x_s = x_values[0]
+                        x_e = x_values[8]
+                        y_s = y_values[0]
+                        y_e = y_values[1]
+                        highlighted_colors = set(range(0, 8))
+                    case "A3I5":
+                        x_s = x_values[0]
+                        x_e = x_values[16]
+                        y_s = y_values[0]
+                        y_e = y_values[2]
+                    case _:
+                        x_s = x_values[0]
+                        x_e = x_values[16]
+                        y_s = y_values[0]
+                        y_e = y_values[16]
+
+                qp.setBrush(QtGui.QBrush(QtCore.Qt.transparent))
+
+                pen.setColor(QtGui.QColor(THEME_COLORS["K_COLOR_0"]))
+                qp.setPen(pen)
+                qp.drawRect(
+                    (thickness * 0.5) + x_s,
+                    (thickness * 0.5) + y_s,
+                    (thickness * 3.5) + x_e,
+                    (thickness * 3.5) + y_e,
+                )
+
+                pen.setColor(QtGui.QColor(THEME_COLORS["LIGHT"]))
+                qp.setPen(pen)
+                qp.drawRect(
+                    (thickness * 1.5) + x_s,
+                    (thickness * 1.5) + y_s,
+                    (thickness * 1.5) + x_e,
+                    (thickness * 1.5) + y_e,
+                )
+
+            qp.end()
+        self.setPixmap(self.canvas)
+    
+    def update_program_theme(self):
+        self.update_image()
+
+
+
 class AnimationTimeline(QtWidgets.QWidget):
     background_color = QtCore.Qt.GlobalColor.black
 
@@ -558,6 +702,7 @@ class GraphicsAnimationTimeline(AnimationTimeline):
         self.current_parts = None
         self.current_matrix = None
         self.current_matrix_inv = False
+        self.current_prematrix = None
 
         self.minimal = minimal
 
@@ -699,23 +844,47 @@ class GraphicsAnimationTimeline(AnimationTimeline):
             matrix = list(self.current_matrix)
             [label.setEnabled(True) for label in self.frame_data_matrix]
 
-        for i, label in enumerate(self.frame_data_matrix):
-            string = [
-                #: Part of affine matrix data.
-                self.tr("X Scale: {0}"),
-                #: Part of affine matrix data.
-                self.tr("X Shear: {0}"),
-                #: Part of affine matrix data.
-                self.tr("X Position: {1}"),
-                #: Part of affine matrix data.
-                self.tr("Y Shear: {0}"),
-                #: Part of affine matrix data.
-                self.tr("Y Scale: {0}"),
-                #: Part of affine matrix data.
-                self.tr("Y Position: {1}"),
-            ][i]
+        if self.current_prematrix is None:
+            for i, label in enumerate(self.frame_data_matrix):
+                string = [
+                    #: Part of affine matrix data.
+                    self.tr("X Scale: {0}"),
+                    #: Part of affine matrix data.
+                    self.tr("X Shear: {0}"),
+                    #: Part of affine matrix data.
+                    self.tr("X Position: {1}"),
+                    #: Part of affine matrix data.
+                    self.tr("Y Shear: {0}"),
+                    #: Part of affine matrix data.
+                    self.tr("Y Scale: {0}"),
+                    #: Part of affine matrix data.
+                    self.tr("Y Position: {1}"),
+                ][i]
 
-            label.setText(string.format(f"{matrix[i]:7.4f}", matrix[i]))
+                label.setHidden(False)
+                label.setText(string.format(f"{matrix[i]:7.4f}", matrix[i]))
+        else:
+            for i, label in enumerate(self.frame_data_matrix):
+                string = [
+                    #: Part of transform data.
+                    self.tr("Rotation: {0}"),
+                    #: Part of affine matrix data.
+                    self.tr("X Scale: {0}"),
+                    #: Part of affine matrix data.
+                    self.tr("X Position: {1}"),
+                    # filler
+                    None,
+                    #: Part of affine matrix data.
+                    self.tr("Y Scale: {0}"),
+                    #: Part of affine matrix data.
+                    self.tr("Y Position: {1}"),
+                ][i]
+
+                if string is None:
+                    label.setHidden(True)
+                else:
+                    label.setHidden(False)
+                    label.setText(string.format(f"{self.current_prematrix[[0, 1, 3, 0, 2, 4][i]]:7.4f}", self.current_prematrix[[0, 1, 3, 0, 2, 4][i]]))
 
         matrix_demo = QtGui.QPixmap(72, 72)
         matrix_demo.fill(self.background_color)
@@ -754,12 +923,13 @@ class GraphicsAnimationTimeline(AnimationTimeline):
         self.matrix_demo.setPixmap(matrix_demo)
         self.matrix_demo.resize(matrix_demo.size())
     
-    def send_frame_data(self, current_parts = None, current_keyframe_timer = None, current_matrix_index = None, current_matrix = None, current_matrix_inv = False):
+    def send_frame_data(self, current_parts = None, current_keyframe_timer = None, current_matrix_index = None, current_matrix = None, current_matrix_inv = False, current_prematrix = None):
         self.current_parts          = current_parts
         self.current_keyframe_timer = current_keyframe_timer
         self.current_matrix_index   = current_matrix_index
         self.current_matrix         = current_matrix
         self.current_matrix_inv     = current_matrix_inv
+        self.current_prematrix      = current_prematrix
         
         if self.current_parts is None:
             self.play_button.setEnabled(False)
@@ -780,8 +950,8 @@ class ColorAnimationTimeline(AnimationTimeline):
         self.layer_toggle_list = QtWidgets.QComboBox()
         self.layer_toggle_list.currentIndexChanged.connect(self.update_layer)
 
-        layer_info = QtWidgets.QWidget()
-        layer_info_layout = QtWidgets.QGridLayout(layer_info)
+        self.layer_info = QtWidgets.QWidget()
+        layer_info_layout = QtWidgets.QGridLayout(self.layer_info)
         layer_info_layout.setContentsMargins(0, 0, 0, 0)
 
         self.layer_info_text_1 = QtWidgets.QLabel()
@@ -810,7 +980,7 @@ class ColorAnimationTimeline(AnimationTimeline):
 
         self.layout.addWidget(self.layer_toggle_list_string, 0, 4, 1, 2)
         self.layout.addWidget(self.layer_toggle_list, 0, 6)
-        self.layout.addWidget(layer_info, 1, 5, -1, 2, alignment = QtCore.Qt.AlignmentFlag.AlignCenter)
+        self.layout.addWidget(self.layer_info, 1, 5, -1, 2, alignment = QtCore.Qt.AlignmentFlag.AlignCenter)
 
         self.animation_data = None
         self.use_alt_timer = False
@@ -820,11 +990,14 @@ class ColorAnimationTimeline(AnimationTimeline):
     def set_time(self, time):
         if self.animation_data is not None:
             if not self.animation_data[self.current_layer]["is_persistant"]:
-                time = min(
-                    time % self.animation_data[self.current_layer]["parent_length"],
-                    self.animation_data[self.current_layer]["length"] - 1,
-                )
-                
+                if self.animation_data[self.current_layer].get("parent_length", None) is not None:
+                    time = min(
+                        time % self.animation_data[self.current_layer]["parent_length"],
+                        self.animation_data[self.current_layer]["length"] - 1,
+                    )
+                else:
+                    time = time % self.animation_data[self.current_layer]["length"]
+
         self.current_time = time
 
         self.draw_full()
@@ -1051,6 +1224,7 @@ class ColorAnimationTimeline(AnimationTimeline):
             self.sendLayerPersistance.emit(self.animation_data[self.current_layer]["is_persistant"])
 
     def send_color_data(self, layer_amt = 0, keyframes = None, render_channel = None, is_persistant = None, length = None, parent_length = None):
+        self.set_pica_data_enabled(True)
         if layer_amt != 0:
             self.animation_data = [{
                 "keyframes":      keyframes[i],
@@ -1071,3 +1245,69 @@ class ColorAnimationTimeline(AnimationTimeline):
         else:
             self.play_button.setEnabled(True)
             self.stop_button.setEnabled(True)
+
+    def send_palette_data(self, layer_amt = 0, keyframes = None, length = None):
+        self.set_pica_data_enabled(False)
+        if layer_amt != 0:
+            self.animation_data = [{
+                "keyframes":      0,
+                "is_persistant":  True,
+                "length":         0,
+            } for i in range(layer_amt)]
+        else:
+            self.animation_data = None
+            self.update_timeline()
+        
+        self.update_layer(0, update_list = True)
+        
+        if self.animation_data is None or self.use_alt_timer:
+            self.play_button.setEnabled(False)
+            self.stop_button.setEnabled(False)
+        else:
+            self.play_button.setEnabled(True)
+            self.stop_button.setEnabled(True)
+
+    def set_pica_data_enabled(self, enabled):
+        self.layer_info.setVisible(enabled)
+
+
+class LanguageDisplay(QtWidgets.QWidget):
+    def __init__(self):
+        super().__init__()
+
+        layout = QtWidgets.QGridLayout(self)
+        layout.setContentsMargins(0, 0, 0, 0)
+
+        self.obj_name = QtWidgets.QLabel()
+        layout.addWidget(self.obj_name, 0, 0)
+        self.obj_name.setEnabled(False)
+        
+        self.flags_display = QtWidgets.QWidget()
+        flag_layout = QtWidgets.QHBoxLayout(self.flags_display)
+        flag_layout.setContentsMargins(0, 0, 0, 0)
+        layout.addWidget(self.flags_display, 0, 1, alignment = QtCore.Qt.AlignmentFlag.AlignRight)
+    
+    def display_lang(self, obj_name, languages):
+        if obj_name is None:
+            self.hide()
+            return
+
+        self.show()
+        self.obj_name.setText(obj_name)
+
+        flag_layout = self.flags_display.layout()
+        while flag_layout.count():
+            item = flag_layout.takeAt(0)
+            widget = item.widget()
+            if widget:
+                widget.deleteLater()
+
+        if len(languages) == 0:
+            languages = ["Unreachable"]
+
+        for lang_key in languages:
+            flag = QtWidgets.QLabel()
+            pixmap = QtGui.QPixmap(str(LANG_DIR / f"{lang_key}.png"))
+            flag.setPixmap(pixmap)
+
+            flag_layout.addWidget(flag)
