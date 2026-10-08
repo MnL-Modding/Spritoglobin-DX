@@ -200,11 +200,12 @@ class FileImportWindow(QtWidgets.QDialog):
 
 
 class GifExportWindow(QtWidgets.QDialog):
-    def __init__(self, parent, current_window_icon, success_jingle, obj_data, renderer, use_low_framerate, initial_object, initial_animation, initial_color_anim):
+    def __init__(self, parent, current_window_icon, success_jingle, file_name, obj_data, renderer, use_low_framerate, initial_object, initial_animation, initial_color_anim):
         super().__init__()
 
         self.parent = parent
         self.obj_data = obj_data
+        self.file_name = file_name
 
         self.current_window_icon = current_window_icon
         self.success_jingle = success_jingle
@@ -582,7 +583,7 @@ class GifExportWindow(QtWidgets.QDialog):
 
         cached_object = self.obj_data.get_cached_object()
         path = config.get("NavigationPaths", "img_export_path")
-        filename = f"{self.obj_data.game_id}_{cached_object.name}_"
+        filename = f"{self.obj_data.game_id}_{self.file_name}-{cached_object.name}_"
         filename += ".".join(f"{anim}" for anim, _ in self.current_anim_list)
 
         path, file_filter = QtWidgets.QFileDialog.getSaveFileName(

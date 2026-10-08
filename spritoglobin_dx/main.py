@@ -787,6 +787,7 @@ class MainWindow(QtWidgets.QMainWindow):
             parent              = self,
             current_window_icon = self.current_window_icon,
             success_jingle      = success_jingle,
+            file_name           = os.path.splitext(os.path.basename(self.current_path))[0],
             obj_data            = obj_data,
             renderer            = self.master_renderer,
             use_low_framerate   = self.current_game_id in GAME_IDS_THAT_USE_LOW_FRAMERATE,

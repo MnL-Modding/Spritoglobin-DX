@@ -1343,7 +1343,7 @@ class ObjFile:
 
                 self.previous_buffer_init = int.from_bytes(input_data.read(1), 'little', signed = True)
                 buffer_write_flags = int.from_bytes(input_data.read(1), 'little') # no clue if this is accurate but there has been nothing to prove otherwise so far lol
-                for i in range(4):
+                for i in range(min(4, pass_list_num)):
                     current_flag = i
                     self.pass_list[i][0]["write_rgb_buffer"] = ((buffer_write_flags >> (current_flag + 0)) & 1)
                     self.pass_list[i][0]["write_a_buffer"]   = ((buffer_write_flags >> (current_flag + 4)) & 1)
