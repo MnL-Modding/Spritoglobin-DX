@@ -1861,7 +1861,7 @@ class MainWindow(QtWidgets.QMainWindow):
         else:
             self.current_window_icon = QtGui.QIcon(str(FILES_DIR / 'ico_sprito.ico'))
             self.success_jingle.setSource(QtCore.QUrl.fromLocalFile(FILES_DIR / "snd_success.wav"))
-            self.current_theme_file_path = 'img_icons_temp' #'img_icons'
+            self.current_theme_file_path = 'img_icons'
 
         self.set_theme_icons(self.current_theme_file_path, self.theme_icons_map_theme_colors)
         self.apply_theme_icons(update_anim_palette_icons)
